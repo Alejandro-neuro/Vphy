@@ -9,9 +9,11 @@ class Encoder(nn.Module):
         self.Conv = nn.Conv2d(16, 33, 3, stride=2)
 
         #Linear layers
-        self.l1 = nn.Linear(101,50 )
-        self.l2 = nn.Linear(50,10 )
-        self.l3 = nn.Linear(10,1 )
+        self.linear = nn.ModuleList()
+
+        self.linear.append(nn.Linear(101,50))
+        self.linear.append(nn.Linear(50,10))
+        self.linear.append(nn.Linear(10,1))
         
         #Activation functions
         self.sigmoid = nn.Sigmoid()
@@ -19,15 +21,19 @@ class Encoder(nn.Module):
         self.relu= nn.ReLU()
 
         if initw:
-          nn.init.xavier_normal(self.l1.weight)
-          nn.init.xavier_normal(self.l2.weight)
-          nn.init.xavier_normal(self.l3.weight)
+          for m in self.modules():        
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_normal_(m.weight.data)
+                if m.bias is not None:
+                    nn.init.zeros_(m.bias.data)
 
     def forward(self, x):
       x=torch.flatten(x,1)
-      x = self.Tanh(self.l1(x))
-      x = self.Tanh(self.l2(x))
-      x = self.l3(x)
+
+      for i in range(len(self.linear) -1):
+            x = self.linear[i](x)
+            x = torch.relu(x)    
+      x = self.linear[-1](x)
 
       return x
 
