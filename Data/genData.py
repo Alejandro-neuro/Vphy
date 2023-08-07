@@ -43,6 +43,17 @@ def create_pendulum_image(angle_deg):
     # Draw pendulum bob
     draw.ellipse((bob_x - bob_radius, bob_y - bob_radius, bob_x + bob_radius, bob_y + bob_radius), fill='white')
 
+
+    # Setting the points for cropped image
+    left = 0
+    top = (height // 2)-10
+    right = width
+    bottom = height
+    
+    # Cropped image of above dimension
+    # (It will not change original image)
+    image = image.crop((left, top, right, bottom))
+
     # transform image black & white
     image = image.convert('L')
 
@@ -67,7 +78,7 @@ def generateVideo():
 
     # Initialize VideoWriter
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    video = cv2.VideoWriter(video_name, fourcc, frame_rate, (500, 500))
+    video = cv2.VideoWriter(video_name, fourcc, frame_rate, (500, 260))
 
     
 
