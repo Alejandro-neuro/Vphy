@@ -42,20 +42,24 @@ class Dataset(torch.utils.data.Dataset):
             x2 = self.transform(x2)
  
 
-        return (x0,x1 ), x2
+        return (x0,x1), x2
         
-def getLoader(X):
+def getLoader(X,  split = True):
+
+      if split:
      
-      #split dataset 80-20 for training and validation
+            #split dataset 80-20 for training and validation
 
-      train_x, val_x = train_test_split(X, test_size=0.2, shuffle=False)
+            train_x, val_x = train_test_split(X, test_size=0.2, shuffle=False)
 
-      #create train and test dataloaders
+            #create train and test dataloaders
 
-      train_dataset = DataLoader( Dataset(train_x, 1/30), batch_size=32, shuffle=False)
-      val_dataset = DataLoader( Dataset(val_x, 1/30), batch_size=32, shuffle=False)    
+            train_dataset = DataLoader( Dataset(train_x, 1/30), batch_size=32, shuffle=False)
+            val_dataset = DataLoader( Dataset(val_x, 1/30), batch_size=32, shuffle=False)    
 
-      return train_dataset, val_dataset, train_x, val_x 
+            return train_dataset, val_dataset, train_x, val_x 
+      else :
+            return DataLoader( Dataset(X, 1/30), batch_size=len(X), shuffle=False)
 
 if __name__ == "__main__":
     pass

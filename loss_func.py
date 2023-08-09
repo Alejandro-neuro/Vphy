@@ -2,9 +2,20 @@ import torch
 import torch.nn as nn
 from omegaconf import OmegaConf
 
-def custom_loss(outputs, labels):
-    loss = nn.MSELoss()
-    return loss(outputs, labels)   
+def custom_loss(input_img, outputs, expected_pred):
+    lossMSE = nn.MSELoss()
+
+    x0,x1=input_img
+    z,rec=outputs
+    rec0,rec1,outrec=rec
+    z0,z1,z2 = z
+
+    l1=lossMSE(rec0, x0)
+    l2=lossMSE(rec1, x1)
+    l3=lossMSE(outrec,expected_pred)
+
+
+    return l1,l2,l3
 
 def getLoss():
     cfg = OmegaConf.load("config.yaml")

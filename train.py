@@ -26,19 +26,25 @@ def train_epoch(model, loader,loss_fn, optimizer, device='cpu'):
     #loss_fn = nn.MSELoss()
     for data in loader:
 
-        inputs = data
-        labels = data['y'].unsqueeze(1)
+        input_Data, out_Data = data
 
-        inputs = inputs.to(device=device)
-        labels = labels.to(device = device)
+        x0,x1 = input_Data
+
+        x0 = x0.to(device=device, dtype=torch.float)
+        x1 = x1.to(device=device, dtype=torch.float)
+
+        x2 = x2.to(device=device, dtype=torch.float)
+
+
         # Zero gradients for every batch!
         optimizer.zero_grad()
         # Make predictions for this batch
-        outputs = model(inputs)
+        outputs = model(x0,x1)
 
 
         # Compute the loss and its gradients
-        loss = loss_fn(outputs, labels)
+        l1,l2,l3 = loss_fn( (x0,x1), outputs ,x2 )
+        loss = l1+l2+l3 
         loss.backward()
         optimizer.step()
 
@@ -54,30 +60,29 @@ def evaluate_epoch(model, loader,loss_fn, device='cpu'):
         model.to(device)
         model.eval() # specifies that the model is in evaluation mode
         running_loss = 0.
-        accuracy=0.
-        correct = 0.
-
 
         for data in loader:
 
+            input_Data, out_Data = data
 
-            inputs = data
-            labels = data['y'].unsqueeze(1)
+            x0,x1 = input_Data
 
-            inputs = inputs.to(device)
-            labels = labels.to(device)
+            x0 = x0.to(device=device, dtype=torch.float)
+            x1 = x1.to(device=device, dtype=torch.float)
 
-            # Make predictions for this batch
-            outputs = model(inputs)
+            x2 = x2.to(device=device, dtype=torch.float)
 
-            running_loss += loss_fn(outputs, labels).item()
+            outputs = model(x0,x1)
 
-            pred = outputs.argmax(dim=1)
-            correct += (pred == labels.argmax(dim=-1) ).sum().float() / pred.shape[0] # Check against ground-truth labels.
-        loss = running_loss/len(loader)
-        accuracy = correct.item() / len(loader)
+            # Compute the loss 
+            l1,l2,l3 = loss_fn( (x0,x1), outputs ,x2 )
+            loss = l1+l2+l3       
+
+            running_loss += loss.item()
+
+        total_loss = running_loss/len(loader)
         
-    return loss, accuracy
+    return total_loss
 
 
 def train(model, train_loader, val_loader, name):
@@ -98,17 +103,16 @@ def train(model, train_loader, val_loader, name):
     train_losses = []
     val_losses = []
     accuracy_list = []
-    patience = 15 # patience for early stopping
+    patience = 50 # patience for early stopping
 
     for epoch in range(1, num_epochs+1):
         # Model training
         train_loss = train_epoch(model, train_loader, loss_fn,optimizer, device=device)
         # Model validation
-        val_loss,accuracy = evaluate_epoch(model, val_loader, loss_fn, device=device)
+        val_loss = evaluate_epoch(model, val_loader, loss_fn, device=device)
         
         train_losses.append(train_loss)
         val_losses.append(val_loss)
-        accuracy_list.append(accuracy)
         # Early stopping
         try:
             if val_losses[-1]>=val_losses[-2]:
@@ -123,8 +127,7 @@ def train(model, train_loader, val_loader, name):
 
         if epoch%(num_epochs /10 )== 0:
             print("epoch:",epoch, "\t training loss:", train_loss,
-                  "\t validation loss:",val_loss, 
-                  "\t accuracy :", accuracy )
+                  "\t validation loss:",val_loss)
             
     X = []
     X.append( { 'x': range(1, num_epochs+1), 'y': train_losses, 'label': 'train_loss'} )
