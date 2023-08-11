@@ -11,8 +11,8 @@ class Encoder(nn.Module):
         #Linear layers
         self.linear = nn.ModuleList()
 
-        self.linear.append(nn.Linear(101,50))
-        self.linear.append(nn.Linear(50,10))
+        self.linear.append(nn.Linear(130000,500))
+        self.linear.append(nn.Linear(500,10))
         self.linear.append(nn.Linear(10,1))
         
         #Activation functions
@@ -28,7 +28,11 @@ class Encoder(nn.Module):
                     nn.init.zeros_(m.bias.data)
 
     def forward(self, x):
+
+      x = x.unsqueeze(1)
       x=torch.flatten(x,1)
+
+      
 
       for i in range(len(self.linear) -1):
             x = self.linear[i](x)
@@ -42,11 +46,13 @@ class pModel(nn.Module):
         super().__init__()
         self.alpha = torch.tensor([-2.00], requires_grad=True).float()
         self.beta = torch.tensor([-2500.00], requires_grad=True).float()
-        #self.alpha = nn.Parameter(self.alpha )
-        #self.beta= nn.Parameter(self.beta)
+        self.alpha = nn.Parameter(self.alpha )
+        self.beta= nn.Parameter(self.beta)
 
-    def forward(self, x0,x1,dt):
-      
+    def forward(self, x0,x1,dt):    
+
+      #device = "cuda" if torch.cuda.is_available() else "cpu"
+      #dt = torch.tensor([dt], requires_grad=False).float().to(device)
 
 
       return x1+(x1-x0)+self.alpha*(x1-x0 )*dt*2 + (self.beta*x1 )*dt*dt*4
@@ -55,10 +61,10 @@ class Decoder(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
         self.l1 = nn.Linear(1,10 )
-        self.l2 = nn.Linear(10,50 )
-        self.l3 = nn.Linear(50,101 )
+        self.l2 = nn.Linear(10,500 )
+        self.l3 = nn.Linear(500,130000 )
 
-        self.uflat = nn.Unflatten(1, torch.Size([101,1]))
+        self.uflat = nn.Unflatten(1, torch.Size([1,260,500]))
         self.relu= nn.ReLU()
         self.Softmax= nn.Softmax(dim=1)
         self.sigmoid= nn.Sigmoid()
@@ -69,9 +75,9 @@ class Decoder(nn.Module):
 
           #uniform_
           #xavier_normal
-          nn.init.xavier_normal(self.l1.weight)
-          nn.init.xavier_normal(self.l2.weight)
-          nn.init.xavier_normal(self.l3.weight)
+          nn.init.xavier_normal_(self.l1.weight)
+          nn.init.xavier_normal_(self.l2.weight)
+          nn.init.xavier_normal_(self.l3.weight)
 
     def forward(self, x):
 

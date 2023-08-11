@@ -71,7 +71,7 @@ def generateVideo():
     t,a = generatePendulumA(g,L,x0, x1)
 
     # Create a video of the swinging pendulum
-    video_name = 'pendulum_swing.mp4'
+    video_name = 'pendulum_swing2.mp4'
     frame_rate = 30
     duration = len(a) / frame_rate
     num_frames = frame_rate * duration

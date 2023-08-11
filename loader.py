@@ -59,7 +59,7 @@ def getLoader(X,  split = True):
 
             return train_dataset, val_dataset, train_x, val_x 
       else :
-            return DataLoader( Dataset(X, 1/30), batch_size=len(X), shuffle=False)
+            return DataLoader( Dataset(X, 1/30), batch_size=1, shuffle=False)
 
 if __name__ == "__main__":
     pass

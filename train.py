@@ -33,7 +33,7 @@ def train_epoch(model, loader,loss_fn, optimizer, device='cpu'):
         x0 = x0.to(device=device, dtype=torch.float)
         x1 = x1.to(device=device, dtype=torch.float)
 
-        x2 = x2.to(device=device, dtype=torch.float)
+        x2 = out_Data.to(device=device, dtype=torch.float)
 
 
         # Zero gradients for every batch!
@@ -43,7 +43,8 @@ def train_epoch(model, loader,loss_fn, optimizer, device='cpu'):
 
 
         # Compute the loss and its gradients
-        l1,l2,l3 = loss_fn( (x0,x1), outputs ,x2 )
+        inputs = (x0,x1)
+        l1,l2,l3 = loss_fn((x0,x1) , outputs ,x2 )
         loss = l1+l2+l3 
         loss.backward()
         optimizer.step()
@@ -70,12 +71,13 @@ def evaluate_epoch(model, loader,loss_fn, device='cpu'):
             x0 = x0.to(device=device, dtype=torch.float)
             x1 = x1.to(device=device, dtype=torch.float)
 
-            x2 = x2.to(device=device, dtype=torch.float)
+            x2 = out_Data.to(device=device, dtype=torch.float)
 
             outputs = model(x0,x1)
 
             # Compute the loss 
-            l1,l2,l3 = loss_fn( (x0,x1), outputs ,x2 )
+            inputs = (x0,x1)
+            l1,l2,l3 = loss_fn(inputs , outputs ,x2 )
             loss = l1+l2+l3       
 
             running_loss += loss.item()
