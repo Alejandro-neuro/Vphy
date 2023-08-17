@@ -28,24 +28,19 @@ def train_epoch(model, loader,loss_fn, optimizer, device='cpu'):
 
         input_Data, out_Data = data
 
-        x0,x1 = input_Data
-
-        x0 = x0.to(device=device, dtype=torch.float)
-        x1 = x1.to(device=device, dtype=torch.float)
-
-        x2 = out_Data.to(device=device, dtype=torch.float)
+        x0 = input_Data.to(device=device, dtype=torch.float)
+        x1 = out_Data.to(device=device, dtype=torch.float)
 
 
         # Zero gradients for every batch!
         optimizer.zero_grad()
         # Make predictions for this batch
-        outputs = model(x0,x1)
+        outputs = model(x0)
 
 
         # Compute the loss and its gradients
-        inputs = (x0,x1)
-        l1,l2,l3 = loss_fn((x0,x1) , outputs ,x2 )
-        loss = l1+l2+l3 
+        l1,l2 = loss_fn(x0 , outputs ,x1 )
+        loss = l1+l2
         loss.backward()
         optimizer.step()
 
@@ -66,19 +61,17 @@ def evaluate_epoch(model, loader,loss_fn, device='cpu'):
 
             input_Data, out_Data = data
 
-            x0,x1 = input_Data
 
-            x0 = x0.to(device=device, dtype=torch.float)
-            x1 = x1.to(device=device, dtype=torch.float)
+            x0 = input_Data.to(device=device, dtype=torch.float)
+            x1 = out_Data.to(device=device, dtype=torch.float)
 
-            x2 = out_Data.to(device=device, dtype=torch.float)
 
-            outputs = model(x0,x1)
+            outputs = model(x0)
 
             # Compute the loss 
-            inputs = (x0,x1)
-            l1,l2,l3 = loss_fn(inputs , outputs ,x2 )
-            loss = l1+l2+l3       
+            
+            l1,l2 = loss_fn(x0 , outputs ,x1 )
+            loss = l1+l2     
 
             running_loss += loss.item()
 

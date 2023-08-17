@@ -5,17 +5,18 @@ from omegaconf import OmegaConf
 def custom_loss(input_img, outputs, expected_pred):
     lossMSE = nn.MSELoss()
 
-    x0,x1=input_img
+    x0=input_img[:,-1,:,:]
     z,rec=outputs
     rec0,rec1,outrec=rec
     z0,z1,z2 = z
 
+    expected_pred=expected_pred.squeeze(1)
+
     l1=lossMSE(rec0, x0)
-    l2=lossMSE(rec1, x1)
-    l3=lossMSE(outrec,expected_pred)
+    l2=lossMSE(outrec,expected_pred)
 
 
-    return l1,l2,l3
+    return l1,l2
 
 def getLoss():
     cfg = OmegaConf.load("config.yaml")

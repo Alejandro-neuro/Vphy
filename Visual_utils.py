@@ -65,18 +65,17 @@ def visualize(model, loader):
 
     for data in loader:
 
-        print(f'Frame {i} of {num_frames}')
+        print(f'Frame {i} of {num_frames}', end="\r")
 
         input_Data, out_Data = data
 
-        x0,x1 = input_Data
+        x0= input_Data
 
         x0 = x0.to(device=device, dtype=torch.float)
-        x1 = x1.to(device=device, dtype=torch.float)
 
         x2 = out_Data.to(device=device, dtype=torch.float)
 
-        outputs = model(x0,x1)
+        outputs = model(x0)
         z,rec=outputs
         rec0,rec1,outrec=rec
 
@@ -99,7 +98,10 @@ def visualize(model, loader):
         #print(pred.shape)
 
         # normalize to 0-1
-        pred = (pred - pred.min()) / (pred.max() - pred.min())
+
+        if ((pred.max() - pred.min()) != 0):
+           
+            pred = (pred - pred.min()) / (pred.max() - pred.min())
         
 
         # concatenate expected and predicted one over the other
@@ -144,14 +146,13 @@ def CompareLatent(model, loader):
 
         input_Data, out_Data = data
 
-        x0,x1 = input_Data
+        x0 = input_Data
 
         x0 = x0.to(device=device, dtype=torch.float)
-        x1 = x1.to(device=device, dtype=torch.float)
 
         x2 = out_Data.to(device=device, dtype=torch.float)
 
-        outputs = model(x0,x1)
+        outputs = model(x0)
         z,rec=outputs
         rec0,rec1,outrec=rec
 

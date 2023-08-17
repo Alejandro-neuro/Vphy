@@ -24,7 +24,7 @@ class Dataset(torch.utils.data.Dataset):
 
   def __len__(self):
         'Denotes the total number of samples'
-        return len(self.x)-2
+        return len(self.x)-3
 
   def __getitem__(self, index):
         'Generates one sample of data'
@@ -43,7 +43,49 @@ class Dataset(torch.utils.data.Dataset):
  
 
         return (x0,x1), x2
-        
+  
+class Dataset3D(torch.utils.data.Dataset):
+      'Characterizes a dataset for PyTorch'
+      def __init__(self, x, dt, nInFrames = 3 , transform=None):
+            'Initialization'
+            self.x = x
+            self.dt = dt
+            self.transform = None
+            self.convert_tensor = transforms.ToTensor()
+            self.nInFrames = nInFrames
+
+      def __len__(self):
+            'Denotes the total number of samples'
+            return len(self.x)-self.nInFrames 
+
+      def __getitem__(self, index):
+            'Generates one sample of data'
+
+            # Concatenate 3 frames to create 3D image
+            for i in range(self.nInFrames):
+                  x_temp = self.convert_tensor(genData.create_pendulum_image( self.x[index+i] ))
+                 
+                  if i == 0:  
+                        input = x_temp
+                  else :
+                        input = torch.cat((input, x_temp), 0)
+            
+            
+            
+            
+            # Select sample                
+
+
+            out =self.convert_tensor( genData.create_pendulum_image( self.x[index + self.nInFrames ] ) )
+
+
+            if self.transform:
+                  input = self.transform(input)
+                  out = self.transform(out)
+
+
+            return input, out
+            
 def getLoader(X,  split = True):
 
       if split:
@@ -54,12 +96,12 @@ def getLoader(X,  split = True):
 
             #create train and test dataloaders
 
-            train_dataset = DataLoader( Dataset(train_x, 1/30), batch_size=32, shuffle=False)
-            val_dataset = DataLoader( Dataset(val_x, 1/30), batch_size=32, shuffle=False)    
+            train_dataset = DataLoader( Dataset3D(train_x, 1/30), batch_size=32, shuffle=False)
+            val_dataset = DataLoader( Dataset3D(val_x, 1/30), batch_size=32, shuffle=False)    
 
             return train_dataset, val_dataset, train_x, val_x 
       else :
-            return DataLoader( Dataset(X, 1/30), batch_size=1, shuffle=False)
+            return DataLoader( Dataset3D(X, 1/30), batch_size=1, shuffle=False)
 
 if __name__ == "__main__":
     pass
