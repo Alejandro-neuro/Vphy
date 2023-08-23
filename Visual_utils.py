@@ -43,12 +43,11 @@ def set_center_values(A, B):
 
 
 
-def visualize(model, loader):
+def visualize(model, loader, video_name = 'ExpVsPred.mp4'):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
 
     # Create a video of the swinging pendulum
-    video_name = 'Comparison4.mp4'
     frame_rate = 30
     duration = len(loader) / frame_rate
     num_frames = frame_rate * duration
@@ -133,7 +132,7 @@ def visualize(model, loader):
     #cv2.destroyAllWindows()
     print(f'Video saved as {video_name}')
 
-def CompareLatent(model, loader):
+def CompareLatent(model, loader, name = 'LatentSpace.png'):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
 
@@ -163,8 +162,16 @@ def CompareLatent(model, loader):
 
 
     X = []
-    X.append( { 'x': range(0, len(z0_list) ), 'y': z0_list, 'label': 'z0'} )
-    X.append( { 'x': range(0, len(z1_list) ), 'y': z1_list, 'label': 'z1'} )
-    X.append( { 'x': range(0, len(z2_list) ), 'y': z2_list, 'label': 'z2'} )
+    X.append( { 'x': range(0, len(z0_list) ), 'y': normalize(z0_list ), 'label': 'z0' , 'alpha':0.5  } )
+    X.append( { 'x': range(0, len(z1_list) ), 'y': normalize(z1_list ), 'label': 'z1' , 'alpha':0.5  } )
+    X.append( { 'x': range(0, len(z2_list) ), 'y': normalize(z2_list ), 'label': 'z2' , 'alpha':0.5  } )
     
-    cp.plotMultiple( X,  'sample', 'value','Latent Space', "latent_spaces", styleDark = True )
+    cp.plotMultiple( X,  'sample', 'value','Latent Space', name, styleDark = True )
+
+def normalize(x):
+    # normalize list of values to max value 1 and mean 0
+
+    # list to numpy array
+    x = np.array(x)
+
+    return (x - x.min()) / (x.max() - x.min())

@@ -34,11 +34,17 @@ def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False ):
                 color = colors_dark[i]
             else:
                 color = colors[i]
+        #Set alpha default one if not defined
+        try:
+            alpha = row['alpha']
+        except:
+            alpha = 1.0 
+      
 
 
     
 
-        plt.plot(x,y, color=color, linewidth =3, label=f'{row["label"]}' )
+        plt.plot(x,y, color=color, linewidth =3, label=f'{row["label"]}', alpha = alpha)
     
     plt.legend(fontsize="20", loc ="upper left")
     plt.savefig(f'./plots/{name}.png')
