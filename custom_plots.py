@@ -7,7 +7,10 @@ colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', '#FFA500', '#800080', '#008080']
 colors_dark = ['#00FFFF', '#FF1493', '#00FF00', '#FF4500', '#ADFF2F', '#FF00FF', '#1E90FF', '#FF69B4', '#20B2AA', '#FF8C00']
 
 
-def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False ):
+def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False, show = False ):
+
+    if(show):
+        plt.ioff()
     
     plt.figure()
     if(styleDark):
@@ -48,8 +51,10 @@ def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False ):
     
     plt.legend(fontsize="20", loc ="upper left")
     plt.savefig(f'./plots/{name}.png')
-    
-    plt.show()
+    if(show):
+        plt.show()
+    else:
+        plt.close()
 
 def plotMatrix(M,xlabel, ylabel,title, name, styleDark = False):
 

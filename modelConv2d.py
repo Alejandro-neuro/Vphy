@@ -223,3 +223,15 @@ class AE(nn.Module):
       outRec =self.convdecoder(self.decoder(z2))
 
       return (z[:,0:1],z[:,2:3],z2), (in0Rec,in1Rec,outRec)
+    
+
+class FullDecoder(nn.Module):
+    def __init__(self,  initw = False):
+        super().__init__()
+        
+        self.decoder     = Decoder(initw=initw)
+        self.convdecoder = ConvDecoder(initw=initw)  
+     
+    def forward(self, x):
+
+      return self.convdecoder(self.decoder(x))

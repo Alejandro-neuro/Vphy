@@ -132,6 +132,84 @@ def visualize(model, loader, video_name = 'ExpVsPred.mp4'):
     #cv2.destroyAllWindows()
     print(f'Video saved as {video_name}')
 
+
+def visualize_dec(model, loader, video_name = 'ExpVsPred.mp4'):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model.to(device)
+
+    # Create a video of the swinging pendulum
+    frame_rate = 30
+    duration = len(loader) / frame_rate
+    num_frames = frame_rate * duration
+
+    # Initialize VideoWriter
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    video = cv2.VideoWriter(video_name, fourcc, frame_rate, ( 600 ,600 ))
+    i = 0
+
+
+    border = np.zeros((600,600), np.uint8)
+
+
+
+    for data in loader:
+
+        print(f'Frame {i} of {num_frames}', end="\r")
+
+        input_Data, out_Data = data
+
+        x0= input_Data
+
+        x0 = x0.to(device=device, dtype=torch.float)
+
+        x2 = out_Data.to(device=device, dtype=torch.float)
+
+        output = model(x0)
+        
+
+        # Copy tensor and send to cpu and detach
+        expec = x2.to('cpu').detach().numpy().copy()
+        pred = output.to('cpu').detach().numpy().copy()
+
+        # squeeze to remove batch dimension
+        expec = np.squeeze(expec)
+        pred = np.squeeze(pred)
+
+        if ((pred.max() - pred.min()) != 0):
+           
+            pred = (pred - pred.min()) / (pred.max() - pred.min())
+        
+
+        expected_pred = np.concatenate((expec, pred), axis=0)
+
+      
+
+        #matrix to cv2 image
+        expected_pred = np.uint8( np.round(expected_pred * 255, 0) )   
+
+        #replicate the image 3 times to have 3 channels 
+        expected_pred = set_center_values(border, expected_pred)
+        expected_pred = np.repeat(expected_pred[:, :, np.newaxis], 3, axis=2)
+
+        # Convert PIL image to OpenCV format
+        cv2_frame = cv2.cvtColor(expected_pred, cv2.COLOR_RGB2BGR)       
+        
+        # add text label
+        cv2.putText(cv2_frame, 'Expected', (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
+        cv2.putText(cv2_frame, 'Predicted', (10, 280), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+
+        
+        # Add frame to the video
+        video.write(cv2_frame)
+        i += 1
+
+    # Release the video writer
+    video.release()
+    #cv2.destroyAllWindows()
+    print(f'Video saved as {video_name}')
+
+
+
 def CompareLatent(model, loader, name = 'LatentSpace.png'):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)

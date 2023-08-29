@@ -12,6 +12,8 @@ from omegaconf import OmegaConf
 import Data.genData as genData
 from torchvision import transforms
 
+import matplotlib.pyplot as plt
+
 
 class Dataset(torch.utils.data.Dataset):
   'Characterizes a dataset for PyTorch'
@@ -85,8 +87,41 @@ class Dataset3D(torch.utils.data.Dataset):
 
 
             return input, out
+      
+class Dataset_decoder(torch.utils.data.Dataset):
+      'Characterizes a dataset for PyTorch'
+      def __init__(self, x, transform=None):
+            'Initialization'
+            self.x = x
+            self.transform = None
+            self.convert_tensor = transforms.ToTensor()
+
+      def __len__(self):
+            'Denotes the total number of samples'
+            return len(self.x)
+
+      def __getitem__(self, index):
+            'Generates one sample of data'
             
-def getLoader(X,  split = True):
+            input = torch.tensor([self.x[index]])   
+            out =self.convert_tensor( genData.create_pendulum_image( self.x[index ] ) )
+
+
+            if self.transform:
+                  input = self.transform(input)
+                  out = self.transform(out)
+
+
+            return input, out
+            
+def getLoader(X,  split = True, type = "Dataset3d"):
+
+      if type == "Dataset":
+            loadertype = Dataset
+      if type == "Dataset3d":
+            loadertype = Dataset3D
+      if type == "Dataset_decoder":
+            loadertype = Dataset_decoder
 
       if split:
      
@@ -96,12 +131,26 @@ def getLoader(X,  split = True):
 
             #create train and test dataloaders
 
-            train_dataset = DataLoader( Dataset3D(train_x, 1/30), batch_size=32, shuffle=False)
-            val_dataset = DataLoader( Dataset3D(val_x, 1/30), batch_size=32, shuffle=False)    
+            train_dataset = DataLoader( loadertype(train_x, 1/30), batch_size=32, shuffle=False)
+            val_dataset = DataLoader( loadertype(val_x, 1/30), batch_size=32, shuffle=False)    
 
             return train_dataset, val_dataset, train_x, val_x 
       else :
-            return DataLoader( Dataset3D(X, 1/30), batch_size=1, shuffle=False)
+            return DataLoader( loadertype(X, 1/30), batch_size=1, shuffle=False)
+      
+
+def get_template():
+
+      convert_tensor = transforms.ToTensor()
+
+      img = genData.create_pendulum_image( 0 ) 
+
+      # show image
+
+      plt.imshow(img)
+
+      return convert_tensor( genData.create_pendulum_image( 0 ) )
+      
 
 if __name__ == "__main__":
     pass

@@ -1,7 +1,7 @@
 seed: 42
 optimize:
   optimizer: Adam
-  lr: 0.001
+  lr: 0.01
 train:
   epochs: 20
   batch_size: 32

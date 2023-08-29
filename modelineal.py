@@ -138,8 +138,8 @@ class Decoder(nn.Module):
 
     def forward(self, x):
 
-      x = self.Tanh(self.l1(x))
-      x = self.Tanh(self.l2(x))
+      x = self.relu(self.l1(x))
+      x = self.relu(self.l2(x))
       x = self.sigmoid(self.l3(x))
 
       x = self.uflat(x)

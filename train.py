@@ -39,8 +39,8 @@ def train_epoch(model, loader,loss_fn, optimizer, device='cpu'):
 
 
         # Compute the loss and its gradients
-        l1,l2 = loss_fn(x0 , outputs ,x1 )
-        loss = l1+l2
+        loss  = loss_fn(x0 , outputs ,x1 )
+        
         loss.backward()
         optimizer.step()
 
@@ -70,8 +70,7 @@ def evaluate_epoch(model, loader,loss_fn, device='cpu'):
 
             # Compute the loss 
             
-            l1,l2 = loss_fn(x0 , outputs ,x1 )
-            loss = l1+l2     
+            loss = loss_fn(x0 , outputs ,x1 )
 
             running_loss += loss.item()
 
@@ -80,7 +79,7 @@ def evaluate_epoch(model, loader,loss_fn, device='cpu'):
     return total_loss
 
 
-def train(model, train_loader, val_loader, name):
+def train(model, train_loader, val_loader, name, loss_name=None):
 
     cfg = OmegaConf.load("config.yaml")
 
@@ -88,7 +87,7 @@ def train(model, train_loader, val_loader, name):
     print(f"Using device: {device}")
 
     num_epochs = cfg.train.epochs
-    loss_fn = loss_func.getLoss()
+    loss_fn = loss_func.getLoss(loss_name)
     optimizer = optimizer_Factory.getOptimizer(model)    
 
 

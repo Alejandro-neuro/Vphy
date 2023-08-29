@@ -18,24 +18,39 @@ def custom_loss(input_img, outputs, expected_pred):
 
     return l1,l2
 
-def getLoss():
-    cfg = OmegaConf.load("config.yaml")
+def decoder_loss(input_img, output, expected_pred):
+    lossMSE = nn.MSELoss()
+        
 
-    if cfg.loss == "MSE":
+    expected_pred = expected_pred.squeeze(1)
+    
+    return lossMSE(output,expected_pred) + lossMSE(output.sum(1),expected_pred.sum(1)) + lossMSE(output.sum(2),expected_pred.sum(2)) + lossMSE(output.sum((1,2)).unsqueeze(1),expected_pred.sum((1,2)).unsqueeze(1))
+def getLoss(loss = None):
+
+    if loss == None:
+
+        cfg = OmegaConf.load("config.yaml")
+        loss = cfg.loss
+    
+
+    if loss == "MSE":
         loss_fn = nn.MSELoss()
         return loss_fn
-    if cfg.loss == "MAE":
+    if loss == "MAE":
         loss_fn = nn.L1Loss()
         return loss_fn 
-    if cfg.loss == "custom":   
+    if loss == "custom":   
         return custom_loss  
-    if cfg.loss == "BCE":
+    if loss == "BCE":
         loss_fn = nn.BCELoss()
         return loss_fn  
-    if cfg.loss == "CE":
+    if loss == "CE":
         loss_fn = nn.CrossEntropyLoss()
         return loss_fn  
-    if cfg.loss == "NLL":
+    if loss == "decoder_loss":
+        loss_fn = decoder_loss
+        return loss_fn  
+    if loss == "NLL":
         loss_fn = nn.NLLLoss()
         return loss_fn  
     pass
