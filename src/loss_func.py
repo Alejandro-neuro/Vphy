@@ -24,7 +24,7 @@ def decoder_loss(input_img, output, expected_pred):
 
     expected_pred = expected_pred.squeeze(1)
     
-    return lossMSE(output,expected_pred) + lossMSE(output.sum(1),expected_pred.sum(1)) + lossMSE(output.sum(2),expected_pred.sum(2)) + lossMSE(output.sum((1,2)).unsqueeze(1),expected_pred.sum((1,2)).unsqueeze(1))
+    return lossMSE(output,expected_pred) #+ lossMSE(output.sum(1),expected_pred.sum(1)) + lossMSE(output.sum(2),expected_pred.sum(2)) + lossMSE(output.sum((1,2)).unsqueeze(1),expected_pred.sum((1,2)).unsqueeze(1))
 def getLoss(loss = None):
 
     if loss == None:

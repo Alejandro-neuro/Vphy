@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 import numpy as np
 from omegaconf import OmegaConf
-import loss_func
-import optimizer_Factory
-import custom_plots as cp
+from src import loss_func
+from src import optimizer_Factory
+from src import custom_plots as cp
 
 
 def train_epoch(model, loader,loss_fn, optimizer, device='cpu'):

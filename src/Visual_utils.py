@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 import torch
-import custom_plots as cp
+from src import custom_plots as cp
 from PIL import Image, ImageDraw
 
 def createImage(pos,x ):

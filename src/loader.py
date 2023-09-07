@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import networkx as nx
 import numpy as np
 
 from torch.utils.data import DataLoader, Dataset

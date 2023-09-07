@@ -1,19 +1,19 @@
 
 import numpy as np
 from omegaconf import OmegaConf
-import models
-import modelConv2d
-import modelineal
-import loss_func
-import train
-import loader
+from src import models
+from src import modelConv2d
+from src import modelineal
+from src import loss_func
+from src import train
+from src import loader
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
-import optimizer_Factory as of
+from src import optimizer_Factory as of
 import Data.genData as genData
-import custom_plots as cp
-import Visual_utils as vu
+from src import custom_plots as cp
+from src import Visual_utils as vu
 
 
 

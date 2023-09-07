@@ -117,9 +117,9 @@ class pModel(nn.Module):
 class Decoder(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
-        self.l1 = nn.Linear(1,10 )
-        self.l2 = nn.Linear(10,1000 )
-        self.l3 = nn.Linear(1000,130000 )
+        self.l1 = nn.Linear(1,10 , bias=False)
+        self.l2 = nn.Linear(10,1000, bias=False)
+        self.l3 = nn.Linear(1000,130000, bias=False)
 
         self.uflat = nn.Unflatten(1, torch.Size([260,500]))
         self.relu= nn.ReLU()
