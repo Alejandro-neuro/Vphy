@@ -1,10 +1,10 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-import custom_plots as cp
-import Visual_utils as vu
+from src import custom_plots as cp
+from src import Visual_utils as vu
 import pandas as pd
-import custom_plots as cp
+from src import custom_plots as cp
 from PIL import Image, ImageDraw
 import math
 import cv2
