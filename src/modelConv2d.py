@@ -235,3 +235,93 @@ class FullDecoder(nn.Module):
     def forward(self, x):
 
       return self.convdecoder(self.decoder(x))
+    
+class Down(nn.Module):
+    def __init__(self,  in_channels, mid_channels):
+        super().__init__()
+        
+        self.conv = nn.Sequential(
+            nn.Conv2d(in_channels, mid_channels, kernel_size=3, padding=1, bias=False),
+            nn.ReLU(inplace=True)
+        )
+     
+    def forward(self, x):
+
+      return  nn.MaxPool2d(self.conv(x))
+    
+class Up(nn.Module):
+  def __init__(self,  in_channels, out_channels):
+    super().__init__()
+    
+    
+    self.Upscale = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, stride=2, padding=0, bias=True)
+    self.conv =  nn.Conv2d(out_channels*2, out_channels, kernel_size=3, padding=3)
+    self.conv_same = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
+
+    self.relu= nn.ReLU()
+   
+  def forward(self, x, template):
+
+    xu = self.Upscale(x)
+    x_cat = torch.cat([xu, template], dim=1)
+    x = self.relu(self.conv(x_cat))
+    x = self.relu(self.conv_same(x))
+
+    return  
+    
+class ConvAE(nn.Module):
+    def __init__(self,  template, initw = False):
+        super().__init__()
+
+        self.d1 = Down(1,3)
+        self.d2 = Down(3,6)
+        self.d3 = Down(6,12)
+
+        self.u3 = Up(12,6)
+        self.u2 = Up(6,3)
+        self.u1 = Up(3,1)
+
+        self.template = template
+        
+        self.decoder     = Decoder(initw=initw)
+        self.convdecoder = ConvDecoder(initw=initw)  
+     
+    def forward(self, x):
+
+      d1=self.d1(self.template)
+      d2=self.d2(d1)
+      d3=self.d3(d2)
+
+      print(d1.shape)
+      print(d2.shape)
+      print(d3.shape)
+
+      x = self.decoder(x)
+
+      print(x.shape)
+
+      
+      u3=u3(x,d3)
+      u2=u2(u3,d2)
+      u1=u1(u2,d1)
+
+      print(u3.shape)
+      print(u2.shape)
+      print(u1.shape)      
+      
+
+
+      return u1
+    
+class FullDecoderwTemplate(nn.Module):
+    def __init__(self, template,  initw = False):
+        super().__init__()
+
+        self.template = template
+        
+        self.decoder     = Decoder(initw=initw)
+        self.convdecoder = ConvDecoder(initw=initw)  
+     
+    def forward(self, x):
+
+      return self.convdecoder(self.decoder(x))
