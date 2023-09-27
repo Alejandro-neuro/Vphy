@@ -241,13 +241,16 @@ class Down(nn.Module):
         super().__init__()
         
         self.conv = nn.Sequential(
-            nn.Conv2d(in_channels, mid_channels, kernel_size=3, padding=1, bias=False),
+            nn.Conv2d(in_channels, mid_channels, kernel_size=3, stride=1,padding=1, bias=False),
             nn.ReLU(inplace=True)
         )
+
+        self.relu= nn.ReLU()
+        self.pool2d = nn.MaxPool2d(kernel_size=2, stride=2)
      
     def forward(self, x):
 
-      return  nn.MaxPool2d(self.conv(x))
+      return   self.pool2d(self.relu(self.conv(x)) )
     
 class Up(nn.Module):
   def __init__(self,  in_channels, out_channels):
@@ -281,7 +284,7 @@ class ConvAE(nn.Module):
         self.u2 = Up(6,3)
         self.u1 = Up(3,1)
 
-        self.template = template
+        self.template = template.unsqueeze(0)
         
         self.decoder     = Decoder(initw=initw)
         self.convdecoder = ConvDecoder(initw=initw)  
@@ -289,24 +292,28 @@ class ConvAE(nn.Module):
     def forward(self, x):
 
       d1=self.d1(self.template)
+      
       d2=self.d2(d1)
       d3=self.d3(d2)
 
-      print(d1.shape)
-      print(d2.shape)
-      print(d3.shape)
+      
+      
 
       x = self.decoder(x)
 
-      print(x.shape)
+      print("x:", x.shape," d3:", d3.shape)
 
       
-      u3=u3(x,d3)
-      u2=u2(u3,d2)
-      u1=u1(u2,d1)
 
-      print(u3.shape)
-      print(u2.shape)
+      
+      u3=self.u3(x,d3.repeat(32,1,1,1) )
+      print("u3:", u3.shape," d2:", d2.shape)
+      u2=self.u2(u3,d2.repeat(32,1,1,1))
+      print("u2:", u2.shape," d1:", d1.shape)
+      u1=self.u1(u2,d1.repeat(32,1,1,1))
+
+      
+      
       print(u1.shape)      
       
 

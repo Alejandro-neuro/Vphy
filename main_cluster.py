@@ -30,8 +30,8 @@ def main():
     linearDecoder = modelineal.Decoder(initw=True)
 
 
-    linearDecoder, train_losses, val_losses, accuracy_list  = train.train(linearDecoder, train_dataloader, test_dataloader, 'linearDecoder', loss_name='decoder_loss')
-    vu.visualize_dec(linearDecoder, visual_loader, video_name = 'LinearDecoder_ExpVsPred.mp4')
+    linearDecoder, train_losses, val_losses, accuracy_list  = train.train(linearDecoder, train_dataloader, test_dataloader, 'linearDecoder', loss_name='Focal_batch_loss')
+    vu.visualize_dec(linearDecoder, visual_loader, video_name = 'LinearDecoder_ExpVsPred_focalLoss.mp4')
 
 if __name__ == "__main__":
     main()  
