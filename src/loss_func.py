@@ -18,21 +18,18 @@ def custom_loss(input_img, outputs, expected_pred):
 
     return l1,l2
 
-def Focal_batch_loss(input_img, outputs, expected_pred):
+def Focal_batch_loss(output, expected_pred):
     lossMSE = nn.MSELoss()
 
-    x0=input_img[:,-1,:,:]
-    z,rec=outputs
-    rec0,rec1,outrec=rec
-    z0,z1,z2 = z
+   
 
     expected_pred=expected_pred.squeeze(1)
 
-    diff_pred = torch.mean((outrec - expected_pred) ** 2,  (1,2,3))
+    diff_pred = torch.mean((output - expected_pred) ** 2,  (1,2,3))
 
-    diff_rec = torch.mean((rec0 - x0) ** 2,  (1,2,3))
+    #diff_rec = torch.mean((rec0 - x0) ** 2,  (1,2,3))
 
-    batch_loss = torch.mean(torch.exp(diff_pred + diff_rec)-1)
+    batch_loss = torch.mean(torch.exp(diff_pred )-1)
 
 
     return batch_loss
