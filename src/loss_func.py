@@ -18,7 +18,7 @@ def custom_loss(input_img, outputs, expected_pred):
 
     return l1,l2
 
-def Focal_batch_loss(output, expected_pred):
+def Focal_batch_loss(input_img, output, expected_pred):
     lossMSE = nn.MSELoss()
 
    
