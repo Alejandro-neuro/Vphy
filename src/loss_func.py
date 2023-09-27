@@ -51,7 +51,8 @@ def getLoss(loss = None):
         cfg = OmegaConf.load("config.yaml")
         loss = cfg.loss
     
-
+    if loss == "Focal_batch_loss":
+        return Focal_batch_loss
     if loss == "MSE":
         loss_fn = nn.MSELoss()
         return loss_fn
