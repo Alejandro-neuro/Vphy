@@ -21,6 +21,17 @@ def generatePendulumA(g,L,a0, a1):
     
     return t,a    
 
+def generateIntensity(g,L,a0, a1):
+
+    t = np.arange(0,30,1/30)
+    a = (np.cos(5*t)*np.exp(-.1*t) )*np.pi/2
+    
+    X = []
+    X.append( { 'x': t, 'y': a, 'label': 'Pendulum angle'} )
+    cp.plotMultiple( X,  'time (ms)', 'Angle','Pendulum angle', 'test', styleDark = True )
+    
+    return t,a  
+
 def create_pendulum_image(angle_deg):
     # Create a blank image
     width, height = 500, 500
