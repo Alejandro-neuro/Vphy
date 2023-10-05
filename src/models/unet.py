@@ -45,7 +45,7 @@ class build_unet(nn.Module):
     def __init__(self):
         super().__init__()
         """ Encoder """
-        self.e1 = encoder_block(3, 64)
+        self.e1 = encoder_block(1, 64)
         self.e2 = encoder_block(64, 128)
         self.e3 = encoder_block(128, 256)
         self.e4 = encoder_block(256, 512)
