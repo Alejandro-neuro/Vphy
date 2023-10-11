@@ -8,7 +8,7 @@ class Extractor(nn.Module):
     def __init__(self, chan = [1, 3, 9], initw = False):
         super().__init__()
 
-        self.l1 = nn.Linear(1000,500 )
+        self.l1 = nn.Linear(10000,500 )
         self.l2 = nn.Linear(500,100 )
         self.l3 = nn.Linear(100,1 )
 

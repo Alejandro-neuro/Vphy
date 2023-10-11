@@ -40,6 +40,7 @@ def train_epoch(model, loader,loss_fn, optimizer, device='cpu'):
 
         # Compute the loss and its gradients
         loss  = loss_fn(x0 , outputs ,x1 )
+
         
         loss.backward()
         optimizer.step()

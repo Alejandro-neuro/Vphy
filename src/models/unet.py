@@ -1,5 +1,6 @@
 import torch 
 import torch.nn as nn
+import torch.nn.functional as F
 
 class conv_block(nn.Module):
     def __init__(self, in_c, out_c):
@@ -36,6 +37,15 @@ class decoder_block(nn.Module):
         self.conv = conv_block(out_c+out_c, out_c)
     def forward(self, inputs, skip):
         x = self.up(inputs)
+
+        diffY = skip.size()[2] - x.size()[2]
+        diffX = skip.size()[3] - x.size()[3]
+
+        x = F.pad(x, [diffX // 2, diffX - diffX // 2,
+                        diffY // 2, diffY - diffY // 2])
+        
+        
+        
         x = torch.cat([x, skip], axis=1)
         x = self.conv(x)
         return x
@@ -45,7 +55,7 @@ class build_unet(nn.Module):
     def __init__(self):
         super().__init__()
         """ Encoder """
-        self.e1 = encoder_block(1, 64)
+        self.e1 = encoder_block(2, 64)
         self.e2 = encoder_block(64, 128)
         self.e3 = encoder_block(128, 256)
         self.e4 = encoder_block(256, 512)
