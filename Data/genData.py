@@ -21,16 +21,38 @@ def generatePendulumA(g,L,a0, a1):
     
     return t,a    
 
-def generateIntensity(g,L,a0, a1):
+def generateIntensity():
 
-    t = np.arange(0,30,1/30)
-    a = (np.cos(5*t)*np.exp(-.1*t) )*np.pi/2
+    t = np.arange(0,10,1/100)
+    t = np.arange(0,10, 0.1)
+    m = (1-0.2)/(1-(-1))
+    b= 1 - m
+    a = m*np.cos(t)+b
     
     X = []
-    X.append( { 'x': t, 'y': a, 'label': 'Pendulum angle'} )
-    cp.plotMultiple( X,  'time (ms)', 'Angle','Pendulum angle', 'test', styleDark = True )
+    X.append( { 'x': t, 'y': a, 'label': 'Intensity'} )
+    cp.plotMultiple( X,  'time (ms)', 'Intensity','Intensity', 'test', styleDark = True )
     
     return t,a  
+def create_intensity_image(I, base = None):
+    if base is None:
+        base = Image.open('Data/neuron_gr.png').convert('L')
+
+    # Create a blank gray image
+
+    width, height = 50, 50
+    img_array = np.array(base)
+
+    img_array = img_array / np.max(img_array)
+
+    img_array[img_array < 0.5] = 0
+    img_array[img_array >= 0.5] = I
+
+    bknoise = [[1,1], [1,2],[1,3],[2,1],[2,2],[2,3],[3,1],[3,2],[3,3]]
+    for bk in bknoise:
+        img_array[bk] = 1
+
+    return img_array
 
 def create_pendulum_image(angle_deg):
     # Create a blank image
@@ -107,5 +129,4 @@ def generateVideo():
 
     # Release the video writer
     video.release()
-
 

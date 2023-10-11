@@ -12,6 +12,8 @@ from torchvision import transforms
 
 import matplotlib.pyplot as plt
 
+from PIL import Image, ImageDraw
+
 
 class Dataset(torch.utils.data.Dataset):
   'Characterizes a dataset for PyTorch'
@@ -118,6 +120,72 @@ def getLoader(X,  split = True, type = "Dataset3d"):
             loadertype = Dataset
       if type == "Dataset3d":
             loadertype = Dataset3D
+      if type == "Dataset_decoder":
+            loadertype = Dataset_decoder
+
+      if split:
+     
+            #split dataset 80-20 for training and validation
+
+            train_x, val_x = train_test_split(X, test_size=0.2, shuffle=False)
+
+            #create train and test dataloaders
+
+            train_dataset = DataLoader( loadertype(train_x, 1/30), batch_size=32, shuffle=False)
+            val_dataset = DataLoader( loadertype(val_x, 1/30), batch_size=32, shuffle=False)    
+
+            return train_dataset, val_dataset, train_x, val_x 
+      else :
+            return DataLoader( loadertype(X, 1/30), batch_size=1, shuffle=False)
+
+class Dataset3Din(torch.utils.data.Dataset):
+      'Characterizes a dataset for PyTorch'
+      def __init__(self, x, dt, nInFrames = 3 , transform=None):
+            'Initialization'
+            self.x = x
+            self.dt = dt
+            self.transform = None
+            self.convert_tensor = transforms.ToTensor()
+            self.nInFrames = nInFrames
+            self.base = Image.open('Data/neuron_gr.png').convert('L')
+
+      def __len__(self):
+            'Denotes the total number of samples'
+            return len(self.x)-self.nInFrames 
+
+      def __getitem__(self, index):
+            'Generates one sample of data'
+
+            # Concatenate 3 frames to create 3D image
+            for i in range(self.nInFrames):
+                  x_temp = self.convert_tensor(genData.create_intensity_image( self.x[index+i], self.base  ))
+                 
+                  if i == 0:  
+                        input = x_temp
+                  else :
+                        input = torch.cat((input, x_temp), 0)
+            
+            
+            
+            
+            # Select sample                
+
+
+            out =self.convert_tensor( genData.create_intensity_image( self.x[index + self.nInFrames ], self.base   ) )
+
+
+            if self.transform:
+                  input = self.transform(input)
+                  out = self.transform(out)
+
+
+            return input, out
+def getLoaderIn(X,  split = True, type = "Dataset3d"):
+
+      if type == "Dataset":
+            loadertype = Dataset
+      if type == "Dataset3d":
+            loadertype = Dataset3Din
       if type == "Dataset_decoder":
             loadertype = Dataset_decoder
 

@@ -5,7 +5,7 @@ import torch.nn as nn
 from . import blocks
 
 class Encoder(nn.Module):
-    def __init__(self, chan = [1, 3, 9], initw = False):
+    def __init__(self, initw = False):
         super().__init__()
 
         self.unet = unet.build_unet()
@@ -21,6 +21,7 @@ class Encoder(nn.Module):
         for i in range(3):
             mask = self.unet(x[:,i:i+1,:,:])
             masks.append(mask)
+            print(mask.shape)
         
         masks = torch.cat(masks, dim=1)
 
