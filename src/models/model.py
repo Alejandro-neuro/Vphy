@@ -10,6 +10,14 @@ class Encoder(nn.Module):
 
         self.unet = unet.build_unet()
         self.extractor = blocks.Extractor() 
+        self.background = None
+
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.mask = torch.ones(100, 100, requires_grad=True).to(device)
+        self.mask = nn.Parameter(self.mask )
+
+        
+
         
 
     def forward(self, x):
@@ -17,7 +25,10 @@ class Encoder(nn.Module):
         masks = []
         
         
-        mask = self.unet(x[:,1:3,:,:])          
+        masks = self.unet(x[:,1:3,:,:])          
+
+        mask = masks[:,0:1,:,:]
+        self.background = masks[:,1:2,:,:]
         
         #masks = torch.cat(masks, dim=1)
 
@@ -34,6 +45,8 @@ class Encoder(nn.Module):
         
         v = torch.cat(v, dim=1)
 
+        
+
       
         
         return v,mask
@@ -45,18 +58,21 @@ class Decoder(nn.Module):
         self.base = torch.ones(100, 100, requires_grad=True).to(device)
         self.base = nn.Parameter(self.base )
 
-        self.conv_layer1 = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=3, padding=1)
+        self.conv_layer1 = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=3, padding=1, bias=False)
 
-        self.conv_layer2 = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=3, padding=1)
+        self.conv_layer2 = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=3, padding=1, bias=False)
 
         self.relu= nn.ReLU()
+
+        self.temp = None
         
 
 
     def forward(self, v,mask):
       
-      x = v.view(v.shape[0], 1, 1, 1) * mask
+      x = v.view(v.shape[0], 1, 1, 1) #* mask
       x = x + self.base
+      self.temp = x
       x = self.relu(self.conv_layer1(x))
       x = self.relu(self.conv_layer2(x))   
 
@@ -65,7 +81,7 @@ class Decoder(nn.Module):
 class pModel(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
-        self.alpha = torch.tensor([1.0], requires_grad=True).float()
+        self.alpha = torch.tensor([0.5], requires_grad=True).float()
         self.alpha = nn.Parameter(self.alpha )
         
 

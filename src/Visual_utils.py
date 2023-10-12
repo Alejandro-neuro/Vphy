@@ -106,6 +106,8 @@ def visualize(model, loader, video_name = 'ExpVsPred.mp4'):
         # concatenate expected and predicted one over the other
         expected_pred = np.concatenate((expec, pred), axis=0)
 
+        expected_pred = np.concatenate((expected_pred, np.abs(expec-pred) ), axis=0)
+
       
 
         #matrix to cv2 image
@@ -120,7 +122,8 @@ def visualize(model, loader, video_name = 'ExpVsPred.mp4'):
         
         # add text label
         cv2.putText(cv2_frame, 'Expected', (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
-        cv2.putText(cv2_frame, 'Predicted', (10, 280), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+        cv2.putText(cv2_frame, 'Predicted', (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+        cv2.putText(cv2_frame, 'error', (10, 280), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
 
         
         # Add frame to the video
@@ -251,5 +254,9 @@ def normalize(x):
 
     # list to numpy array
     x = np.array(x)
+    try :
+        # normalize
+        return (x - x.min()) / (x.max() - x.min())
+    except:
 
-    return (x - x.min()) / (x.max() - x.min())
+        return np.array(x)

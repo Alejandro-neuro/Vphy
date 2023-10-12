@@ -67,7 +67,7 @@ class build_unet(nn.Module):
         self.d3 = decoder_block(256, 128)
         self.d4 = decoder_block(128, 64)
         """ Classifier """
-        self.outputs = nn.Conv2d(64, 1, kernel_size=1, padding=0)
+        self.outputs = nn.Conv2d(64, 2, kernel_size=1, padding=0)
     def forward(self, inputs):
         """ Encoder """
         s1, p1 = self.e1(inputs)
