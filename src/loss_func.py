@@ -13,18 +13,10 @@ def custom_loss(input_img, outputs, expected_pred):
 
     zed = torch.concatenate((z0,z1,z2), axis=1)
 
-    print("zed.shape",zed.shape)
+    #print("zed.shape",zed.shape)
 
-    x0=x0.unsqueeze(1)
-    x1=x1.unsqueeze(1)
+    expected_pred=expected_pred.squeeze(1)
 
-    #expected_pred=expected_pred.squeeze(1)
-
-    #print("expected_pred.shape",expected_pred.shape)
-    #print("outrec.shape",outrec.shape)
-
-    #print("x0.shape",x0.shape)
-    #print("rec0.shape",rec0.shape)
 
     l1=lossMSE(rec0, x0)
     l2=lossMSE(rec1, x1)

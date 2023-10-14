@@ -73,7 +73,7 @@ class ConvEncoder(nn.Module):
     
 
 class ConvDecoder(nn.Module):
-  def __init__(self, chan = [12, 9,6,1], initw = False):
+  def __init__(self, chan = [100, 50,10,1], initw = False):
         super().__init__()
 
 
@@ -81,10 +81,10 @@ class ConvDecoder(nn.Module):
         self.convs = nn.ModuleList()
 
         for i in range(len(chan)-1):
-          self.convs.append(nn.ConvTranspose2d(chan[i], chan[i+1], kernel_size=2, stride=2, padding=0, bias=True))
-          self.convs.append(nn.Conv2d(chan[i+1], chan[i+1], kernel_size=3, padding=3))
+          self.convs.append(nn.ConvTranspose2d(chan[i], chan[i+1], kernel_size=3, stride=2, padding=0, bias=True))
+          self.convs.append(nn.Conv2d(chan[i+1], chan[i+1], kernel_size=3, padding=2 ))
 
-        self.convs.append(nn.Conv2d(1, 1, kernel_size=2, stride=2,padding=2))
+        self.convs.append(nn.Conv2d(1, 1, kernel_size=2))
 
 
         
@@ -171,9 +171,9 @@ class Decoder(nn.Module):
         super().__init__()
         self.l1 = nn.Linear(1,10 )
         self.l2 = nn.Linear(10,500 )
-        self.l3 = nn.Linear(500,88572 )
+        self.l3 = nn.Linear(500,10000 )
 
-        self.uflat = nn.Unflatten(1, torch.Size([12,61,121]))
+        self.uflat = nn.Unflatten(1, torch.Size([100,10,10]))
         self.relu= nn.ReLU()
         self.Softmax= nn.Softmax(dim=1)
         self.sigmoid= nn.Sigmoid()

@@ -3,6 +3,7 @@ from . import unet
 import torch
 import torch.nn as nn
 from . import blocks
+from . import modelConv2d
 
 class Encoder(nn.Module):
     def __init__(self, initw = False):
@@ -81,7 +82,7 @@ class Decoder(nn.Module):
 class pModel(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
-        self.alpha = torch.tensor([0.5], requires_grad=True).float()
+        self.alpha = torch.tensor([1.0], requires_grad=True).float()
         self.alpha = nn.Parameter(self.alpha )
         
 
@@ -103,7 +104,8 @@ class AEModel(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
         self.encoder = Encoder()
-        self.decoder = Decoder()
+        #self.decoder = Decoder()
+        self.decoder = modelConv2d.FullDecoder()
         self.pModel = pModel()
 
         self.mask = None
@@ -114,9 +116,9 @@ class AEModel(nn.Module):
       v,mask = self.encoder(x)
       v_pred = self.pModel(v,0.01)
 
-      in0Rec = self.decoder(v[:,0:1], mask)
-      in1Rec = self.decoder(v[:,1:2], mask)
-      outRec = self.decoder(v_pred, mask)
+      in0Rec = self.decoder(v[:,0:1])
+      in1Rec = self.decoder(v[:,1:2] )
+      outRec = self.decoder(v_pred)
 
       self.mask = mask
 
