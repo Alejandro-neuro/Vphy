@@ -68,6 +68,8 @@ class build_unet(nn.Module):
         self.d4 = decoder_block(128, 64)
         """ Classifier """
         self.outputs = nn.Conv2d(64, 2, kernel_size=1, padding=0)
+
+        self.relu = nn.ReLU()
     def forward(self, inputs):
         """ Encoder """
         s1, p1 = self.e1(inputs)
@@ -83,4 +85,4 @@ class build_unet(nn.Module):
         d4 = self.d4(d3, s1)
         """ Classifier """
         outputs = self.outputs(d4)
-        return outputs
+        return self.relu(outputs)
