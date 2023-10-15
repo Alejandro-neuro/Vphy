@@ -34,9 +34,12 @@ def generateIntensity():
     cp.plotMultiple( X,  'time (ms)', 'Intensity','Intensity', 'test', styleDark = True )
     
     return t,a  
-def create_intensity_image(I, base = None):
+def create_intensity_image(I, noise = False, shapeType = 'complex', base = None):
     if base is None:
-        base = Image.open('Data/neuron_gr.png').convert('L')
+        if shapeType == 'complex':
+            base = Image.open('Data/neuron2.png').convert('L')
+        elif shapeType == 'simple':
+            base = Image.open('Data/neuron_gr.png').convert('L')
 
     # Create a blank gray image
 
@@ -45,12 +48,23 @@ def create_intensity_image(I, base = None):
 
     img_array = img_array / np.max(img_array)
 
-    img_array[img_array < 0.5] = 0
-    img_array[img_array >= 0.5] = I
+
+    if shapeType == 'simple':
+        img_array[img_array < 0.5] = 0
+        img_array[img_array >= 0.5] = I
+
+    if shapeType == 'complex':        
+        img_array = img_array* I
 
     bknoise = [[1,1], [1,2],[1,3],[2,1],[2,2],[2,3],[3,1],[3,2],[3,3]]
     for bk in bknoise:
         img_array[bk] = 1
+    # generate random gaussian noise matrix proportional to the intensity
+    if noise:
+        img_array = img_array + np.random.normal(0, 0.1, img_array.shape) * I
+
+    img_array[img_array >= 1] = 1
+    
 
     return img_array
 

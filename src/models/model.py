@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 from . import blocks
 from . import modelConv2d
+from . import modelineal
 
 class Encoder(nn.Module):
     def __init__(self, initw = False):
@@ -98,14 +99,13 @@ class pModel(nn.Module):
       #return x1+(x1-x0)+self.alpha*(x1-x0 )*dt*2 + (self.beta*x1 )*dt*dt*4
 
       return  y1+ (y1-y0)*dt +dt*dt *self.alpha* y1
-    
-
+ 
 class AEModel(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
         self.encoder = Encoder()
         #self.decoder = Decoder()
-        self.decoder = modelConv2d.FullDecoder()
+        self.decoder = modelineal.Decoder()
         self.pModel = pModel()
 
         self.mask = None
@@ -114,7 +114,7 @@ class AEModel(nn.Module):
     def forward(self, x):    
 
       v,mask = self.encoder(x)
-      v_pred = self.pModel(v,0.01)
+      v_pred = self.pModel(v,0.1)
 
       in0Rec = self.decoder(v[:,0:1])
       in1Rec = self.decoder(v[:,1:2] )

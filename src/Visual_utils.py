@@ -54,11 +54,12 @@ def visualize(model, loader, video_name = 'ExpVsPred.mp4'):
 
     # Initialize VideoWriter
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    video = cv2.VideoWriter(video_name, fourcc, frame_rate, ( 600 ,600 ))
+    h = 300
+    video = cv2.VideoWriter(video_name, fourcc, frame_rate, ( h ,h ))
     i = 0
 
 
-    border = np.zeros((600,600), np.uint8)
+    border = np.zeros((h,h), np.uint8)
 
 
 
@@ -121,9 +122,9 @@ def visualize(model, loader, video_name = 'ExpVsPred.mp4'):
         cv2_frame = cv2.cvtColor(expected_pred, cv2.COLOR_RGB2BGR)       
         
         # add text label
-        cv2.putText(cv2_frame, 'Expected', (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
-        cv2.putText(cv2_frame, 'Predicted', (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
-        cv2.putText(cv2_frame, 'error', (10, 280), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+        cv2.putText(cv2_frame, 'Expected', (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 1, cv2.LINE_AA)
+        cv2.putText(cv2_frame, 'Predicted', (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 1, cv2.LINE_AA)
+        cv2.putText(cv2_frame, 'error', (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 0), 1, cv2.LINE_AA)
 
         
         # Add frame to the video
@@ -246,6 +247,49 @@ def CompareLatent(model, loader, name = 'LatentSpace.png'):
     X.append( { 'x': range(0, len(z0_list) ), 'y': normalize(z0_list ), 'label': 'z0' , 'alpha':0.5  } )
     X.append( { 'x': range(0, len(z1_list) ), 'y': normalize(z1_list ), 'label': 'z1' , 'alpha':0.5  } )
     X.append( { 'x': range(0, len(z2_list) ), 'y': normalize(z2_list ), 'label': 'z2' , 'alpha':0.5  } )
+    
+    cp.plotMultiple( X,  'sample', 'value','Latent Space', name, styleDark = True )
+
+def CompareError(model, loader, name = 'ErrorImg.png'):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model.to(device)
+
+    z0_list = []
+    z1_list = []
+    z2_list = []
+
+
+    for data in loader:
+
+        input_Data, out_Data = data
+
+        input_img = input_Data
+
+        input_img = x0.to(device=device, dtype=torch.float)
+
+        x0=input_img[:,-2,:,:]
+        x1=input_img[:,-1,:,:]
+
+        x2 = out_Data.to(device=device, dtype=torch.float)
+
+        outputs = model(x0)
+        z,rec=outputs
+        rec0,rec1,outrec=rec
+
+        lossMSE = nn.MSELoss()
+        
+        l_in=lossMSE(outrec, x1)
+        l_out=lossMSE(outrec,x2)
+
+        
+        z0_list.append(l_in.detach().cpu().numpy())
+        z1_list.append(l_out.detach().cpu().numpy()) 
+
+
+    X = []
+    X.append( { 'x': range(0, len(z0_list) ), 'y': normalize(z0_list ), 'label': 'Error Input' , 'alpha':0.5  } )
+    X.append( { 'x': range(0, len(z1_list) ), 'y': normalize(z1_list ), 'label': 'Error recontruction' , 'alpha':0.5  } )
+
     
     cp.plotMultiple( X,  'sample', 'value','Latent Space', name, styleDark = True )
 

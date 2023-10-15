@@ -48,7 +48,7 @@ class Dataset(torch.utils.data.Dataset):
   
 class Dataset3D(torch.utils.data.Dataset):
       'Characterizes a dataset for PyTorch'
-      def __init__(self, x, dt, nInFrames = 3 , transform=None):
+      def __init__(self, x, dt, nInFrames = 3  ,transform=None):
             'Initialization'
             self.x = x
             self.dt = dt
@@ -78,7 +78,7 @@ class Dataset3D(torch.utils.data.Dataset):
             # Select sample                
 
 
-            out =self.convert_tensor( genData.create_pendulum_image( self.x[index + self.nInFrames ] ) )
+            out =self.convert_tensor( genData.create_pendulum_image( self.x[index + self.nInFrames ], noise=self.noise, shapeType=self.shapeType ) )
 
 
             if self.transform:
@@ -140,25 +140,29 @@ def getLoader(X,  split = True, type = "Dataset3d"):
 
 class Dataset3Din(torch.utils.data.Dataset):
       'Characterizes a dataset for PyTorch'
-      def __init__(self, x, dt, nInFrames = 3 , transform=None):
+      def __init__(self, x, dt, nInFrames = 3 ,sr = 10 ,  noise=True, shapeType='complex', transform=None):
             'Initialization'
             self.x = x
             self.dt = dt
             self.transform = None
             self.convert_tensor = transforms.ToTensor()
             self.nInFrames = nInFrames
-            self.base = Image.open('Data/neuron_gr.png').convert('L')
+            self.base = None
+            self.sr = sr
+
+            self.noise = noise
+            self.shapeType = shapeType
 
       def __len__(self):
             'Denotes the total number of samples'
-            return len(self.x)-self.nInFrames 
+            return len(self.x)-self.nInFrames*self.sr 
 
       def __getitem__(self, index):
             'Generates one sample of data'
 
             # Concatenate 3 frames to create 3D image
             for i in range(self.nInFrames):
-                  x_temp = self.convert_tensor(genData.create_intensity_image( self.x[index+i], self.base  ))
+                  x_temp = self.convert_tensor(genData.create_intensity_image( self.x[index+i*self.sr], noise=self.noise, shapeType=self.shapeType  ))
                  
                   if i == 0:  
                         input = x_temp
@@ -171,7 +175,7 @@ class Dataset3Din(torch.utils.data.Dataset):
             # Select sample                
 
 
-            out =self.convert_tensor( genData.create_intensity_image( self.x[index + self.nInFrames ], self.base   ) )
+            out =self.convert_tensor( genData.create_intensity_image( self.x[index + self.nInFrames*self.sr ], noise=self.noise, shapeType=self.shapeType   ) )
 
 
             if self.transform:
@@ -180,7 +184,7 @@ class Dataset3Din(torch.utils.data.Dataset):
 
 
             return input, out
-def getLoaderIn(X,  split = True, type = "Dataset3d"):
+def getLoaderIn(X,  split = True, type = "Dataset3d",  dt=1/100, nInFrames = 3,sr = 10 ,  noise=True, shapeType='complex'):
 
       if type == "Dataset":
             loadertype = Dataset
@@ -197,12 +201,12 @@ def getLoaderIn(X,  split = True, type = "Dataset3d"):
 
             #create train and test dataloaders
 
-            train_dataset = DataLoader( loadertype(train_x, 1/30), batch_size=32, shuffle=False)
-            val_dataset = DataLoader( loadertype(val_x, 1/30), batch_size=32, shuffle=False)    
+            train_dataset = DataLoader( loadertype(train_x, dt=dt, nInFrames = nInFrames,sr = 10 ,  noise=noise, shapeType=shapeType), batch_size=32, shuffle=False)
+            val_dataset = DataLoader( loadertype(val_x, dt=dt, nInFrames = nInFrames,sr = 10 ,  noise=noise, shapeType=shapeType), batch_size=32, shuffle=False)    
 
             return train_dataset, val_dataset, train_x, val_x 
       else :
-            return DataLoader( loadertype(X, 1/30), batch_size=1, shuffle=False)
+            return DataLoader( loadertype(X, dt=dt, nInFrames = nInFrames,sr = 10 ,  noise=noise, shapeType=shapeType), batch_size=1, shuffle=False)
       
 
 def get_template():

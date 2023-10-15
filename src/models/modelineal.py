@@ -117,11 +117,11 @@ class pModel(nn.Module):
 class Decoder(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
-        self.l1 = nn.Linear(1,10 , bias=False)
+        self.l1 = nn.Linear(1,10 , bias=True)
         self.l2 = nn.Linear(10,1000, bias=False)
-        self.l3 = nn.Linear(1000,130000, bias=False)
+        self.l3 = nn.Linear(1000,10000, bias=False)
 
-        self.uflat = nn.Unflatten(1, torch.Size([260,500]))
+        self.uflat = nn.Unflatten(1, torch.Size([100,100]))
         self.relu= nn.ReLU()
         self.Softmax= nn.Softmax(dim=1)
         self.sigmoid= nn.Sigmoid()
