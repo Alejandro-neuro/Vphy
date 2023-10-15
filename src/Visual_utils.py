@@ -122,9 +122,9 @@ def visualize(model, loader, video_name = 'ExpVsPred.mp4'):
         cv2_frame = cv2.cvtColor(expected_pred, cv2.COLOR_RGB2BGR)       
         
         # add text label
-        cv2.putText(cv2_frame, 'Expected', (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 1, cv2.LINE_AA)
-        cv2.putText(cv2_frame, 'Predicted', (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 1, cv2.LINE_AA)
-        cv2.putText(cv2_frame, 'error', (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 0), 1, cv2.LINE_AA)
+        cv2.putText(cv2_frame, 'Expected', (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 1, cv2.LINE_AA)
+        cv2.putText(cv2_frame, 'Predicted', (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 1, cv2.LINE_AA)
+        cv2.putText(cv2_frame, 'error', (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 0), 1, cv2.LINE_AA)
 
         
         # Add frame to the video

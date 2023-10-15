@@ -27,7 +27,7 @@ class Encoder(nn.Module):
         masks = []
         
         
-        masks = self.unet(x[:,1:3,:,:])          
+        masks = self.unet(x)          
 
         mask = masks[:,0:1,:,:]
         self.background = masks[:,0:1,:,:]
@@ -37,7 +37,7 @@ class Encoder(nn.Module):
        
         
         v = []
-        for i in range(3):
+        for i in range(x.shape[1]):
 
             d0 = x[:,i:i+1,:,:] * mask
             
@@ -92,8 +92,8 @@ class pModel(nn.Module):
       device = "cuda" if torch.cuda.is_available() else "cpu"
       dt = torch.tensor([dt], requires_grad=False).float().to(device)
 
-      y1 = z[:,2:3]
-      y0 = z[:,1:2]
+      y1 = z[:,1:2]
+      y0 = z[:,0:1]
 
 
       #return x1+(x1-x0)+self.alpha*(x1-x0 )*dt*2 + (self.beta*x1 )*dt*dt*4
@@ -122,4 +122,4 @@ class AEModel(nn.Module):
 
       self.mask = mask
 
-      return  (v[:,1:2],v[:,2:3],v_pred), (in0Rec,in1Rec,outRec)
+      return  (v[:,0:1],v[:,1:2],v_pred), (in0Rec,in1Rec,outRec)
