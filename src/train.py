@@ -6,6 +6,8 @@ from src import loss_func
 from src import optimizer_Factory
 from src import custom_plots as cp
 
+import wandb
+
 
 def train_epoch(model, loader,loss_fn, optimizer, device='cpu'):
     """
@@ -30,6 +32,13 @@ def train_epoch(model, loader,loss_fn, optimizer, device='cpu'):
 
         x0 = input_Data.to(device=device, dtype=torch.float)
         x1 = out_Data.to(device=device, dtype=torch.float)
+        if False:
+            max_values_dim1, _ = torch.max(x1, dim=1)
+            max_values_dim2, _ = torch.max(max_values_dim1, dim=1)
+            max_values_dim3, _ = torch.max(max_values_dim2, dim=1)
+            max_values_dim3 = max_values_dim3.unsqueeze(1)
+
+            print(max_values_dim3)
 
 
         # Zero gradients for every batch!
@@ -95,6 +104,19 @@ def train(model, train_loader, val_loader, name, loss_name=None):
     model.to(device)
     #create vectors for the training and validation loss
 
+    wandb.init(
+            # set the wandb project where this run will be logged
+            project="Vphysics-Project",
+            
+            # track hyperparameters and run metadata
+            config={
+            "learning_rate": cfg.optimize.lr,
+            "architecture": "Lineal",
+            "dataset": "NEURON",
+            "epochs": cfg.train.epochs,
+            }
+        )
+
     train_losses = []
     val_losses = []
     accuracy_list = []
@@ -108,6 +130,18 @@ def train(model, train_loader, val_loader, name, loss_name=None):
         
         train_losses.append(train_loss)
         val_losses.append(val_loss)
+
+        wandb.log({"train_loss": train_loss, "validation_loss": val_loss,
+                    "alpha": model.pModel.alpha[0].detach().cpu().numpy(), "beta": model.pModel.beta[0].detach().cpu().numpy()})
+        
+        if epoch % 2 == 0:
+            for name, param in model.named_parameters():
+                param.requires_grad = True
+        if epoch % 2 == 1 or epoch > num_epochs /2:
+            for name, param in model.named_parameters():
+                if name != 'pModel.alpha' and name != 'pModel.beta' :  # Replace 'fc1.weight' with the parameter you want to keep trainable
+                    param.requires_grad = False
+
         # Early stopping
         try:
             if val_losses[-1]>=val_losses[-2]:
@@ -123,7 +157,7 @@ def train(model, train_loader, val_loader, name, loss_name=None):
         if epoch%(num_epochs /10 )== 0:
             print("epoch:",epoch, "\t training loss:", train_loss,
                   "\t validation loss:",val_loss)
-            
+    wandb.finish()        
     X = []
     X.append( { 'x': range(1, num_epochs+1), 'y': train_losses, 'label': 'train_loss'} )
     X.append({'x': range(1, num_epochs+1), 'y': val_losses, 'label': 'val_loss'} )

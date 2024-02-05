@@ -23,11 +23,11 @@ def generatePendulumA(g,L,a0, a1):
 
 def generateIntensity():
 
-    t = np.arange(0,10,1/100)
-    t = np.arange(0,10, 0.1)
+    t = np.arange(0,10,1/2000)
+    t = np.arange(0,10, 1/200)
     m = (1-0.2)/(1-(-1))
     b= 1 - m
-    a = m*np.cos(t)+b
+    a = m*np.cos(2*t)+b
     
     X = []
     X.append( { 'x': t, 'y': a, 'label': 'Intensity'} )
@@ -46,6 +46,9 @@ def create_intensity_image(I, noise = False, shapeType = 'complex', base = None)
     width, height = 50, 50
     img_array = np.array(base)
 
+    #resize image
+    img_array = cv2.resize(img_array, (width, height))
+
     img_array = img_array / np.max(img_array)
 
 
@@ -55,10 +58,10 @@ def create_intensity_image(I, noise = False, shapeType = 'complex', base = None)
 
     if shapeType == 'complex':        
         img_array = img_array* I
-
-    bknoise = [[1,1], [1,2],[1,3],[2,1],[2,2],[2,3],[3,1],[3,2],[3,3]]
-    for bk in bknoise:
-        img_array[bk] = 1
+    if False:
+        bknoise = [[1,1], [1,2],[1,3],[2,1],[2,2],[2,3],[3,1],[3,2],[3,3]]
+        for bk in bknoise:
+            img_array[bk] = 1
     # generate random gaussian noise matrix proportional to the intensity
     if noise:
         img_array = img_array + np.random.normal(0, 0.1, img_array.shape) * I

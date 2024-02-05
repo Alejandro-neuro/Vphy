@@ -3,8 +3,8 @@ optimize:
   optimizer: Adam
   lr: 0.01
 train:
-  epochs: 20
-  batch_size: 32
+  epochs: 100
+  batch_size: 16
 dataset:
   path: MNIST
   test_size: 0.2

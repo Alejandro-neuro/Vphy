@@ -40,9 +40,9 @@ class Encoder(nn.Module):
         #Linear layers
         self.linear = nn.ModuleList()
 
-        self.linear.append(nn.Linear(130000,1000))
+        self.linear.append(nn.Linear(2500,1000))
         self.linear.append(nn.Linear(1000,500))
-        self.linear.append(nn.Linear(500,10))
+        self.linear.append(nn.Linear(500,1))
         
         #Activation functions
         self.sigmoid = nn.Sigmoid()
@@ -99,8 +99,8 @@ class FramInt(nn.Module):
 class pModel(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
-        self.alpha = torch.tensor([50.0], requires_grad=True).float()
-        self.beta = torch.tensor([2500.0], requires_grad=True).float()
+        self.alpha = torch.tensor([0.0], requires_grad=True).float()
+        self.beta = torch.tensor([0.0], requires_grad=True).float()
         self.alpha = nn.Parameter(self.alpha )
         self.beta= nn.Parameter(self.beta)
 
@@ -112,16 +112,16 @@ class pModel(nn.Module):
 
       #return x1+(x1-x0)+self.alpha*(x1-x0 )*dt*2 + (self.beta*x1 )*dt*dt*4
 
-      return z[:,0:1]+ z[:,1:2]*dt -( self.alpha*z[:,1:2] + self.beta*z[:,2:3] )*dt*dt
+      return z[:,2:3]+ z[:,1:2]*dt -( self.alpha*z[:,1:2] + self.beta*z[:,0:1] )*dt*dt
 
 class Decoder(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
         self.l1 = nn.Linear(1,10 , bias=True)
         self.l2 = nn.Linear(10,1000, bias=False)
-        self.l3 = nn.Linear(1000,10000, bias=False)
+        self.l3 = nn.Linear(1000,2500, bias=False)
 
-        self.uflat = nn.Unflatten(1, torch.Size([100,100]))
+        self.uflat = nn.Unflatten(1, torch.Size([50,50]))
         self.relu= nn.ReLU()
         self.Softmax= nn.Softmax(dim=1)
         self.sigmoid= nn.Sigmoid()
@@ -151,8 +151,7 @@ class AE(nn.Module):
     def __init__(self, dt, initw = False):
         super().__init__()
 
-        self.framencoder = Encoder(initw=initw )
-        self.int     = FramInt(initw=initw )
+        self.framencoder = Encoder(initw=initw)
         self.decoder     = Decoder(initw=initw)
         self.pModel      = pModel(initw=initw)
         self.dt = dt
@@ -161,18 +160,36 @@ class AE(nn.Module):
       
       batch, channel, height, width = x0.shape
 
+      
+
       # iterate over the channels
+     
       for i in range(channel):
          
         xframe = x0[:,i,:,:].unsqueeze(1)
+
+        if False:
+            max_values_list = []
+            max_values_dim1, _ = torch.max(xframe, dim=1)
+            max_values_dim2, _ = torch.max(max_values_dim1, dim=1)
+            max_values_dim3, _ = torch.max(max_values_dim2, dim=1)
+            max_values_dim3 = max_values_dim3.unsqueeze(1)
+            max_values_list = torch.cat((max_values_list,max_values_dim3),1)
+            max_values_list = max_values_dim
+            print(max_values_list.shape, max_values_dim3.shape)
+            print(max_values_list)
+
         xframe = self.framencoder(xframe)
         # concatenate the frames
         if i == 0:
             x = xframe
         else:
-            x = torch.cat((x,xframe),1)         
+            x = torch.cat((x,xframe),1)    
+            
 
-      z = self.int(x)
+
+      
+      z = x
       z2 =self.pModel(z, self.dt)
 
       in0Rec =self.decoder(z[:,0:1])
