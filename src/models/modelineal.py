@@ -99,7 +99,7 @@ class FramInt(nn.Module):
 class pModel(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
-        self.alpha = torch.tensor([0.0], requires_grad=True).float()
+        self.alpha = torch.tensor([0.1], requires_grad=True).float()
         self.beta = torch.tensor([0.0], requires_grad=True).float()
         self.alpha = nn.Parameter(self.alpha )
         self.beta= nn.Parameter(self.beta)
@@ -111,14 +111,18 @@ class pModel(nn.Module):
 
 
       #return x1+(x1-x0)+self.alpha*(x1-x0 )*dt*2 + (self.beta*x1 )*dt*dt*4
+        y0 = z[:,0:1]
+        y1 = z[:,1:2]
+        y2 = z[:,2:3]
 
-      return z[:,2:3]+ z[:,1:2]*dt -( self.alpha*z[:,1:2] + self.beta*z[:,0:1] )*dt*dt
+
+        return y2 + (y2-y1) - dt*dt*(self.alpha*y1)
 
 class Decoder(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
-        self.l1 = nn.Linear(1,10 , bias=True)
-        self.l2 = nn.Linear(10,1000, bias=False)
+        self.l1 = nn.Linear(1,100 , bias=False)
+        self.l2 = nn.Linear(100,1000, bias=False)
         self.l3 = nn.Linear(1000,2500, bias=False)
 
         self.uflat = nn.Unflatten(1, torch.Size([50,50]))
@@ -134,13 +138,13 @@ class Decoder(nn.Module):
           #xavier_normal
           nn.init.xavier_normal_(self.l1.weight)
           nn.init.xavier_normal_(self.l2.weight)
-          nn.init.xavier_normal_(self.l3.weight)
+          #nn.init.xavier_normal_(self.l3.weight)
 
     def forward(self, x):
 
       x = self.relu(self.l1(x))
       x = self.relu(self.l2(x))
-      x = self.sigmoid(self.l3(x))
+      x = self.l3(x)
 
       x = self.uflat(x)
       return x
@@ -192,7 +196,7 @@ class AE(nn.Module):
       z = x
       z2 =self.pModel(z, self.dt)
 
-      in0Rec =self.decoder(z[:,0:1])
+      in0Rec =self.decoder(z[:,1:2])
       in1Rec =self.decoder(z[:,2:3])
       outRec =self.decoder(z2)
 

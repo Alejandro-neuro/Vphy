@@ -98,7 +98,9 @@ def train(model, train_loader, val_loader, name, loss_name=None):
 
     num_epochs = cfg.train.epochs
     loss_fn = loss_func.getLoss(loss_name)
-    optimizer = optimizer_Factory.getOptimizer(model)    
+    #optimizer = optimizer_Factory.getOptimizer(model)    
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 
     model.to(device)
@@ -122,6 +124,9 @@ def train(model, train_loader, val_loader, name, loss_name=None):
     accuracy_list = []
     patience = 50 # patience for early stopping
 
+    best_loss = float('inf')  # Initialize with a large value
+    best_model_state = None
+
     for epoch in range(1, num_epochs+1):
         # Model training
         train_loss = train_epoch(model, train_loader, loss_fn,optimizer, device=device)
@@ -136,10 +141,12 @@ def train(model, train_loader, val_loader, name, loss_name=None):
         
         if epoch % 2 == 0:
             for name, param in model.named_parameters():
+                optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
                 param.requires_grad = True
-        if epoch % 2 == 1 or epoch > num_epochs /2:
+        if epoch % 2 == 1 or epoch > 3*num_epochs /4:
             for name, param in model.named_parameters():
-                if name != 'pModel.alpha' and name != 'pModel.beta' :  # Replace 'fc1.weight' with the parameter you want to keep trainable
+                if name != 'pModel.alpha' and name != 'pModel.beta' : 
+                    optimizer = torch.optim.Adam(model.parameters(), lr=0.5) # Replace 'fc1.weight' with the parameter you want to keep trainable
                     param.requires_grad = False
 
         # Early stopping
@@ -154,10 +161,15 @@ def train(model, train_loader, val_loader, name, loss_name=None):
         except:
             early_stop = 0
 
+        if train_loss < best_loss:
+            best_loss = train_loss
+            best_model_state = model.state_dict()
+
         if epoch%(num_epochs /10 )== 0:
             print("epoch:",epoch, "\t training loss:", train_loss,
                   "\t validation loss:",val_loss)
     wandb.finish()        
+    model.load_state_dict(best_model_state)
     X = []
     X.append( { 'x': range(1, num_epochs+1), 'y': train_losses, 'label': 'train_loss'} )
     X.append({'x': range(1, num_epochs+1), 'y': val_losses, 'label': 'val_loss'} )

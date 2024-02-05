@@ -2,6 +2,14 @@ import torch
 import torch.nn as nn
 from omegaconf import OmegaConf
 
+def getMaxValues(x1):
+    max_values_dim1, _ = torch.max(x1, dim=1)
+    max_values_dim2, _ = torch.max(max_values_dim1, dim=1)
+    max_values_dim3, _ = torch.max(max_values_dim2, dim=1)
+    max_values_dim3 = max_values_dim3.unsqueeze(1)
+
+    return max_values_dim3
+
 def custom_loss(input_img, outputs, expected_pred):
     lossMSE = nn.MSELoss()
 
@@ -9,6 +17,14 @@ def custom_loss(input_img, outputs, expected_pred):
     x1=input_img[:,-1,:,:]
     z,rec=outputs
     rec0,rec1,outrec=rec
+
+    if False:
+        temp1 = getMaxValues(x0.unsqueeze(1))
+        temp2 =getMaxValues(x1.unsqueeze(1))
+        temp3 =getMaxValues(expected_pred)
+
+        temp = torch.cat((temp1,temp2,temp3),1)
+        print("temp",temp)  
     z0,z1,z2 = z
 
     zed = torch.concatenate((z0,z1,z2), axis=1)
