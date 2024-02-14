@@ -99,7 +99,7 @@ class FramInt(nn.Module):
 class pModel(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
-        self.alpha = torch.tensor([0.1], requires_grad=True).float()
+        self.alpha = torch.tensor([4.0], requires_grad=True).float()
         self.beta = torch.tensor([0.0], requires_grad=True).float()
         self.alpha = nn.Parameter(self.alpha )
         self.beta= nn.Parameter(self.beta)
@@ -155,7 +155,7 @@ class AE(nn.Module):
     def __init__(self, dt, initw = False):
         super().__init__()
 
-        self.framencoder = Encoder(initw=initw)
+        self.encoder = Encoder(initw=initw)
         self.decoder     = Decoder(initw=initw)
         self.pModel      = pModel(initw=initw)
         self.dt = dt
@@ -200,4 +200,4 @@ class AE(nn.Module):
       in1Rec =self.decoder(z[:,2:3])
       outRec =self.decoder(z2)
 
-      return (z[:,0:1],z[:,2:3],z2), (in0Rec,in1Rec,outRec)
+      return (z[:,1:2],z[:,2:3],z2), (in0Rec,in1Rec,outRec)

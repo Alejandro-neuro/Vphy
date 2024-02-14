@@ -88,8 +88,35 @@ def evaluate_epoch(model, loader,loss_fn, device='cpu'):
         
     return total_loss
 
+def freeze(model, type): 
+    for name, param in model.named_parameters():
+        param.requires_grad = True
+    if type == 'encoder':
+        for name, param in model.named_parameters():
+            if not 'encoder' in name:  
+                param.requires_grad = False
+    if type == 'decoder':
+        for name, param in model.named_parameters():
+            if not 'decoder' in name: 
+                param.requires_grad = False
 
-def train(model, train_loader, val_loader, name, loss_name=None):
+    if type == 'encoder-decoder':
+        for name, param in model.named_parameters():
+            if name == 'pModel.alpha' or name == 'pModel.beta' : 
+                param.requires_grad = False
+
+    if type == 'pModel':
+        for name, param in model.named_parameters():
+                if name != 'pModel.alpha' and name != 'pModel.beta' : 
+                    param.requires_grad = False
+
+    return model
+
+
+
+
+
+def train(model, train_loader, val_loader, name, type ='normal', loss_name=None):
 
     cfg = OmegaConf.load("config.yaml")
 
@@ -105,6 +132,8 @@ def train(model, train_loader, val_loader, name, loss_name=None):
 
     model.to(device)
     #create vectors for the training and validation loss
+
+    model = freeze(model, type)
 
     wandb.init(
             # set the wandb project where this run will be logged
@@ -139,15 +168,11 @@ def train(model, train_loader, val_loader, name, loss_name=None):
         wandb.log({"train_loss": train_loss, "validation_loss": val_loss,
                     "alpha": model.pModel.alpha[0].detach().cpu().numpy(), "beta": model.pModel.beta[0].detach().cpu().numpy()})
         
-        if epoch % 2 == 0:
-            for name, param in model.named_parameters():
-                optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-                param.requires_grad = True
-        if epoch % 2 == 1 or epoch > 3*num_epochs /4:
-            for name, param in model.named_parameters():
-                if name != 'pModel.alpha' and name != 'pModel.beta' : 
-                    optimizer = torch.optim.Adam(model.parameters(), lr=0.5) # Replace 'fc1.weight' with the parameter you want to keep trainable
-                    param.requires_grad = False
+        if type == 'dynamic':
+            if epoch % 2 == 0:
+                model = freeze(model, 'encoder')
+            if epoch % 2 == 1 or epoch > 3*num_epochs /4:
+                model = freeze(model, 'encoder-decoder')
 
         # Early stopping
         try:
