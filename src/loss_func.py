@@ -10,8 +10,23 @@ def getMaxValues(x1):
 
     return max_values_dim3
 
-def custom_loss(input_img, outputs, expected_pred):
+def MSEVARLoss(pred_img, expected_pred):
+
     lossMSE = nn.MSELoss()
+
+    pred_img_var = pred_img.view(pred_img.shape[0], -1)
+    pred_img_var = torch.var(pred_img_var, dim=0)
+    pred_img_var = torch.mean(pred_img_var)
+    
+    expected_pred_var = expected_pred.view(expected_pred.shape[0], -1)
+    expected_pred_var = torch.var(expected_pred_var, dim=0)
+    expected_pred_var = torch.mean(expected_pred_var)
+
+    return lossMSE(pred_img, expected_pred) + lossMSE(pred_img_var, expected_pred_var)
+
+
+def custom_loss(input_img, outputs, expected_pred):
+    lossMSE = nn.SmoothL1Loss()
 
     x0=input_img[:,-2,:,:]
     x1=input_img[:,-1,:,:]

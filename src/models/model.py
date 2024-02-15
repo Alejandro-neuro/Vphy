@@ -18,17 +18,10 @@ class Encoder(nn.Module):
         self.mask = torch.ones(100, 100, requires_grad=True).to(device)
         self.mask = nn.Parameter(self.mask )
 
-        
-
-        
-
     def forward(self, x):
       
-        masks = []
-        
-        
-        masks = self.unet(x)          
-
+        masks = []            
+        masks = self.unet(x)
         mask = masks[:,0:1,:,:]
         self.background = masks[:,0:1,:,:]
         
@@ -85,7 +78,8 @@ class pModel(nn.Module):
         super().__init__()
         self.alpha = torch.tensor([1.0], requires_grad=True).float()
         self.alpha = nn.Parameter(self.alpha )
-        
+        self.beta = torch.tensor([1.0], requires_grad=True).float()
+        self.beta = nn.Parameter(self.alpha )
 
     def forward(self, z,dt):    
 
@@ -101,20 +95,22 @@ class pModel(nn.Module):
       return  y1+ (y1-y0)*dt +dt*dt *self.alpha* y1
  
 class AEModel(nn.Module):
-    def __init__(self, initw = False):
+    def __init__(self, dt = 0.1, initw = False):
         super().__init__()
         self.encoder = Encoder()
         #self.decoder = Decoder()
         self.decoder = modelineal.Decoder()
         self.pModel = pModel()
 
+        self.dt = dt
+
         self.mask = None
         
 
     def forward(self, x):    
-
+      x = x[:,1:3,:,:]
       v,mask = self.encoder(x)
-      v_pred = self.pModel(v,0.1)
+      v_pred = self.pModel(v,self.dt)
 
       in0Rec = self.decoder(v[:,0:1])
       in1Rec = self.decoder(v[:,1:2] )

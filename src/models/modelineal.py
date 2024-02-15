@@ -63,6 +63,7 @@ class Encoder(nn.Module):
             x = self.linear[i](x)
             x = torch.relu(x)    
       x = self.linear[-1](x)
+      x = self.sigmoid(x)
       return x
     
 class FramInt(nn.Module):
@@ -121,8 +122,8 @@ class pModel(nn.Module):
 class Decoder(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
-        self.l1 = nn.Linear(1,100 , bias=False)
-        self.l2 = nn.Linear(100,1000, bias=False)
+        self.l1 = nn.Linear(1,10 , bias=False)
+        self.l2 = nn.Linear(10,1000, bias=False)
         self.l3 = nn.Linear(1000,2500, bias=False)
 
         self.uflat = nn.Unflatten(1, torch.Size([50,50]))
@@ -145,6 +146,7 @@ class Decoder(nn.Module):
       x = self.relu(self.l1(x))
       x = self.relu(self.l2(x))
       x = self.l3(x)
+      x = self.sigmoid(x)
 
       x = self.uflat(x)
       return x
@@ -183,7 +185,7 @@ class AE(nn.Module):
             print(max_values_list.shape, max_values_dim3.shape)
             print(max_values_list)
 
-        xframe = self.framencoder(xframe)
+        xframe = self.encoder(xframe)
         # concatenate the frames
         if i == 0:
             x = xframe
