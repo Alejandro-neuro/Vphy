@@ -6,6 +6,8 @@ from src import loss_func
 from src import optimizer_Factory
 from src import custom_plots as cp
 
+from datetime import datetime
+
 import wandb
 
 
@@ -135,9 +137,14 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
 
     model = freeze(model, type)
 
+    now = datetime.now()
+
+    dt_string = now.strftime("%d_%m_%y_%H")
+
     wandb.init(
             # set the wandb project where this run will be logged
             project="Vphysics-Project",
+            name = "exp_"+dt_string,
             
             # track hyperparameters and run metadata
             config={
