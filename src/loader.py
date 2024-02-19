@@ -197,7 +197,7 @@ def getLoaderIn(X,  split = True, type = "Dataset3d",  dt=1/100, nInFrames = 3,s
 
             #create train and test dataloaders
 
-            train_dataset = DataLoader( loadertype(train_x, dt=dt, nInFrames = nInFrames,sr = sr ,  noise=noise, shapeType=shapeType), batch_size=32, shuffle=True)
+            train_dataset = DataLoader( loadertype(train_x, dt=dt, nInFrames = nInFrames,sr = sr ,  noise=noise, shapeType=shapeType), batch_size=32, shuffle=False)
             val_dataset = DataLoader( loadertype(val_x, dt=dt, nInFrames = nInFrames,sr = sr ,  noise=noise, shapeType=shapeType), batch_size=32, shuffle=False)    
 
             return train_dataset, val_dataset, train_x, val_x 

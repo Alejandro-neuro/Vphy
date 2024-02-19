@@ -174,18 +174,18 @@ class AE(nn.Module):
          
         xframe = x0[:,i,:,:].unsqueeze(1)
 
-        if False:
-            max_values_list = []
+        if True:
+            #max_values_list = []
             max_values_dim1, _ = torch.max(xframe, dim=1)
             max_values_dim2, _ = torch.max(max_values_dim1, dim=1)
             max_values_dim3, _ = torch.max(max_values_dim2, dim=1)
             max_values_dim3 = max_values_dim3.unsqueeze(1)
-            max_values_list = torch.cat((max_values_list,max_values_dim3),1)
-            max_values_list = max_values_dim
-            print(max_values_list.shape, max_values_dim3.shape)
-            print(max_values_list)
+            #max_values_list = torch.cat((max_values_list,max_values_dim3),1)
+            #max_values_list = max_values_dim
+            #print(max_values_list.shape, max_values_dim3.shape)
+            #print(max_values_list)
 
-        xframe = self.encoder(xframe)
+        xframe = max_values_dim3
         # concatenate the frames
         if i == 0:
             x = xframe
@@ -196,7 +196,10 @@ class AE(nn.Module):
 
       
       z = x
+      print(z.shape)
+      print(z)
       z2 =self.pModel(z, self.dt)
+      print(z2)
 
       in0Rec =self.decoder(z[:,1:2])
       in1Rec =self.decoder(z[:,2:3])
