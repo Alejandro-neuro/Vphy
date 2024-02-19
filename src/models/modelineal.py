@@ -106,18 +106,11 @@ class pModel(nn.Module):
         self.beta= nn.Parameter(self.beta)
 
     def forward(self, z,dt):    
-
-      #device = "cuda" if torch.cuda.is_available() else "cpu"
-      #dt = torch.tensor([dt], requires_grad=False).float().to(device)
-
-
-      #return x1+(x1-x0)+self.alpha*(x1-x0 )*dt*2 + (self.beta*x1 )*dt*dt*4
         y0 = z[:,0:1]
         y1 = z[:,1:2]
         y2 = z[:,2:3]
 
-
-        return y2 + (y2-y1) - dt*dt*(self.alpha*y1)
+        return y2 + (y2-y1) - dt*dt*(self.alpha*y2)
 
 class Decoder(nn.Module):
     def __init__(self, initw = False):
@@ -196,10 +189,7 @@ class AE(nn.Module):
 
       
       z = x
-      print(z.shape)
-      print(z)
       z2 =self.pModel(z, self.dt)
-      print(z2)
 
       in0Rec =self.decoder(z[:,1:2])
       in1Rec =self.decoder(z[:,2:3])

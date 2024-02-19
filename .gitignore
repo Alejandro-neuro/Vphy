@@ -4,3 +4,4 @@
 *.wandb
 wandb*.json
 wandb/
+*.cpython-310.pyc
