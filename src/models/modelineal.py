@@ -5,7 +5,7 @@ import torchvision
 import matplotlib.pyplot as plt
 import numpy as np
 
-import decoders as decoder
+from . import decoders as decoder
 
 def savekernels(a):
 
