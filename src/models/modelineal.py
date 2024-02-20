@@ -29,12 +29,6 @@ def savekernels(a):
 
     plt.savefig(f'./plots/modelconv.png')
     plt.close()
-
-
-
-
-
-
 class Encoder(nn.Module):
     def __init__(self, initw = False):
         super().__init__()

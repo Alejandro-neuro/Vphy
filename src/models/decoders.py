@@ -62,7 +62,11 @@ class mlpVec(nn.Module):
 
     def forward(self, x):
       
-      x = torch.cat((x, self.shape), 1)
+   
+
+      expanded_vector = self.shape.unsqueeze(0).expand(x.size(0), -1)
+      
+      x = torch.cat((x, expanded_vector), 1)
 
       x = self.relu(self.l1(x))
       x = self.relu(self.l2(x))

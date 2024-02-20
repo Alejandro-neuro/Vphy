@@ -99,9 +99,9 @@ def visualize(model, loader, video_name = 'ExpVsPred.mp4'):
 
         # normalize to 0-1
 
-        if ((pred.max() - pred.min()) != 0):
+        #if ((pred.max() - pred.min()) != 0):
            
-            pred = (pred - pred.min()) / (pred.max() - pred.min())
+            #pred = (pred - pred.min()) / (pred.max() - pred.min())
         
 
         # concatenate expected and predicted one over the other

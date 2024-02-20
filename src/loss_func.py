@@ -24,9 +24,17 @@ def MSEVARLoss(pred_img, expected_pred):
 
     return lossMSE(pred_img, expected_pred) + lossMSE(pred_img_var, expected_pred_var)
 
+def manual_MSE(pred_img, expected_pred):
+
+    squared_errors = (pred_img - expected_pred) ** 2
+    log_errors = 10*torch.log(squared_errors +1)
+    return torch.mean(log_errors)
+
+     
+
 
 def custom_loss(input_img, outputs, expected_pred):
-    lossMSE = nn.SmoothL1Loss()
+    lossMSE = manual_MSE
 
     x0=input_img[:,-2,:,:]
     x1=input_img[:,-1,:,:]
@@ -48,13 +56,11 @@ def custom_loss(input_img, outputs, expected_pred):
 
     expected_pred=expected_pred.squeeze(1)
 
-
-    l1=lossMSE(rec0, x0)
-    l2=lossMSE(rec1, x1)
-    l3=lossMSE(outrec,expected_pred)
+    reconstruction = torch.cat((rec0,rec1,outrec), axis=0)
+    ground_truth = torch.cat((x0,x1,expected_pred), axis=0)
 
 
-    return l1+l2+l3
+    return lossMSE(reconstruction,ground_truth) 
 
 def Focal_batch_loss(input_img, output, expected_pred):
     lossMSE = nn.MSELoss()
