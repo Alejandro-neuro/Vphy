@@ -114,7 +114,7 @@ class AE(nn.Module):
         super().__init__()
 
         self.encoder = Encoder(initw=initw)
-        self.decoder     = decoder.mlpVec(initw=initw)
+        self.decoder     = decoder.mlp(initw=initw)
         self.pModel      = pModel(initw=initw)
         self.dt = dt
 

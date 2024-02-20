@@ -103,6 +103,12 @@ def visualize(model, loader, video_name = 'ExpVsPred.mp4'):
            
             #pred = (pred - pred.min()) / (pred.max() - pred.min())
         
+        if (pred.max() > 1):
+            pred[pred>1] = 1
+
+        if (pred.min() < 0):
+            pred[pred<0] = 0
+        
 
         # concatenate expected and predicted one over the other
         expected_pred = np.concatenate((expec, pred), axis=0)

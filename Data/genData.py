@@ -9,6 +9,10 @@ from PIL import Image, ImageDraw
 import math
 import cv2
 
+from omegaconf import OmegaConf
+
+cfg = OmegaConf.load("config.yaml")
+Image_size = cfg.image_size
 
 def generatePendulumA(g,L,a0, a1):
 
@@ -21,9 +25,9 @@ def generatePendulumA(g,L,a0, a1):
     
     return t,a    
 
-def generateIntensity():
+def generateDynamics():
 
-    t = np.arange(0,10,1/2000)
+    
     t = np.arange(0,10, 1/200)
     m = (1-0.2)/(1-(-1))
     b= 1 - m
@@ -43,7 +47,7 @@ def create_intensity_image(I, noise = False, shapeType = 'complex', base = None)
 
     # Create a blank gray image
 
-    width, height = 50, 50
+    width, height = Image_size, Image_size
     img_array = np.array(base)
 
     #resize image
@@ -71,24 +75,54 @@ def create_intensity_image(I, noise = False, shapeType = 'complex', base = None)
 
     return img_array
 
-def create_pendulum_image(angle_deg):
+def create_scale_Image(I, noise = False, shapeType = 'complex', base = None):
+
+    """
+    Generate an image with a circle centered in it.
+
+    :param image_size: Size of the image (tuple of width and height)
+    :param radius: Radius of the circle
+    :return: Numpy array representing the image with the circle
+    """
+
+    image_size = (Image_size, Image_size)
+
     # Create a blank image
-    width, height = 500, 500
+    image = np.zeros(image_size)
+
+    # Get center coordinates
+    center_x = image_size[0] // 2
+    center_y = image_size[1] // 2
+
+    # Generate grid of coordinates
+    X, Y = np.meshgrid(np.arange(image_size[0]), np.arange(image_size[1]))
+
+    # Compute distance from center for each pixel
+    distances = np.sqrt((X - center_x) ** 2 + (Y - center_y) ** 2)
+
+    # Set pixels inside the circle to 1
+    image[distances <= I+10] = 1
+
+    return image
+
+def create_pendulum_image(I, noise = False, shapeType = 'complex', base = None):
+    # Create a blank image
+    width, height = Image_size, Image_size
     image = Image.new('RGB', (width, height), 'black')
     draw = ImageDraw.Draw(image)
 
     # Pendulum parameters
-    pendulum_length = 200
-    bob_radius = 10
+    pendulum_length = 20
+    bob_radius = 5
 
     # Calculate bob position
     #angle_rad = math.radians(angle_deg)
-    angle_rad = angle_deg
+    angle_rad = I
     bob_x = width // 2 + pendulum_length * math.sin(angle_rad)
     bob_y = height // 2 + pendulum_length * math.cos(angle_rad)
 
     # Draw pendulum rod
-    draw.line([(width // 2, height // 2), (bob_x, bob_y)], fill='grey', width=3)
+    draw.line([(width // 2, height // 2), (bob_x, bob_y)], fill='grey', width=4)
 
     # Draw pendulum bob
     draw.ellipse((bob_x - bob_radius, bob_y - bob_radius, bob_x + bob_radius, bob_y + bob_radius), fill='white')
@@ -102,7 +136,7 @@ def create_pendulum_image(angle_deg):
     
     # Cropped image of above dimension
     # (It will not change original image)
-    image = image.crop((left, top, right, bottom))
+    #image = image.crop((left, top, right, bottom))
 
     # transform image black & white
     image = image.convert('L')
@@ -110,25 +144,28 @@ def create_pendulum_image(angle_deg):
     # Save the image
     #image.save(f'pendulum_{angle_deg}deg.png')
 
-    return image
+    return np.array(image)
     #image.show()
 
-def generateVideo():
-    g=9.81
-    L=1
-    x0=np.pi/2
-    x1=np.pi/2.5
-    t,a = generatePendulumA(g,L,x0, x1)
+def generateVideo(a,DynamicsType, name):
+    
 
     # Create a video of the swinging pendulum
-    video_name = 'pendulum_swing2.mp4'
+    video_name = name+'.mp4'
     frame_rate = 30
     duration = len(a) / frame_rate
     num_frames = frame_rate * duration
 
     # Initialize VideoWriter
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    video = cv2.VideoWriter(video_name, fourcc, frame_rate, (500, 260))
+    video = cv2.VideoWriter(video_name, fourcc, frame_rate, (50, 50))
+
+    if DynamicsType == "Scale":
+        ImageGenerator = create_scale_Image
+    if DynamicsType == "Intensity":
+        ImageGenerator = create_intensity_image
+    if DynamicsType == "Motion":
+        ImageGenerator = create_pendulum_image
 
     
 
@@ -136,10 +173,13 @@ def generateVideo():
     # Generate frames and add to video
     for angle in a:
         # Create pendulum image
-        frame_image = create_pendulum_image(angle)
+        frame_image = ImageGenerator(angle)
+
+        if(len(frame_image.shape) < 3):
+            frame_image = np.stack((frame_image,)*3, axis=-1)
         
         # Convert PIL image to OpenCV format
-        cv2_frame = cv2.cvtColor(np.array(frame_image), cv2.COLOR_RGB2BGR)
+        cv2_frame = cv2.cvtColor(frame_image, cv2.COLOR_RGB2BGR)
         
         # Add frame to the video
         video.write(cv2_frame)

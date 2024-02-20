@@ -12,3 +12,4 @@ dataset:
   val_size: 0.2
   num_workers: 2
 loss: custom
+image_size: 50

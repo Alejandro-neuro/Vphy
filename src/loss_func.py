@@ -34,7 +34,7 @@ def manual_MSE(pred_img, expected_pred):
 
 
 def custom_loss(input_img, outputs, expected_pred):
-    lossMSE = manual_MSE
+    lossMSE = nn.MSELoss()
 
     x0=input_img[:,-2,:,:]
     x1=input_img[:,-1,:,:]

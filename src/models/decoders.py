@@ -11,10 +11,15 @@ class mlp(nn.Module):
         self.l3 = nn.Linear(1000,2500, bias=False)
 
         self.uflat = nn.Unflatten(1, torch.Size([50,50]))
+
+        #normalization layer
+        self.norm = nn.BatchNorm1d(1000)
+
+
+        #activation functions
         self.relu= nn.ReLU()
         self.Softmax= nn.Softmax(dim=1)
         self.sigmoid= nn.Sigmoid()
-
         self.Tanh=nn.Tanh()
 
         if initw:
@@ -29,8 +34,12 @@ class mlp(nn.Module):
 
       x = self.relu(self.l1(x))
       x = self.relu(self.l2(x))
+      # add normalization layer
+
+      x = self.norm(x)
+
       x = self.l3(x)
-      x = self.sigmoid(x)
+      x = self.relu(x)
 
       x = self.uflat(x)
       return x
