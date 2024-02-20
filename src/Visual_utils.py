@@ -5,6 +5,8 @@ import torch
 from src import custom_plots as cp
 from PIL import Image, ImageDraw
 
+import torchvision
+
 def createImage(pos,x ):
     nArray = np.zeros((20, 20,3), np.uint8) #Create the arbitrary input img
 
@@ -36,8 +38,9 @@ def set_center_values(A, B):
     start_col_A = center_col_A - center_col_B
     end_row_A = start_row_A + B.shape[0]
     end_col_A = start_col_A + B.shape[1]
+
     
-    A[start_row_A:end_row_A, start_col_A:end_col_A] = B
+    A[:, center_row_A:] = B
     
     return A
 
@@ -54,7 +57,7 @@ def visualize(model, loader, video_name = 'ExpVsPred.mp4'):
 
     # Initialize VideoWriter
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    h = 300
+    h = 200
     video = cv2.VideoWriter(video_name, fourcc, frame_rate, ( h ,h ))
     i = 0
 
@@ -128,9 +131,9 @@ def visualize(model, loader, video_name = 'ExpVsPred.mp4'):
         cv2_frame = cv2.cvtColor(expected_pred, cv2.COLOR_RGB2BGR)       
         
         # add text label
-        cv2.putText(cv2_frame, 'Expected', (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 1, cv2.LINE_AA)
-        cv2.putText(cv2_frame, 'Predicted', (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 1, cv2.LINE_AA)
-        cv2.putText(cv2_frame, 'error', (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 0), 1, cv2.LINE_AA)
+        cv2.putText(cv2_frame, 'Expected', (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 1, cv2.LINE_AA)
+        cv2.putText(cv2_frame, 'Predicted', (10, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 1, cv2.LINE_AA)
+        cv2.putText(cv2_frame, 'error', (10, 125), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 0), 1, cv2.LINE_AA)
 
         
         # Add frame to the video
@@ -152,13 +155,15 @@ def visualize_dec(model, loader, video_name = 'ExpVsPred.mp4'):
     duration = len(loader) / frame_rate
     num_frames = frame_rate * duration
 
+    imagesize = 100
+
     # Initialize VideoWriter
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    video = cv2.VideoWriter(video_name, fourcc, frame_rate, ( 600 ,600 ))
+    video = cv2.VideoWriter(video_name, fourcc, frame_rate, ( imagesize ,imagesize ))
     i = 0
 
 
-    border = np.zeros((600,600), np.uint8)
+    border = np.zeros((imagesize,imagesize), np.uint8)
 
 
 
@@ -180,6 +185,8 @@ def visualize_dec(model, loader, video_name = 'ExpVsPred.mp4'):
         # Copy tensor and send to cpu and detach
         expec = x2.to('cpu').detach().numpy().copy()
         pred = output.to('cpu').detach().numpy().copy()
+        input_value = x0.to('cpu').detach().numpy().copy()
+        formatted_string = "{:.4f}".format(input_value[0][0])
 
         # squeeze to remove batch dimension
         expec = np.squeeze(expec)
@@ -205,8 +212,10 @@ def visualize_dec(model, loader, video_name = 'ExpVsPred.mp4'):
         cv2_frame = cv2.cvtColor(expected_pred, cv2.COLOR_RGB2BGR)       
         
         # add text label
-        cv2.putText(cv2_frame, 'Expected', (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
-        cv2.putText(cv2_frame, 'Predicted', (10, 280), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+        cv2.putText(cv2_frame, 'GT', (5, 25), cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.6, (255, 0, 0),1, cv2.LINE_AA)
+        cv2.putText(cv2_frame, 'Out', (3, 75), cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.6, (0, 255, 0), 1, cv2.LINE_AA)
+
+        cv2.putText(cv2_frame, formatted_string, (3, 10), cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.55, (255, 0, 0), 1, cv2.LINE_AA)
 
         
         # Add frame to the video
@@ -217,6 +226,20 @@ def visualize_dec(model, loader, video_name = 'ExpVsPred.mp4'):
     video.release()
     #cv2.destroyAllWindows()
     print(f'Video saved as {video_name}')
+
+def visualize_loader(train_dataloader):
+    data_iter = iter(train_dataloader)
+
+    # Get a batch of data
+    batch_data = next(data_iter)
+
+    for data in train_dataloader:
+
+        grid_img = torchvision.utils.make_grid(data[0], nrow=5)
+
+        plt.figure()
+
+        plt.imshow(grid_img.permute(1, 2, 0))
 
 
 

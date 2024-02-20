@@ -25,12 +25,10 @@ def generatePendulumA(g,L,a0, a1):
     
     return t,a    
 
-def generateDynamics():
-
-    
+def generateDynamics(max=1, min=0):
     t = np.arange(0,10, 1/200)
-    m = (1-0.2)/(1-(-1))
-    b= 1 - m
+    m = (max-min)/(1-(-1))
+    b= max - m
     a = m*np.cos(2*t)+b
     
     X = []
@@ -38,7 +36,7 @@ def generateDynamics():
     cp.plotMultiple( X,  'time (ms)', 'Intensity','Intensity', 'test', styleDark = True )
     
     return t,a  
-def create_intensity_image(I, noise = False, shapeType = 'complex', base = None):
+def create_intensity_image(I, noise = False, shapeType = 'simple', base = None):
     if base is None:
         if shapeType == 'complex':
             base = Image.open('Data/neuron2.png').convert('L')
@@ -75,7 +73,7 @@ def create_intensity_image(I, noise = False, shapeType = 'complex', base = None)
 
     return img_array
 
-def create_scale_Image(I, noise = False, shapeType = 'complex', base = None):
+def create_scale_image(I, noise = False, shapeType = 'complex', base = None):
 
     """
     Generate an image with a circle centered in it.
@@ -90,6 +88,8 @@ def create_scale_Image(I, noise = False, shapeType = 'complex', base = None):
     # Create a blank image
     image = np.zeros(image_size)
 
+    radius = 5 + I*10
+
     # Get center coordinates
     center_x = image_size[0] // 2
     center_y = image_size[1] // 2
@@ -101,7 +101,7 @@ def create_scale_Image(I, noise = False, shapeType = 'complex', base = None):
     distances = np.sqrt((X - center_x) ** 2 + (Y - center_y) ** 2)
 
     # Set pixels inside the circle to 1
-    image[distances <= I+10] = 1
+    image[distances <= radius] = 1
 
     return image
 
@@ -113,16 +113,16 @@ def create_pendulum_image(I, noise = False, shapeType = 'complex', base = None):
 
     # Pendulum parameters
     pendulum_length = 20
-    bob_radius = 5
+    bob_radius = 3
 
     # Calculate bob position
     #angle_rad = math.radians(angle_deg)
-    angle_rad = I
+    angle_rad = math.radians(I*180)
     bob_x = width // 2 + pendulum_length * math.sin(angle_rad)
     bob_y = height // 2 + pendulum_length * math.cos(angle_rad)
 
     # Draw pendulum rod
-    draw.line([(width // 2, height // 2), (bob_x, bob_y)], fill='grey', width=4)
+    draw.line([(width // 2, height // 2), (bob_x, bob_y)], fill='grey', width=2)
 
     # Draw pendulum bob
     draw.ellipse((bob_x - bob_radius, bob_y - bob_radius, bob_x + bob_radius, bob_y + bob_radius), fill='white')
@@ -144,7 +144,7 @@ def create_pendulum_image(I, noise = False, shapeType = 'complex', base = None):
     # Save the image
     #image.save(f'pendulum_{angle_deg}deg.png')
 
-    return np.array(image)
+    return np.array(image)/255
     #image.show()
 
 def generateVideo(a,DynamicsType, name):
@@ -175,11 +175,19 @@ def generateVideo(a,DynamicsType, name):
         # Create pendulum image
         frame_image = ImageGenerator(angle)
 
-        if(len(frame_image.shape) < 3):
-            frame_image = np.stack((frame_image,)*3, axis=-1)
+        #clipped_img_array = np.clip(frame_image, 0, 255)
+
+        # If you want to convert the data type to uint8 after clipping
+        #clipped_img_array = clipped_img_array.astype(np.uint8)
+
+        #if(len(frame_image.shape) < 3):
+         #   frame_image = np.stack((frame_image,)*3, axis=-1)
+        
+        clipped_img_array = frame_image * 255
+        clipped_img_array = clipped_img_array.astype(np.uint8)
         
         # Convert PIL image to OpenCV format
-        cv2_frame = cv2.cvtColor(frame_image, cv2.COLOR_RGB2BGR)
+        cv2_frame = cv2.cvtColor(clipped_img_array, cv2.COLOR_RGB2BGR)
         
         # Add frame to the video
         video.write(cv2_frame)

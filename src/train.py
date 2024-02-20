@@ -172,8 +172,12 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
         train_losses.append(train_loss)
         val_losses.append(val_loss)
 
-        wandb.log({"train_loss": train_loss, "validation_loss": val_loss,
-                    "alpha": model.pModel.alpha[0].detach().cpu().numpy(), "beta": model.pModel.beta[0].detach().cpu().numpy()})
+        if hasattr(model, 'pModel'):
+
+            wandb.log({"train_loss": train_loss, "validation_loss": val_loss,
+                        "alpha": model.pModel.alpha[0].detach().cpu().numpy(), "beta": model.pModel.beta[0].detach().cpu().numpy()})
+        else:
+            wandb.log({"train_loss": train_loss, "validation_loss": val_loss})  
         
         if type == 'dynamic':
             if epoch % 2 == 0:
