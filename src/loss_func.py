@@ -79,7 +79,7 @@ def Focal_batch_loss(input_img, output, expected_pred):
     return batch_loss
 
 def decoder_loss(input_img, output, expected_pred):
-    lossMSE = nn.MSELoss()
+    lossMSE = manual_MSE
         
 
     expected_pred = expected_pred.squeeze(1)

@@ -7,7 +7,7 @@ class mlp(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
         self.l1 = nn.Linear(1,10 , bias=False)
-        self.l2 = nn.Linear(10,1000, bias=False)
+        self.l2 = nn.Linear(10,1000, bias=True)
         self.l3 = nn.Linear(1000,2500, bias=False)
 
         self.uflat = nn.Unflatten(1, torch.Size([50,50]))
@@ -32,8 +32,8 @@ class mlp(nn.Module):
 
     def forward(self, x):
 
-      x = self.relu(self.l1(x))
-      x = self.relu(self.l2(x))
+      x = self.Tanh(self.l1(x))
+      x = self.Tanh(self.l2(x))
       # add normalization layer
 
       x = self.norm(x)
