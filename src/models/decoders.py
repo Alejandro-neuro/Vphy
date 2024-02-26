@@ -84,3 +84,30 @@ class mlpVec(nn.Module):
 
       x = self.uflat(x)
       return x
+    
+class convDecoder(nn.Module):
+    def __init__(self, initw = False):
+        super(convDecoder, self).__init__()
+        
+       
+        
+        # Initial fully connected layer to upscale the scalar to a 50x50 feature map
+        self.linear = nn.Linear(1, 100)
+        
+   
+        
+        # Upsampling layers
+        self.upconv1 = nn.ConvTranspose2d(4, 1, kernel_size=3, stride=4, padding=0, output_padding=1)
+        
+        # Final convolution to get to desired image size: 50x50
+        self.final_conv = nn.Conv2d(1, 1, kernel_size=3, padding=1)
+
+    def forward(self, x):
+        x = self.linear(x)
+        x = x.view(-1, 4, 5, 5)  # Reshape to 50x50 feature map
+        
+        #x = nn.functional.relu(self.conv1(x))
+        
+        x = nn.functional.relu(self.upconv1(x))
+        #x = torch.sigmoid(self.final_conv(x))
+        return x

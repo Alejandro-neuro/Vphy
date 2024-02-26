@@ -26,6 +26,9 @@ def MSEVARLoss(pred_img, expected_pred):
 
 def manual_MSE(pred_img, expected_pred):
 
+    print("pred_img.shape",pred_img.shape)
+    print("expected_pred.shape",expected_pred.shape)
+
     squared_errors = (pred_img - expected_pred) ** 2
     log_errors = 10*torch.log(squared_errors +1)
     return torch.mean(log_errors)
