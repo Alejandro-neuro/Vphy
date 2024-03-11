@@ -119,3 +119,23 @@ class AEModel(nn.Module):
       self.mask = mask
 
       return  (v[:,0:1],v[:,1:2],v_pred), (in0Rec,in1Rec,outRec)
+    
+
+class EndPhys(nn.Module):
+    def __init__(self, dt = 0.1, initw = False):
+        super().__init__()
+        self.encoder = Encoder()
+        self.pModel = pModel()
+
+        self.dt = dt
+    def forward(self, x):    
+      in_frames = x[:,0:2,:,:]
+      out_frame = x[:,2:3,:,:]
+      
+      z = self.encoder(in_frames)
+      z2_phys = self.pModel(z,self.dt)
+      z2_encoder = self.encoder(out_frame)
+
+      return  z2_encoder, z2_phys
+
+        

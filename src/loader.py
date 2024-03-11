@@ -66,8 +66,6 @@ class Dataset(torch.utils.data.Dataset):
 
 
             return input, out
-      
-
 
 class Dataset_decoder(torch.utils.data.Dataset):
       'Characterizes a dataset for PyTorch'
@@ -111,7 +109,47 @@ class Dataset_decoder(torch.utils.data.Dataset):
 
             return input, out
             
+class Dataset_decoder(torch.utils.data.Dataset):
+      'Characterizes a dataset for PyTorch'
+      def __init__(self, x, dynamics_type, nInFrames = 3 ,sr = 10 , noise=True, shapeType='complex', transform=None):
+            'Initialization'
+            self.x = x
+            self.transform = None
+            self.convert_tensor = transforms.ToTensor()
+            self.nInFrames = nInFrames
+            self.base = None
+            self.sr = sr
+            self.type = type
 
+            self.dynamics_type=dynamics_type
+
+            self.noise = noise
+            self.shapeType = shapeType
+
+      def __len__(self):
+            'Denotes the total number of samples'
+            return len(self.x)
+
+      def __getitem__(self, index):
+            'Generates one sample of data'
+
+            if self.dynamics_type == "Motion":
+                  ImageGenerator = genData.create_pendulum_image
+            if self.dynamics_type == "Scale":
+                  ImageGenerator = genData.create_scale_image
+            if self.dynamics_type == "Intensity":
+                  ImageGenerator = genData.create_intensity_image
+            
+            input = torch.tensor([self.x[index]])   
+            out =self.convert_tensor(ImageGenerator( self.x[index], noise=self.noise, shapeType=self.shapeType  ))
+
+
+            if self.transform:
+                  input = self.transform(input)
+                  out = self.transform(out)
+
+
+            return input, out
 def getLoader(X, type , split = True,   dt=1/100, nInFrames = 3,sr = 10 ,  noise=True, shapeType='simple'):   
 
       if split:     

@@ -5,6 +5,7 @@ from omegaconf import OmegaConf
 from src import loss_func
 from src import optimizer_Factory
 from src import custom_plots as cp
+from torch.autograd import Variable
 
 from datetime import datetime
 
@@ -114,10 +115,6 @@ def freeze(model, type):
 
     return model
 
-
-
-
-
 def train(model, train_loader, val_loader, name, type ='normal', loss_name=None):
 
     cfg = OmegaConf.load("config.yaml")
@@ -141,15 +138,17 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
 
     dt_string = now.strftime("%d_%m_%y_%H")
 
+    model_name = model.__class__.__name__
+
     wandb.init(
             # set the wandb project where this run will be logged
             project="Vphysics-Project",
-            name = "exp_"+dt_string,
+            name = "exp_"+model_name+"_"+dt_string,
             
             # track hyperparameters and run metadata
             config={
             "learning_rate": cfg.optimize.lr,
-            "architecture": "Lineal",
+            "architecture": model_name,
             "dataset": "NEURON",
             "epochs": cfg.train.epochs,
             }
@@ -211,6 +210,117 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
     X.append({'x': range(1, num_epochs+1), 'y': val_losses, 'label': 'val_loss'} )
     cp.plotMultiple( X,  'epoch', 'Loss','Performance', name, styleDark = True )
     return model, train_losses, val_losses, accuracy_list  
+
+def trainGAN(model, train_loader, val_loader, name, type ='normal'):
+
+    cfg = OmegaConf.load("config.yaml")
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"Using device: {device}")
+
+    num_epochs = cfg.train.epochs
+    loss_fn = loss_func.getLoss("adversarial_loss")
+    #optimizer = optimizer_Factory.getOptimizer(model)    
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+    Tensor = torch.cuda.FloatTensor if device == "cuda" else torch.FloatTensor
+
+
+    
+    #create vectors for the training and validation loss
+    optimizer_G = torch.optim.Adam(model.generator.parameters(), lr=0.0002, betas=(0.5, 0.999))
+    optimizer_D = torch.optim.Adam(model.discriminator.parameters(), lr=0.0002, betas=(0.5, 0.999))
+
+    model.to(device)
+
+    now = datetime.now()
+
+    dt_string = now.strftime("%d_%m_%y_%H")
+
+    model_name = model.__class__.__name__
+
+    wandb.init(
+            # set the wandb project where this run will be logged
+            project="Vphysics-Project",
+            name = "exp_"+model_name+"_"+dt_string,
+            
+            # track hyperparameters and run metadata
+            config={
+            "learning_rate": cfg.optimize.lr,
+            "architecture": model_name,
+            "dataset": "NEURON",
+            "epochs": cfg.train.epochs,
+            }
+        )
+
+    train_losses = []
+    val_losses = []
+    accuracy_list = []
+    patience = 50 # patience for early stopping
+
+    best_loss = float('inf')  # Initialize with a large value
+    best_model_state = None
+
+    for epoch in range(1, num_epochs+1):
+
+        running_loss = 0.
+        total_loss = 0.
+
+        for data in train_loader:
+
+            input_Data, out_Data = data
+
+            z = input_Data.to(device=device, dtype=torch.float)
+            real = out_Data.to(device=device, dtype=torch.float)
+
+            # Adversarial ground truths
+            valid = Variable(Tensor(real.shape[0], 1).fill_(1.0), requires_grad=False)
+            fake = Variable(Tensor(real.shape[0], 1).fill_(0.0), requires_grad=False)
+
+
+            # Generate a batch of images
+            gen_imgs = model.generator(z)
+            # Loss measures generator's ability to fool the discriminator
+            g_loss = loss_fn(model.discriminator(gen_imgs), valid)
+
+        
+
+            g_loss.backward()
+            optimizer_G.step()
+
+            # ---------------------
+            #  Train Discriminator
+            # ---------------------
+
+            optimizer_D.zero_grad()
+
+            # Measure discriminator's ability to classify real from generated samples
+            real_loss = loss_fn(model.discriminator(real), valid)
+            fake_loss = loss_fn(model.discriminator(gen_imgs.detach()), fake)
+            d_loss = (real_loss + fake_loss) / 2
+
+            d_loss.backward()
+            optimizer_D.step()
+
+            running_loss += d_loss.item()
+
+        total_loss = running_loss/len(train)
+  
+        train_losses.append(total_loss)
+
+        
+        wandb.log({"train_loss": total_loss})  
+        
+        if total_loss < best_loss:
+            best_loss = total_loss
+            best_model_state = model.state_dict()
+
+        if epoch%(num_epochs /10 )== 0:
+            print("epoch:",epoch, "\t training loss:", total_loss)
+        wandb.finish()        
+
+        # Early
 
 if __name__ == '__main__':
     train()

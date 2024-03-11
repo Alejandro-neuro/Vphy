@@ -87,7 +87,28 @@ def decoder_loss(input_img, output, expected_pred):
 
     expected_pred = expected_pred.squeeze(1)
     
-    return lossMSE(output,expected_pred) #+ lossMSE(output.sum(1),expected_pred.sum(1)) + lossMSE(output.sum(2),expected_pred.sum(2)) + lossMSE(output.sum((1,2)).unsqueeze(1),expected_pred.sum((1,2)).unsqueeze(1))
+    return lossMSE(output,expected_pred) 
+#+ lossMSE(output.sum(1),expected_pred.sum(1)) + lossMSE(output.sum(2),expected_pred.sum(2)) + lossMSE(output.sum((1,2)).unsqueeze(1),expected_pred.sum((1,2)).unsqueeze(1))
+def adversarial_loss(discriminated, real):
+    loss = nn.BCELoss()
+    return loss(discriminated, real)
+
+def latent_loss(z2_encoder, z2_phys):
+    loss_MSE = nn.MSELoss()
+    loss = loss_MSE(z2_encoder, z2_phys)
+
+    print("z2_encoder.shape",z2_encoder.shape)
+    print("z2_phys.shape",z2_phys.shape)
+
+    mu = z2_encoder.mean(0)
+    logvar = z2_encoder.logvar(0)
+    print("mu.shape",mu.shape)
+    print("logvar.shape",logvar.shape)
+
+    KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+    return loss
+
+
 def getLoss(loss = None):
 
     if loss == None:
@@ -97,6 +118,8 @@ def getLoss(loss = None):
     
     if loss == "Focal_batch_loss":
         return Focal_batch_loss
+    if loss == "adversarial_loss":
+        return adversarial_loss
     if loss == "MSE":
         loss_fn = nn.MSELoss()
         return loss_fn
