@@ -28,10 +28,6 @@ def savekernels(a):
     plt.savefig(f'./plots/modelconv.png')
     plt.close()
 
-
-
-
-
 class ConvEncoder1(nn.Module):
     def __init__(self, chan = [1, 3, 9], initw = False):
         super().__init__()
@@ -76,7 +72,6 @@ class ConvEncoder1(nn.Module):
 
       return x
     
-
 class ConvEncoder(nn.Module):
     def __init__(self, chan = [1, 3, 9], initw = False):
         super().__init__()
@@ -246,8 +241,6 @@ class Decoder(nn.Module):
 
       x = self.uflat(x)
       return x
-
-
 
 class AE(nn.Module):
     def __init__(self, dt, initw = False):

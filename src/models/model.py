@@ -5,6 +5,7 @@ import torch.nn as nn
 from . import blocks
 from . import modelConv2d
 from . import modelineal
+from . import encoders
 
 class Encoder(nn.Module):
     def __init__(self, initw = False):
@@ -124,15 +125,25 @@ class AEModel(nn.Module):
 class EndPhys(nn.Module):
     def __init__(self, dt = 0.1, initw = False):
         super().__init__()
-        self.encoder = Encoder()
+        self.encoder = encoders.EcoderMLP()
         self.pModel = pModel()
 
         self.dt = dt
     def forward(self, x):    
       in_frames = x[:,0:2,:,:]
       out_frame = x[:,2:3,:,:]
+
+      for i in range(in_frames.shape[1]):
+          z_temp = self.encoder(in_frames[:,i:i+1,:,:])
+
+          # print max value across all dimensions
+          print(torch.max(z_temp))
+
+          z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
+
+          
       
-      z = self.encoder(in_frames)
+      print("z",z.shape)
       z2_phys = self.pModel(z,self.dt)
       z2_encoder = self.encoder(out_frame)
 
