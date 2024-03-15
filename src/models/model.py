@@ -90,14 +90,14 @@ class pModel(nn.Module):
       y1 = z[:,1:2]
       y0 = z[:,0:1]
 
-      dt = dt/5
+      dt = dt
 
-      for i in range(5):
+      #for i in range(5):
 
-        y_hat = y1+ (y1-y0) -dt*dt *self.alpha* y1
+      y_hat = y1+ (y1-y0) -dt*dt *self.alpha* y1
 
-        y0 = y1
-        y1 = y_hat
+        #y0 = y1
+        #y1 = y_hat
 
 
       #return x1+(x1-x0)+self.alpha*(x1-x0 )*dt*2 + (self.beta*x1 )*dt*dt*4
