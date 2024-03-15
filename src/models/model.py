@@ -80,7 +80,7 @@ class pModel(nn.Module):
         self.alpha = torch.tensor([1.0], requires_grad=True).float()
         self.alpha = nn.Parameter(self.alpha )
         self.beta = torch.tensor([1.0], requires_grad=True).float()
-        self.beta = nn.Parameter(self.alpha )
+        self.beta = nn.Parameter(self.beta )
 
     def forward(self, z,dt):    
 
@@ -90,10 +90,19 @@ class pModel(nn.Module):
       y1 = z[:,1:2]
       y0 = z[:,0:1]
 
+      dt = dt/5
+
+      for i in range(5):
+
+        y_hat = y1+ (y1-y0) -dt*dt *self.alpha* y1
+
+        y0 = y1
+        y1 = y_hat
+
 
       #return x1+(x1-x0)+self.alpha*(x1-x0 )*dt*2 + (self.beta*x1 )*dt*dt*4
 
-      return  y1+ (y1-y0)*dt +dt*dt *self.alpha* y1
+      return  y_hat
  
 class AEModel(nn.Module):
     def __init__(self, dt = 0.1, initw = False):
@@ -123,30 +132,28 @@ class AEModel(nn.Module):
     
 
 class EndPhys(nn.Module):
-    def __init__(self, dt = 0.1, initw = False):
+    def __init__(self, dt = 0.2, initw = False):
         super().__init__()
-        self.encoder = encoders.EcoderMLP()
+        self.encoder = encoders.EncoderMLP()
         self.pModel = pModel()
 
         self.dt = dt
     def forward(self, x):    
-      in_frames = x[:,0:2,:,:]
-      out_frame = x[:,2:3,:,:]
+      frames = x.clone()
 
-      for i in range(in_frames.shape[1]):
-          z_temp = self.encoder(in_frames[:,i:i+1,:,:])
-
-          # print max value across all dimensions
-          print(torch.max(z_temp))
-
+      for i in range(frames.shape[1]):
+          
+          z_temp = self.encoder(frames[:,i:i+1,:,:]) 
           z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
 
+      for i in range(frames.shape[1]-2):
           
-      
-      print("z",z.shape)
-      z2_phys = self.pModel(z,self.dt)
-      z2_encoder = self.encoder(out_frame)
+          z2_phys = self.pModel(z[:,i:i+2],self.dt) if i == 0 else torch.cat((z2_phys,self.pModel(z[:,i:i+2],self.dt)),dim=1)
 
+
+      z2_encoder = z[:,2:]
+
+      
       return  z2_encoder, z2_phys
 
         

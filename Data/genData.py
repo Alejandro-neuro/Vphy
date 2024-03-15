@@ -26,7 +26,7 @@ def generatePendulumA(g,L,a0, a1):
     return t,a    
 
 def generateDynamics(max=1, min=0):
-    t = np.arange(0,10, 1/200)
+    t = np.arange(0,100, 1/100)
     m = (max-min)/(1-(-1))
     b= max - m
     a = m*np.cos(2*t)+b

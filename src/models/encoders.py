@@ -3,7 +3,7 @@ import torch.nn as nn
 
 
 
-class EcoderMLP(nn.Module):
+class EncoderMLP(nn.Module):
     def __init__(self, chan = [1, 3, 9], initw = False):
         super().__init__()
 
@@ -26,6 +26,7 @@ class EcoderMLP(nn.Module):
 
     def forward(self, x):
 
+      x = x.view(x.shape[0], -1)
       x = self.relu(self.l1(x))
       x = self.relu(self.l2(x))
       x = self.l3(x)

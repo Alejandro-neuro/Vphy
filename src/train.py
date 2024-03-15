@@ -126,7 +126,11 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
     loss_fn = loss_func.getLoss(loss_name)
     #optimizer = optimizer_Factory.getOptimizer(model)    
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    #optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam([
+                {'params': model.encoder.parameters()},
+                {'params': model.pModel.parameters(), 'lr': 10}
+            ], lr=1e-2)
 
 
     model.to(device)

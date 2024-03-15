@@ -44,8 +44,6 @@ def set_center_values(A, B):
     
     return A
 
-
-
 def visualize(model, loader, video_name = 'ExpVsPred.mp4'):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
@@ -144,7 +142,6 @@ def visualize(model, loader, video_name = 'ExpVsPred.mp4'):
     video.release()
     #cv2.destroyAllWindows()
     print(f'Video saved as {video_name}')
-
 
 def visualize_dec(model, loader, video_name = 'ExpVsPred.mp4'):
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -278,7 +275,35 @@ def CompareLatent(model, loader, name = 'LatentSpace.png'):
     X.append( { 'x': range(0, len(z2_list) ), 'y': normalize(z2_list ), 'label': 'z2' , 'alpha':0.5  } )
     
     cp.plotMultiple( X,  'sample', 'value','Latent Space', name, styleDark = True )
+def CompareLatent_end_phys(model, loader, name = 'LatentSpace_end_phy.png'):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model.to(device)
 
+    z2_encoder_list = []
+    z2_phys_list = []
+
+
+    for data in loader:
+
+        input_Data, out_Data = data
+
+        x0 = input_Data
+
+        x0 = x0.to(device=device, dtype=torch.float)
+
+        outputs = model(x0)
+        z2_encoder, z2_phys=outputs
+
+        
+        z2_encoder_list.append(z2_encoder.detach().cpu().numpy()[0][0])
+        z2_phys_list.append(z2_phys.detach().cpu().numpy()[0][0]) 
+
+
+    X = []
+    X.append( { 'x': range(0, len(z2_encoder_list) ), 'y': normalize(z2_encoder_list ), 'label': 'z2_encoder_list' , 'alpha':0.5  } )
+    X.append( { 'x': range(0, len(z2_phys_list) ), 'y': normalize(z2_phys_list ), 'label': 'z2_phys_list' , 'alpha':0.5  } )
+    
+    cp.plotMultiple( X,  'sample', 'value','Latent Space', name, styleDark = True )
 def CompareError(model, loader, name = 'ErrorImg.png'):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)

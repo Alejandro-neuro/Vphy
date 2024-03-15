@@ -93,20 +93,18 @@ def adversarial_loss(discriminated, real):
     loss = nn.BCELoss()
     return loss(discriminated, real)
 
-def latent_loss(z2_encoder, z2_phys):
+def latent_loss(input_img, outputs, expected_pred):
+
+    z2_encoder, z2_phys = outputs
     loss_MSE = nn.MSELoss()
     loss = loss_MSE(z2_encoder, z2_phys)
 
-    print("z2_encoder.shape",z2_encoder.shape)
-    print("z2_phys.shape",z2_phys.shape)
-
+    
     mu = z2_encoder.mean(0)
-    logvar = z2_encoder.logvar(0)
-    print("mu.shape",mu.shape)
-    print("logvar.shape",logvar.shape)
+    logvar = torch.log(z2_encoder.var(0))
 
     KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-    return loss
+    return loss + KLD
 
 
 def getLoss(loss = None):
@@ -121,8 +119,9 @@ def getLoss(loss = None):
     if loss == "adversarial_loss":
         return adversarial_loss
     if loss == "MSE":
-        loss_fn = nn.MSELoss()
-        return loss_fn
+        return nn.MSELoss()
+    if loss == "latent_loss":
+        return latent_loss
     if loss == "MAE":
         loss_fn = nn.L1Loss()
         return loss_fn 
