@@ -129,7 +129,7 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
     #optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     optimizer = torch.optim.Adam([
                 {'params': model.encoder.parameters()},
-                {'params': model.pModel.parameters(), 'lr': 1}
+                {'params': model.pModel.parameters(), 'lr': 0.05}
             ], lr=1e-2)
 
 
@@ -165,6 +165,18 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
 
     best_loss = float('inf')  # Initialize with a large value
     best_model_state = None
+
+    # Model training
+    train_loss = evaluate_epoch(model, train_loader, loss_fn, device=device)
+    # Model validation
+    val_loss = evaluate_epoch(model, val_loader, loss_fn, device=device)
+
+    if hasattr(model, 'pModel'):
+
+            wandb.log({"train_loss": train_loss, "validation_loss": val_loss,
+                        "alpha": model.pModel.alpha[0].detach().cpu().numpy(), "beta": model.pModel.beta[0].detach().cpu().numpy()})
+    else:
+            wandb.log({"train_loss": train_loss, "validation_loss": val_loss})  
 
     for epoch in range(1, num_epochs+1):
         # Model training
