@@ -338,10 +338,10 @@ def trainGAN(model, train_loader, val_loader, name, type ='normal'):
         wandb.finish() 
         
         model.load_state_dict(best_model_state)
-        X = []
-        X.append( { 'x': range(1, num_epochs+1), 'y': train_losses, 'label': 'train_loss'} )
+        #X = []
+        #X.append( { 'x': range(1, num_epochs+1), 'y': train_losses, 'label': 'train_loss'} )
         #X.append({'x': range(1, num_epochs+1), 'y': val_losses, 'label': 'val_loss'} )
-        cp.plotMultiple( X,  'epoch', 'Loss','Performance', name, styleDark = True )
+        #cp.plotMultiple( X,  'epoch', 'Loss','Performance', name, styleDark = True )
         return model, train_losses, val_losses, accuracy_list         
 
       
