@@ -238,15 +238,13 @@ def trainGAN(model, train_loader, val_loader, name, type ='normal'):
     loss_fn = loss_func.getLoss("adversarial_loss")
     #optimizer = optimizer_Factory.getOptimizer(model)    
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
     Tensor = torch.cuda.FloatTensor if device == "cuda" else torch.FloatTensor
 
 
     
     #create vectors for the training and validation loss
-    optimizer_G = torch.optim.Adam(model.generator.parameters(), lr=0.0002, betas=(0.5, 0.999))
-    optimizer_D = torch.optim.Adam(model.discriminator.parameters(), lr=0.0002, betas=(0.5, 0.999))
+    optimizer_G = torch.optim.Adam(model.generator.parameters(), lr=0.002, betas=(0.5, 0.999))
+    optimizer_D = torch.optim.Adam(model.discriminator.parameters(), lr=0.002, betas=(0.5, 0.999))
 
     model.to(device)
 
@@ -334,9 +332,15 @@ def trainGAN(model, train_loader, val_loader, name, type ='normal'):
 
         if epoch%(num_epochs /10 )== 0:
             print("epoch:",epoch, "\t training loss:", total_loss)
-        wandb.finish()        
+        wandb.finish() 
+        
+        model.load_state_dict(best_model_state)
+        X = []
+        X.append( { 'x': range(1, num_epochs+1), 'y': train_losses, 'label': 'train_loss'} )
+        X.append({'x': range(1, num_epochs+1), 'y': val_losses, 'label': 'val_loss'} )
+        cp.plotMultiple( X,  'epoch', 'Loss','Performance', name, styleDark = True )
+        return model, train_losses, val_losses, accuracy_list         
 
-        # Early
-
+      
 if __name__ == '__main__':
     train()

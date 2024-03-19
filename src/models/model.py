@@ -141,11 +141,19 @@ class EndPhys(nn.Module):
     def forward(self, x):    
       frames = x.clone()
 
+      #frame_area_list = [] 
+
       for i in range(frames.shape[1]):
+          
+          frame = frames[:,i:i+1,:,:]
+          
+          #frame_area = frame.count_nonzero(dim=(1,2,3))
           
           z_temp = self.encoder(frames[:,i:i+1,:,:]) 
           z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
 
+          #frame_area_list= frame_area.unsqueeze(1) if i == 0 else torch.cat((frame_area_list,frame_area.unsqueeze(1)),dim=1)
+      #print(frame_area_list)
       for i in range(frames.shape[1]-2):
           
           z2_phys = self.pModel(z[:,i:i+2],self.dt) if i == 0 else torch.cat((z2_phys,self.pModel(z[:,i:i+2],self.dt)),dim=1)
