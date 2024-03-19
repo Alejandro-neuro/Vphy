@@ -254,21 +254,21 @@ def trainGAN(model, train_loader, val_loader, name, type ='normal'):
 
     model_name = model.__class__.__name__
 
-    if False:
+    
 
-        wandb.init(
-                # set the wandb project where this run will be logged
-                project="Vphysics-Project",
-                name = "exp_GAN_"+model_name+"_"+dt_string,
-                
-                # track hyperparameters and run metadata
-                config={
-                "learning_rate": cfg.optimize.lr,
-                "architecture": model_name,
-                "dataset": "NEURON",
-                "epochs": cfg.train.epochs,
-                }
-            )
+    wandb.init(
+            # set the wandb project where this run will be logged
+            project="Vphysics-Project",
+            name = "exp_GAN_"+model_name+"_"+dt_string,
+            
+            # track hyperparameters and run metadata
+            config={
+            "learning_rate": cfg.optimize.lr,
+            "architecture": model_name,
+            "dataset": "NEURON",
+            "epochs": cfg.train.epochs,
+            }
+        )
 
     train_losses = []
     val_losses = []
@@ -335,13 +335,12 @@ def trainGAN(model, train_loader, val_loader, name, type ='normal'):
 
         if epoch%(num_epochs /10 )== 0:
             print("epoch:",epoch, "\t training loss:", total_loss)
-        if False:
-            wandb.finish() 
+        wandb.finish() 
         
         model.load_state_dict(best_model_state)
         X = []
         X.append( { 'x': range(1, num_epochs+1), 'y': train_losses, 'label': 'train_loss'} )
-        X.append({'x': range(1, num_epochs+1), 'y': val_losses, 'label': 'val_loss'} )
+        #X.append({'x': range(1, num_epochs+1), 'y': val_losses, 'label': 'val_loss'} )
         cp.plotMultiple( X,  'epoch', 'Loss','Performance', name, styleDark = True )
         return model, train_losses, val_losses, accuracy_list         
 
