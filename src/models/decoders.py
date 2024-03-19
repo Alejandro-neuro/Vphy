@@ -120,6 +120,7 @@ class Generator(nn.Module):
         super(Generator, self).__init__()
 
         self.init_size = 50 // 4
+        self.l0 = nn.Sequential(nn.Linear(1, 100))
         self.l1 = nn.Sequential(nn.Linear(100, 128 * self.init_size ** 2))
 
         self.conv_blocks = nn.Sequential(
@@ -132,12 +133,13 @@ class Generator(nn.Module):
             nn.Conv2d(128, 64, 3, stride=1, padding=1),
             nn.BatchNorm2d(64, 0.8),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Conv2d(64, 1, 3, stride=1, padding=1),
+            nn.Conv2d(64, 1, 3, stride=1, padding=2),
             nn.Tanh(),
         )
 
     def forward(self, z):
-        out = self.l1(z)
+        out = self.l0(z)
+        out = self.l1(out)
         out = out.view(out.shape[0], 128, self.init_size, self.init_size)
         img = self.conv_blocks(out)
         return img
@@ -162,7 +164,8 @@ class Discriminator(nn.Module):
 
         # The height and width of downsampled image
         ds_size = 50 // 2 ** 4
-        self.adv_layer = nn.Sequential(nn.Linear(128 * ds_size ** 2, 1), nn.Sigmoid())
+        #128 * ds_size ** 2
+        self.adv_layer = nn.Sequential(nn.Linear(2048, 1), nn.Sigmoid())
 
     def forward(self, img):
         out = self.model(img)

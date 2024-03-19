@@ -254,19 +254,21 @@ def trainGAN(model, train_loader, val_loader, name, type ='normal'):
 
     model_name = model.__class__.__name__
 
-    wandb.init(
-            # set the wandb project where this run will be logged
-            project="Vphysics-Project",
-            name = "exp_"+model_name+"_"+dt_string,
-            
-            # track hyperparameters and run metadata
-            config={
-            "learning_rate": cfg.optimize.lr,
-            "architecture": model_name,
-            "dataset": "NEURON",
-            "epochs": cfg.train.epochs,
-            }
-        )
+    if False:
+
+        wandb.init(
+                # set the wandb project where this run will be logged
+                project="Vphysics-Project",
+                name = "exp_GAN_"+model_name+"_"+dt_string,
+                
+                # track hyperparameters and run metadata
+                config={
+                "learning_rate": cfg.optimize.lr,
+                "architecture": model_name,
+                "dataset": "NEURON",
+                "epochs": cfg.train.epochs,
+                }
+            )
 
     train_losses = []
     val_losses = []
@@ -310,6 +312,7 @@ def trainGAN(model, train_loader, val_loader, name, type ='normal'):
             optimizer_D.zero_grad()
 
             # Measure discriminator's ability to classify real from generated samples
+           
             real_loss = loss_fn(model.discriminator(real), valid)
             fake_loss = loss_fn(model.discriminator(gen_imgs.detach()), fake)
             d_loss = (real_loss + fake_loss) / 2
@@ -319,7 +322,7 @@ def trainGAN(model, train_loader, val_loader, name, type ='normal'):
 
             running_loss += d_loss.item()
 
-        total_loss = running_loss/len(train)
+        total_loss = running_loss/len(train_loader)
   
         train_losses.append(total_loss)
 
@@ -332,7 +335,8 @@ def trainGAN(model, train_loader, val_loader, name, type ='normal'):
 
         if epoch%(num_epochs /10 )== 0:
             print("epoch:",epoch, "\t training loss:", total_loss)
-        wandb.finish() 
+        if False:
+            wandb.finish() 
         
         model.load_state_dict(best_model_state)
         X = []

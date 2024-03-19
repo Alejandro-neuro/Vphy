@@ -94,7 +94,9 @@ class pModel(nn.Module):
 
       #for i in range(5):
 
-      y_hat = y1+ (y1-y0) -dt*dt *self.alpha* y1
+      #y_hat = y1+ (y1-y0) -dt*dt *self.alpha* y1
+
+      y_hat = y1 +(y1 - y0) - dt*(self.beta*(y1-y0) +dt*self.alpha*y1)
 
         #y0 = y1
         #y1 = y_hat
