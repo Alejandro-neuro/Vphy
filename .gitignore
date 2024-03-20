@@ -7,3 +7,5 @@ wandb/
 *.cpython-310.pyc
 runs/
 Data/__pycache__/genData.cpython-310.pyc
+*.pt
+*.pth
