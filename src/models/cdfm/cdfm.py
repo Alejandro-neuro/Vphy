@@ -100,7 +100,7 @@ def train(args):
             logger.add_scalar("MSE", loss.item(), global_step=epoch * l + i)
 
         if epoch % 10 == 0:
-            labels = torch.arange(10).long().to(device)
+            labels = torch.arange(1).long().to(device)
             sampled_images = diffusion.sample(model, n=len(labels), labels=labels)
             ema_sampled_images = diffusion.sample(ema_model, n=len(labels), labels=labels)
             plot_images(sampled_images)
@@ -110,6 +110,8 @@ def train(args):
             torch.save(ema_model.state_dict(), os.path.join("models", args.run_name, f"ema_ckpt.pt"))
             torch.save(optimizer.state_dict(), os.path.join("models", args.run_name, f"optim.pt"))
 
+    return model
+
 import argparse
 class myargs(argparse.Namespace):
     run_name = "DDPM_conditional"
@@ -118,7 +120,7 @@ class myargs(argparse.Namespace):
     image_size = 50
     num_classes = 1
     dataloader = None
-    device = "cuda"
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     lr = 3e-4
 
 
@@ -134,9 +136,9 @@ def launch(dataloader):
     args.image_size = 50
     args.num_classes = 1
     args.dataloader = dataloader
-    args.device = "cuda"
+    args.device = "cuda" if torch.cuda.is_available() else "cpu"
     args.lr = 3e-4
-    train(args)
+    return train(args)
 
 
 if __name__ == '__main__':
