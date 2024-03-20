@@ -239,9 +239,6 @@ def trainGAN(model, train_loader, val_loader, name, type ='normal'):
     #optimizer = optimizer_Factory.getOptimizer(model)    
 
     Tensor = torch.cuda.FloatTensor if device == "cuda" else torch.FloatTensor
-
-
-    
     #create vectors for the training and validation loss
     optimizer_G = torch.optim.Adam(model.generator.parameters(), lr=0.002, betas=(0.5, 0.999))
     optimizer_D = torch.optim.Adam(model.discriminator.parameters(), lr=0.002, betas=(0.5, 0.999))
@@ -249,19 +246,13 @@ def trainGAN(model, train_loader, val_loader, name, type ='normal'):
     model.to(device)
 
     now = datetime.now()
-
     dt_string = now.strftime("%d_%m_%y_%H")
-
-    model_name = model.__class__.__name__
-
-    
+    model_name = model.__class__.__name__   
 
     wandb.init(
             # set the wandb project where this run will be logged
             project="Vphysics-Project",
             name = "exp_GAN_"+model_name+"_"+dt_string,
-            
-            # track hyperparameters and run metadata
             config={
             "learning_rate": cfg.optimize.lr,
             "architecture": model_name,
@@ -289,6 +280,8 @@ def trainGAN(model, train_loader, val_loader, name, type ='normal'):
 
             z = input_Data.to(device=device, dtype=torch.float)
             real = out_Data.to(device=device, dtype=torch.float)
+
+            optimizer_G.zero_grad()
 
             # Adversarial ground truths
             valid = Variable(Tensor(real.shape[0], 1).fill_(1.0), requires_grad=False)
@@ -335,14 +328,14 @@ def trainGAN(model, train_loader, val_loader, name, type ='normal'):
 
         if epoch%(num_epochs /10 )== 0:
             print("epoch:",epoch, "\t training loss:", total_loss)
-        wandb.finish() 
+    wandb.finish() 
         
-        model.load_state_dict(best_model_state)
+    model.load_state_dict(best_model_state)
         #X = []
         #X.append( { 'x': range(1, num_epochs+1), 'y': train_losses, 'label': 'train_loss'} )
         #X.append({'x': range(1, num_epochs+1), 'y': val_losses, 'label': 'val_loss'} )
         #cp.plotMultiple( X,  'epoch', 'Loss','Performance', name, styleDark = True )
-        return model, train_losses, val_losses, accuracy_list         
+    return model, train_losses, val_losses, accuracy_list         
 
       
 if __name__ == '__main__':
