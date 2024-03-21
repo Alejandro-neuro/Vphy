@@ -1,6 +1,9 @@
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+
+from src.models.unet import build_unet as unet
 
 
 class mlp(nn.Module):
@@ -84,6 +87,65 @@ class mlpVec(nn.Module):
       x = self.uflat(x)
       return x
     
+
+class DoubleConv(nn.Module):
+    def __init__(self, in_channels, out_channels, mid_channels=None, residual=False):
+        super().__init__()
+        self.residual = residual
+        if not mid_channels:
+            mid_channels = out_channels
+        self.double_conv = nn.Sequential(
+            nn.Conv2d(in_channels, mid_channels, kernel_size=3, padding=1, bias=False),
+            nn.GroupNorm(1, mid_channels),
+            nn.GELU(),
+            nn.Conv2d(mid_channels, out_channels, kernel_size=3, padding=1, bias=False),
+            nn.GroupNorm(1, out_channels),
+        )
+
+    def forward(self, x):
+        if self.residual:
+            return F.gelu(x + self.double_conv(x))
+        else:
+            return self.double_conv(x)
+        
+class Up(nn.Module):
+    def __init__(self, in_channels, out_channels, emb_dim=256):
+        super().__init__()
+
+        self.up = nn.Upsample(scale_factor=2, mode="bilinear", align_corners=True)
+        self.conv = nn.Sequential(
+            DoubleConv(in_channels, in_channels, residual=True),
+            DoubleConv(in_channels, out_channels, in_channels // 2),
+        )
+
+    def forward(self, x):
+        x = self.up(x)
+        x = self.conv(x)
+        return x 
+    
+class imageEnhancer(nn.Module):
+    def __init__(self, *args, **kwargs) -> None:
+        super(imageEnhancer,self).__init__(*args, **kwargs)
+        self.l1 = DoubleConv(1, 1)
+
+        self.unet = unet()
+
+        self.l2 = DoubleConv(1, 1)
+        self.l3 = DoubleConv(1, 1)
+
+        
+
+        
+
+
+    def forward(self, x):
+        x = self.l1(x)
+        unet_out = self.unet(x)
+        x = unet_out * x
+        x = nn.functional.relu(self.l2(x))
+        x = nn.functional.relu(self.l3(x))
+        return x
+
 class convDecoder(nn.Module):
     def __init__(self, initw = False):
         super(convDecoder, self).__init__()
@@ -92,19 +154,37 @@ class convDecoder(nn.Module):
         self.linear = nn.Linear(1, 100)        
         # Upsampling layers
         self.upconv1 = nn.ConvTranspose2d(4, 1, kernel_size=3, stride=4, padding=0, output_padding=1)
-        
+
+        self.up1 = Up(4, 3)
+
+        self.up2 = Up(3, 2)
+
+        self.up3 = Up(2, 1)
         # Final convolution to get to desired image size: 50x50
         self.final_conv = nn.Conv2d(1, 1, kernel_size=3, padding=1)
 
+        self.imageEnhancer = imageEnhancer()
+
     def forward(self, x):
         x = self.linear(x)
-        x = x.view(-1, 4, 5, 5)  # Reshape to 50x50 feature map
+        x = x.view(-1, 4, 5, 5)  
+        
+        x = self.up1(x)
+        x = F.pad(x, (1, 1, 1, 1), mode='constant', value=0)
+        
+        x = self.up2(x)
+        x = F.pad(x, (0, 1, 0, 1), mode='constant', value=0)
+        
+        x = self.up3(x)
         
         #x = nn.functional.relu(self.conv1(x))
         
-        x = nn.functional.relu(self.upconv1(x))
+        x = nn.functional.relu(self.final_conv(x))
+
+        x2 = self.imageEnhancer(x)
+        
         #x = torch.sigmoid(self.final_conv(x))
-        return x
+        return (x,x2)
     
 def weights_init_normal(m):
     classname = m.__class__.__name__
@@ -113,7 +193,6 @@ def weights_init_normal(m):
     elif classname.find("BatchNorm2d") != -1:
         torch.nn.init.normal_(m.weight.data, 1.0, 0.02)
         torch.nn.init.constant_(m.bias.data, 0.0)
-
 
 class Generator(nn.Module):
     def __init__(self):
@@ -143,7 +222,6 @@ class Generator(nn.Module):
         out = out.view(out.shape[0], 128, self.init_size, self.init_size)
         img = self.conv_blocks(out)
         return img
-
 
 class Discriminator(nn.Module):
     def __init__(self):

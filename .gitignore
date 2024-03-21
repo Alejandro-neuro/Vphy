@@ -9,3 +9,4 @@ runs/
 Data/__pycache__/genData.cpython-310.pyc
 *.pt
 *.pth
+Data/__pycache__/genData.cpython-310.pyc

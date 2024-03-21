@@ -26,9 +26,6 @@ def MSEVARLoss(pred_img, expected_pred):
 
 def manual_MSE(pred_img, expected_pred):
 
-    print("pred_img.shape",pred_img.shape)
-    print("expected_pred.shape",expected_pred.shape)
-
     squared_errors = (pred_img - expected_pred) ** 2
     log_errors = 10*torch.log(squared_errors +1)
     return torch.mean(log_errors)
@@ -82,12 +79,14 @@ def Focal_batch_loss(input_img, output, expected_pred):
     return batch_loss
 
 def decoder_loss(input_img, output, expected_pred):
+
+    x1,x2 = output
     lossMSE = manual_MSE
         
 
     expected_pred = expected_pred.squeeze(1)
     
-    return lossMSE(output,expected_pred) 
+    return lossMSE(x1,expected_pred) + lossMSE(x2,expected_pred)
 #+ lossMSE(output.sum(1),expected_pred.sum(1)) + lossMSE(output.sum(2),expected_pred.sum(2)) + lossMSE(output.sum((1,2)).unsqueeze(1),expected_pred.sum((1,2)).unsqueeze(1))
 def adversarial_loss(discriminated, real):
     loss = nn.BCELoss()
