@@ -128,7 +128,7 @@ class imageEnhancer(nn.Module):
         super(imageEnhancer,self).__init__(*args, **kwargs)
         self.l1 = DoubleConv(1, 1)
 
-        self.unet = unet()
+        self.unet = unet(in_c=1)
 
         self.l2 = DoubleConv(1, 1)
         self.l3 = DoubleConv(1, 1)

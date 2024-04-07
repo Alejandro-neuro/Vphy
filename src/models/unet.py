@@ -52,22 +52,21 @@ class decoder_block(nn.Module):
     
 
 class build_unet(nn.Module):
-    def __init__(self):
+    def __init__(self, in_c):
         super().__init__()
         """ Encoder """
-        self.e1 = encoder_block(1, 64)
-        self.e2 = encoder_block(64, 128)
-        self.e3 = encoder_block(128, 256)
-        self.e4 = encoder_block(256, 512)
+        self.e1 = encoder_block(in_c, in_c*2)
+        self.e2 = encoder_block(in_c*2, in_c*4)
+        self.e3 = encoder_block(in_c*4, in_c*8)
         """ Bottleneck """
-        self.b = conv_block(512, 1024)
+        self.b = conv_block(in_c*8, in_c*16)
         """ Decoder """
-        self.d1 = decoder_block(1024, 512)
-        self.d2 = decoder_block(512, 256)
-        self.d3 = decoder_block(256, 128)
-        self.d4 = decoder_block(128, 64)
+        self.d1 = decoder_block(in_c*16, in_c*8)
+        self.d2 = decoder_block(in_c*16, in_c*8)
+        self.d3 = decoder_block(in_c*8, in_c*4)
+        self.d4 = decoder_block(in_c*4, in_c*2)
         """ Classifier """
-        self.outputs = nn.Conv2d(64, 1, kernel_size=1, padding=0)
+        self.outputs = nn.Conv2d(in_c*2, in_c, kernel_size=1, padding=0)
 
         self.relu = nn.ReLU()
     def forward(self, inputs):
@@ -75,12 +74,10 @@ class build_unet(nn.Module):
         s1, p1 = self.e1(inputs)
         s2, p2 = self.e2(p1)
         s3, p3 = self.e3(p2)
-        s4, p4 = self.e4(p3)
         """ Bottleneck """
-        b = self.b(p4)
+        b = self.b(p3)
         """ Decoder """
-        d1 = self.d1(b, s4)
-        d2 = self.d2(d1, s3)
+        d2 = self.d2(b, s3)
         d3 = self.d3(d2, s2)
         d4 = self.d4(d3, s1)
         """ Classifier """

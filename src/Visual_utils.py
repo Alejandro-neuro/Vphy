@@ -176,7 +176,8 @@ def visualize_dec(model, loader, video_name = 'ExpVsPred.mp4'):
 
         x2 = out_Data.to(device=device, dtype=torch.float)
 
-        output = model(x0)
+        output0,output1 = model(x0)
+        output = output1
         
 
         # Copy tensor and send to cpu and detach
