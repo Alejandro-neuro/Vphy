@@ -29,8 +29,8 @@ def generateDynamics(max=1, min=0):
     t = np.arange(0,100, 1/100)
     m = (max-min)/(1-(-1))
     b= max - m
-    #a = m*np.exp(-0.1*t)*np.cos(2*t)+b
-    a = m*np.cos(2*t)+b
+    a = m*np.exp(-0.1*t)*np.cos(2*t)+b
+    #a = m*np.cos(2*t)+b
     
     X = []
     X.append( { 'x': t, 'y': a, 'label': 'Intensity'} )

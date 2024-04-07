@@ -51,7 +51,7 @@ class Dataset(torch.utils.data.Dataset):
                   x_temp = self.convert_tensor(ImageGenerator( self.x[index+i*self.sr], noise=self.noise, shapeType=self.shapeType  ))
                  
                   if i == 0:  
-                        input = x_temp
+                        input = x_temp#.unsqueeze(0)
                   else :
                         input = torch.cat((input, x_temp), 0)
             # Select sample                

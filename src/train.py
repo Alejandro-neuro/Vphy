@@ -48,11 +48,8 @@ def train_epoch(model, loader,loss_fn, optimizer, device='cpu'):
         optimizer.zero_grad()
         # Make predictions for this batch
         outputs = model(x0)
-
-
         # Compute the loss and its gradients
         loss  = loss_fn(x0 , outputs ,x1 )
-
         
         loss.backward()
         optimizer.step()
@@ -73,16 +70,13 @@ def evaluate_epoch(model, loader,loss_fn, device='cpu'):
         for data in loader:
 
             input_Data, out_Data = data
-
-
+            
             x0 = input_Data.to(device=device, dtype=torch.float)
             x1 = out_Data.to(device=device, dtype=torch.float)
-
-
+            
             outputs = model(x0)
 
-            # Compute the loss 
-            
+            # Compute the loss             
             loss = loss_fn(x0 , outputs ,x1 )
 
             running_loss += loss.item()
@@ -131,12 +125,13 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
     if hasattr(model, 'pModel') and hasattr(model, 'encoder'):
         optimizer = torch.optim.Adam([
                 {'params': model.encoder.parameters()},
-                {'params': model.pModel.parameters(), 'lr': 0.05}
+                {'params': model.pModel.parameters(), 'lr': 0.05}                
             ], lr=1e-2)
     else:
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-
+    ##{'params':  model.pModel.alpha, 'lr': 0.05}, 
+    ##{'params': model.pModel.beta, 'lr': 0.005}
     model.to(device)
     #create vectors for the training and validation loss
 
@@ -150,7 +145,7 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
 
     wandb.init(
             # set the wandb project where this run will be logged
-            project="Vphysics-Project",
+            project="Vphysics-Project-IC",
             name = "exp_"+model_name+"_"+dt_string,
             
             # track hyperparameters and run metadata
@@ -174,6 +169,9 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
     train_loss = evaluate_epoch(model, train_loader, loss_fn, device=device)
     # Model validation
     val_loss = evaluate_epoch(model, val_loader, loss_fn, device=device)
+
+    print("Initial Loss", "\t training loss:", train_loss,
+                  "\t validation loss:",val_loss)
 
     if hasattr(model, 'pModel'):
 

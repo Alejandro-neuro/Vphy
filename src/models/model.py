@@ -77,9 +77,9 @@ class Decoder(nn.Module):
 class pModel(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
-        self.alpha = torch.tensor([1.0], requires_grad=True).float()
+        self.alpha = torch.tensor([10.0], requires_grad=True).float()
         self.alpha = nn.Parameter(self.alpha )
-        self.beta = torch.tensor([1.0], requires_grad=True).float()
+        self.beta = torch.tensor([10.0], requires_grad=True).float()
         self.beta = nn.Parameter(self.beta )
 
     def forward(self, z,dt):    
@@ -97,12 +97,6 @@ class pModel(nn.Module):
       #y_hat = y1+ (y1-y0) -dt*dt *self.alpha* y1
 
       y_hat = y1 +(y1 - y0) - dt*(self.beta*(y1-y0) +dt*self.alpha*y1)
-
-        #y0 = y1
-        #y1 = y_hat
-
-
-      #return x1+(x1-x0)+self.alpha*(x1-x0 )*dt*2 + (self.beta*x1 )*dt*dt*4
 
       return  y_hat
  
@@ -144,10 +138,11 @@ class EndPhys(nn.Module):
       frames = x.clone()
 
       #frame_area_list = [] 
+      
 
       for i in range(frames.shape[1]):
           
-          frame = frames[:,i:i+1,:,:]
+          #frame = frames[:,i,:,:,:]
           
           #frame_area = frame.count_nonzero(dim=(1,2,3))
           
