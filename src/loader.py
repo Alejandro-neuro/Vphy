@@ -51,9 +51,9 @@ class Dataset(torch.utils.data.Dataset):
                   x_temp = self.convert_tensor(ImageGenerator( self.x[index+i*self.sr], noise=self.noise, shapeType=self.shapeType  ))
                  
                   if i == 0:  
-                        input = x_temp.unsqueeze(0)
+                        input = x_temp#.unsqueeze(0)
                   else :
-                        input = torch.cat((input, x_temp.unsqueeze(0)), 0)
+                        input = torch.cat((input, x_temp), 0)
             # Select sample                
 
 
@@ -138,7 +138,7 @@ def getLoader(X, type , split = True,   dt=1/100, nInFrames = 3,sr = 10 ,  noise
       if split:     
             #split dataset 80-20 for training and validation
 
-            train_x, val_x = train_test_split(X, test_size=0.2, shuffle=True)
+            train_x, val_x = train_test_split(X, test_size=0.2, shuffle=False)
 
             #create train and test dataloaders
 

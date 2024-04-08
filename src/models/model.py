@@ -149,8 +149,8 @@ class EndPhys(nn.Module):
           
           #frame_area = frame.count_nonzero(dim=(1,2,3))
           
-          #z_temp = self.encoder(frames[:,i:i+1,:,:]) 
-          z_temp = self.encoder(frames[:,i,:,:,:]) 
+          z_temp = self.encoder(frames[:,i:i+1,:,:]) 
+          #z_temp = self.encoder(frames[:,i,:,:,:]) 
           z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
 
           #frame_area_list= frame_area.unsqueeze(1) if i == 0 else torch.cat((frame_area_list,frame_area.unsqueeze(1)),dim=1)
