@@ -6,6 +6,7 @@ from . import blocks
 from . import modelConv2d
 from . import modelineal
 from . import encoders
+from . import PhysModels
 
 class Encoder(nn.Module):
     def __init__(self, initw = False):
@@ -77,9 +78,9 @@ class Decoder(nn.Module):
 class pModel(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
-        self.alpha = torch.tensor([10.0], requires_grad=True).float()
+        self.alpha = torch.tensor([-0.5], requires_grad=True).float()
         self.alpha = nn.Parameter(self.alpha )
-        self.beta = torch.tensor([10.0], requires_grad=True).float()
+        self.beta = torch.tensor([-0.5], requires_grad=True).float()
         self.beta = nn.Parameter(self.beta )
 
     def forward(self, z,dt):    
@@ -131,6 +132,8 @@ class EndPhys(nn.Module):
     def __init__(self, dt = 0.2, initw = False):
         super().__init__()
         self.encoder = encoders.EncoderMLP()
+        #self.encoder = encoders.EncoderCNN(in_channels=1, n_iter=3)
+        #self.encoder = encoders.EncoderUNET(in_channels=1)
         self.pModel = pModel()
 
         self.dt = dt
@@ -142,11 +145,12 @@ class EndPhys(nn.Module):
 
       for i in range(frames.shape[1]):
           
-          #frame = frames[:,i,:,:,:]
+          #frame = frames[batch,frame,channel,w,h]
           
           #frame_area = frame.count_nonzero(dim=(1,2,3))
           
-          z_temp = self.encoder(frames[:,i:i+1,:,:]) 
+          #z_temp = self.encoder(frames[:,i:i+1,:,:]) 
+          z_temp = self.encoder(frames[:,i,:,:,:]) 
           z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
 
           #frame_area_list= frame_area.unsqueeze(1) if i == 0 else torch.cat((frame_area_list,frame_area.unsqueeze(1)),dim=1)

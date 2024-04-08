@@ -125,11 +125,12 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
     if hasattr(model, 'pModel') and hasattr(model, 'encoder'):
         optimizer = torch.optim.Adam([
                 {'params': model.encoder.parameters()},
-                {'params': model.pModel.parameters(), 'lr': 0.05}                
+                {'params': model.pModel.parameters(), 'lr': 0.05} 
+                          
             ], lr=1e-2)
     else:
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
+    ##{'params': model.pModel.parameters(), 'lr': 0.05}      
     ##{'params':  model.pModel.alpha, 'lr': 0.05}, 
     ##{'params': model.pModel.beta, 'lr': 0.005}
     model.to(device)
