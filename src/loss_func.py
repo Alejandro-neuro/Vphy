@@ -100,9 +100,26 @@ def latent_loss(input_img, outputs, expected_pred):
 
     
     mu = z2_encoder.mean(0)
+
+    #print("mu",mu.shape)
     logvar = torch.log(z2_encoder.var(0))
+    #print("logvar",logvar.shape)
 
     KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+
+    #print("KLD",KLD.shape)
+
+    total_loss = loss + KLD
+
+    if torch.isnan(total_loss):
+        print("mu",mu)
+        print("var", z2_encoder.var(0))
+        print("logvar",logvar)
+        print("KLD",KLD)
+        print("loss",loss)
+        print("total_loss",total_loss)
+    
+
     return loss + KLD
 
 

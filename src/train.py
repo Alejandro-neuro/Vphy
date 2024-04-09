@@ -174,12 +174,13 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
     print("Initial Loss", "\t training loss:", train_loss,
                   "\t validation loss:",val_loss)
 
-    if hasattr(model, 'pModel'):
+    dict_log = {"train_loss": train_loss, "validation_loss": val_loss}
 
-            wandb.log({"train_loss": train_loss, "validation_loss": val_loss,
-                        "alpha": model.pModel.alpha[0].detach().cpu().numpy(), "beta": model.pModel.beta[0].detach().cpu().numpy()})
-    else:
-            wandb.log({"train_loss": train_loss, "validation_loss": val_loss})  
+    if hasattr(model, 'pModel'):
+        for name, value in model.pModel.named_parameters():
+            dict_log[name] = value[0].detach().cpu().numpy()
+
+    wandb.log(dict_log)
 
     for epoch in range(1, num_epochs+1):
         # Model training
@@ -190,12 +191,19 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
         train_losses.append(train_loss)
         val_losses.append(val_loss)
 
-        if hasattr(model, 'pModel'):
+        dict_log = {"train_loss": train_loss, "validation_loss": val_loss}
 
-            wandb.log({"train_loss": train_loss, "validation_loss": val_loss,
-                        "alpha": model.pModel.alpha[0].detach().cpu().numpy(), "beta": model.pModel.beta[0].detach().cpu().numpy()})
-        else:
-            wandb.log({"train_loss": train_loss, "validation_loss": val_loss})  
+        if hasattr(model, 'pModel'):
+            for name, value in model.pModel.named_parameters():
+                dict_log[name] = value[0].detach().cpu().numpy()
+
+        wandb.log(dict_log)
+
+        if np.isnan(train_loss):# or torch.isnan(val_loss):
+            print("Loss is NaN! Epoch:", epoch)
+            wandb.finish()  
+            break
+        
         
         if type == 'dynamic':
             if epoch % 2 == 0:
@@ -209,6 +217,7 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
                 early_stop += 1
             if early_stop == patience:
                 print("Early stopping! Epoch:", epoch)
+                wandb.finish()  
                 break
             else:
                 early_stop = 0

@@ -6,12 +6,12 @@ from . import unet
 
 
 class EncoderMLP(nn.Module):
-    def __init__(self, chan = [1, 3, 9], initw = False):
+    def __init__(self, in_size = 50, latent_dim=1, initw = False):
         super().__init__()
 
-        self.l1 = nn.Linear(2500,500 )
+        self.l1 = nn.Linear(in_size*in_size,500 )
         self.l2 = nn.Linear(500,100 )
-        self.l3 = nn.Linear(100,1 )
+        self.l3 = nn.Linear(100,latent_dim)
 
         self.relu= nn.ReLU()
         self.Softmax= nn.Softmax(dim=1)

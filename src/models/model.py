@@ -129,13 +129,13 @@ class AEModel(nn.Module):
     
 
 class EndPhys(nn.Module):
-    def __init__(self, dt = 0.2, initw = False):
+    def __init__(self, in_size=50, latent_dim = 1, in_channels = 1,  dt = 0.2,  initw = False):
         super().__init__()
-        #self.encoder = encoders.EncoderMLP()
+        self.encoder = encoders.EncoderMLP(in_size = in_size, latent_dim = latent_dim)
         #self.encoder = encoders.EncoderCNN(in_channels=1, n_iter=3)
-        self.encoder = encoders.EncoderUNET(in_channels=1)
-        self.pModel = pModel()
-
+        #self.encoder = encoders.EncoderUNET(in_channels=1)
+        #self.pModel = pModel()
+        self.pModel = PhysModels.Sprin_ode()
         self.dt = dt
     def forward(self, x):    
       frames = x.clone()
@@ -149,8 +149,9 @@ class EndPhys(nn.Module):
           
           #frame_area = frame.count_nonzero(dim=(1,2,3))
           
-          z_temp = self.encoder(frames[:,i:i+1,:,:]) 
-          #z_temp = self.encoder(frames[:,i,:,:,:]) 
+          #z_temp = self.encoder(frames[:,i:i+1,:,:]) 
+          z_temp = self.encoder(frames[:,i,:,:,:]) 
+          z_temp = z_temp.unsqueeze(1)
           z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
 
           #frame_area_list= frame_area.unsqueeze(1) if i == 0 else torch.cat((frame_area_list,frame_area.unsqueeze(1)),dim=1)

@@ -49,9 +49,11 @@ class Dataset(torch.utils.data.Dataset):
             # Concatenate 3 frames to create 3D image
             for i in range(self.nInFrames):
                   x_temp = self.convert_tensor(ImageGenerator( self.x[index+i*self.sr], noise=self.noise, shapeType=self.shapeType  ))
+                  
+                  x_temp = x_temp.unsqueeze(0)
                  
                   if i == 0:  
-                        input = x_temp#.unsqueeze(0)
+                        input = x_temp
                   else :
                         input = torch.cat((input, x_temp), 0)
             # Select sample                
@@ -114,7 +116,7 @@ class Dataset_from_folder(torch.utils.data.Dataset):
       def __init__(self, x):
             'Initialization'
             self.x = x
-            self.transform = None
+            self.transform = transforms.Compose([transforms.Grayscale(num_output_channels=1) ])
             self.convert_tensor = transforms.ToTensor()
 
       def __len__(self):
@@ -122,13 +124,13 @@ class Dataset_from_folder(torch.utils.data.Dataset):
             return len(self.x)
 
       def __getitem__(self, index):
-            'Generates one sample of data'         
+            'Generates one sample of data'     
             
-            input = self.convert_tensor(self.x[index].transpose( (0,1,4,2,3)))
+            input = torch.from_numpy(self.x[index].transpose( (0,3,1,2)))
 
             if self.transform:
                   input = self.transform(input)
-                  out = self.transform(out)
+                  out = self.transform(input)
 
             return input, out
             
@@ -164,6 +166,24 @@ def getLoader_decoder(X, type , split = True,   dt=1/100, nInFrames = 3,sr = 10 
             return train_dataset, val_dataset, train_x, val_x 
       else :
             return DataLoader( Dataset_decoder(X, type, nInFrames = nInFrames,sr = 10 ,  noise=noise, shapeType=shapeType), batch_size=1, shuffle=False)     
+
+
+def getLoader_folder(X, split = True):   
+
+      if split:     
+            #split dataset 80-20 for training and validation
+
+            train_x, val_x = train_test_split(X, test_size=0.2, shuffle=False)
+
+            #create train and test dataloaders
+
+            train_dataset = DataLoader( Dataset_from_folder(train_x), batch_size=32, shuffle=True)
+            val_dataset = DataLoader( Dataset_from_folder(val_x), batch_size=32, shuffle=False)    
+
+            return train_dataset, val_dataset, train_x, val_x 
+      else :
+            return DataLoader( Dataset_from_folder(X), batch_size=1, shuffle=False)
+      
 
 def get_template():
 
