@@ -131,9 +131,9 @@ class AEModel(nn.Module):
 class EndPhys(nn.Module):
     def __init__(self, dt = 0.2, initw = False):
         super().__init__()
-        self.encoder = encoders.EncoderMLP()
+        #self.encoder = encoders.EncoderMLP()
         #self.encoder = encoders.EncoderCNN(in_channels=1, n_iter=3)
-        #self.encoder = encoders.EncoderUNET(in_channels=1)
+        self.encoder = encoders.EncoderUNET(in_channels=1)
         self.pModel = pModel()
 
         self.dt = dt
