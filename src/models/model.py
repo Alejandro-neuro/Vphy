@@ -7,6 +7,7 @@ from . import modelConv2d
 from . import modelineal
 from . import encoders
 from . import PhysModels
+from . import aunet
 
 class Encoder(nn.Module):
     def __init__(self, initw = False):
@@ -134,8 +135,9 @@ class EndPhys(nn.Module):
         self.encoder = encoders.EncoderMLP(in_size = in_size, latent_dim = latent_dim)
         #self.encoder = encoders.EncoderCNN(in_channels=1, n_iter=3)
         #self.encoder = encoders.EncoderUNET(in_channels=1)
-        #self.pModel = pModel()
-        self.pModel = PhysModels.Sprin_ode()
+        self.mask = aunet.UNet()
+        self.pModel = pModel()
+        #self.pModel = PhysModels.Sprin_ode()
         self.dt = dt
     def forward(self, x):    
       frames = x.clone()
@@ -150,7 +152,11 @@ class EndPhys(nn.Module):
           #frame_area = frame.count_nonzero(dim=(1,2,3))
           
           #z_temp = self.encoder(frames[:,i:i+1,:,:]) 
-          z_temp = self.encoder(frames[:,i,:,:,:]) 
+          current_frame = frames[:,i,:,:,:]
+          mask = self.mask(current_frame) 
+          mask_frame = current_frame * mask
+          
+          z_temp = self.encoder(mask_frame)
           z_temp = z_temp.unsqueeze(1)
           z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
 
