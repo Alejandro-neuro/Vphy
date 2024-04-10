@@ -9,7 +9,7 @@ class SelfAttention(nn.Module):
         super(SelfAttention, self).__init__()
         self.channels = channels
         self.size = size
-        self.mha = nn.MultiheadAttention(channels, 4, batch_first=True)
+        self.mha = nn.MultiheadAttention(channels, 2, batch_first=True)
         self.ln = nn.LayerNorm([channels])
         self.ff_self = nn.Sequential(
             nn.LayerNorm([channels]),
@@ -19,7 +19,7 @@ class SelfAttention(nn.Module):
         )
 
     def forward(self, x):
-        
+
         x = x.view(-1, self.channels, self.size * self.size).swapaxes(1, 2)
         
         x_ln = self.ln(x)
@@ -104,25 +104,25 @@ class UNet(nn.Module):
         super().__init__()
         self.device = device
         
-        self.inc = DoubleConv(c_in, 64)
-        self.down1 = Down(64, 128)
-        self.sa1 = SelfAttention(128, int(img_size/2) )
-        self.down2 = Down(128, 256)
-        self.sa2 = SelfAttention(256, int(img_size/4) )
-        self.down3 = Down(256, 256)
-        self.sa3 = SelfAttention(256, int(img_size/8) )
+        self.inc = DoubleConv(c_in, c_in*2 )
+        self.down1 = Down(c_in*2 , c_in*4 )
+        self.sa1 = SelfAttention(c_in*4 , int(img_size/2) )
+        self.down2 = Down(c_in*4, c_in*8 )
+        self.sa2 = SelfAttention(c_in*8, int(img_size/4) )
+        self.down3 = Down(c_in*8, c_in*8)
+        self.sa3 = SelfAttention(c_in*8 , int(img_size/8) )
 
-        self.bot1 = DoubleConv(256, 512)
-        self.bot2 = DoubleConv(512, 512)
-        self.bot3 = DoubleConv(512, 256)
+        self.bot1 = DoubleConv(c_in*8 , c_in*16)
+        self.bot2 = DoubleConv(c_in*16, c_in*16)
+        self.bot3 = DoubleConv(c_in*16, c_in*8)
 
-        self.up1 = Up(512, 128)
-        self.sa4 = SelfAttention(128, int(img_size/4))
-        self.up2 = Up(256, 64)
-        self.sa5 = SelfAttention(64, int(img_size/2))
-        self.up3 = Up(128, 64)
-        self.sa6 = SelfAttention(64, img_size)
-        self.outc = nn.Conv2d(64, c_out, kernel_size=1)
+        self.up1 = Up(c_in*16 , c_in*4 )
+        self.sa4 = SelfAttention(c_in*4 , int(img_size/4))
+        self.up2 = Up(c_in*8 , c_in*2 )
+        self.sa5 = SelfAttention(c_in*2 , int(img_size/2))
+        self.up3 = Up(c_in*4 , c_in*2 )
+        self.sa6 = SelfAttention(c_in*2 , img_size)
+        self.outc = nn.Conv2d(c_in*2 , c_out, kernel_size=1)
 
 
     def forward(self, x):
@@ -140,8 +140,10 @@ class UNet(nn.Module):
         x4 = self.bot3(x4)
 
         x = self.up1(x4, x3)
+        #print("x.shape sa4",x.shape)
         x = self.sa4(x)
         x = self.up2(x, x2)
+        #print("x.shape sa5",x.shape)
         x = self.sa5(x)
         x = self.up3(x, x1)
         x = self.sa6(x)
