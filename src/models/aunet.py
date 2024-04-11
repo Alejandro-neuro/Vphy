@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
-
 class SelfAttention(nn.Module):
     def __init__(self, channels, size):
         super(SelfAttention, self).__init__()
@@ -99,7 +97,7 @@ class Up(nn.Module):
         return x 
 
 
-class UNet(nn.Module):
+class Attn_UNet(nn.Module):
     def __init__(self, c_in=1, c_out=1, img_size = 50, device="cuda"):
         super().__init__()
         self.device = device
@@ -147,5 +145,43 @@ class UNet(nn.Module):
         x = self.sa5(x)
         x = self.up3(x, x1)
         x = self.sa6(x)
+        output = self.outc(x)
+        return output
+    
+
+class UNet(nn.Module):
+    def __init__(self, c_in=1, c_out=1, img_size = 50, device="cuda"):
+        super().__init__()
+        self.device = device
+        
+        self.inc = DoubleConv(c_in, c_in*2 )
+        self.down1 = Down(c_in*2 , c_in*4 )      
+        self.down2 = Down(c_in*4, c_in*8 )
+        self.down3 = Down(c_in*8, c_in*8)
+
+        self.bot1 = DoubleConv(c_in*8 , c_in*16)
+        self.bot2 = DoubleConv(c_in*16, c_in*16)
+        self.bot3 = DoubleConv(c_in*16, c_in*8)
+
+        self.up1 = Up(c_in*16 , c_in*4 )
+        self.up2 = Up(c_in*8 , c_in*2 )
+        self.up3 = Up(c_in*4 , c_in*2 )
+        self.outc = nn.Conv2d(c_in*2 , c_out, kernel_size=1)
+
+
+    def forward(self, x):
+
+        x1 = self.inc(x)
+        x2 = self.down1(x1)
+        x3 = self.down2(x2)
+        x4 = self.down3(x3)
+
+        x4 = self.bot1(x4)
+        x4 = self.bot2(x4)
+        x4 = self.bot3(x4)
+
+        x = self.up1(x4, x3)
+        x = self.up2(x, x2)
+        x = self.up3(x, x1)
         output = self.outc(x)
         return output
