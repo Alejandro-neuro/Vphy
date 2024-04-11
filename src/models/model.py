@@ -135,7 +135,8 @@ class EndPhys(nn.Module):
         self.encoder = encoders.EncoderMLP(in_size = in_size, latent_dim = latent_dim)
         #self.encoder = encoders.EncoderCNN(in_channels=1, n_iter=3)
         #self.encoder = encoders.EncoderUNET(in_channels=1)
-        self.mask = aunet.UNet()
+        self.masker = aunet.UNet()
+        self.masks = None
         self.pModel = pModel()
         #self.pModel = PhysModels.Sprin_ode()
         self.dt = dt
@@ -153,8 +154,10 @@ class EndPhys(nn.Module):
           
           #z_temp = self.encoder(frames[:,i:i+1,:,:]) 
           current_frame = frames[:,i,:,:,:]
-          mask = self.mask(current_frame) 
+          mask = self.masker(current_frame) 
           mask_frame = current_frame * mask
+
+          self.masks = mask if i == 0 else torch.cat((self.masks,mask),dim=1)
           
           z_temp = self.encoder(mask_frame)
           z_temp = z_temp.unsqueeze(1)
@@ -171,5 +174,8 @@ class EndPhys(nn.Module):
 
       
       return  z2_encoder, z2_phys
+    
+    def get_masks(self):
+        return self.masks
 
         

@@ -305,6 +305,58 @@ def CompareLatent_end_phys(model, loader, name = 'LatentSpace_end_phy.png'):
     X.append( { 'x': range(0, len(z2_phys_list) ), 'y': normalize(z2_phys_list ), 'label': 'z2_phys_list' , 'alpha':0.5  } )
     
     cp.plotMultiple( X,  'sample', 'value','Latent Space', name, styleDark = True )
+
+
+def view_masks(model, loader, iters = 10):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model.to(device)
+
+    masks = None
+    z2_phys_list = []
+
+    iter = 0
+
+
+    for data in loader:
+
+        input_Data, out_Data = data
+
+        x0 = input_Data
+
+        x0 = x0.to(device=device, dtype=torch.float)
+
+        outputs = model(x0)
+        mask = model.get_masks()
+
+        masks = mask if masks is None else torch.cat((masks, mask), 0)
+
+        img = masks[0].detach().cpu().numpy()
+        img = np.squeeze(img)
+        img = np.uint8( np.round(img * 255, 0) )
+        img = np.transpose(img, (1, 2, 0))
+
+        plt.figure()
+
+        plt.imshow(img)
+        plt.show()
+
+
+
+        if iter == iters:
+            break
+
+    print(masks.shape)
+    
+    grid_img = torchvision.utils.make_grid(masks, nrow=5)
+
+    plt.figure()
+
+    plt.imshow(grid_img.permute(1, 2, 0))
+
+
+    
+
+
 def CompareError(model, loader, name = 'ErrorImg.png'):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
