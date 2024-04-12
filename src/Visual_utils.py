@@ -328,16 +328,22 @@ def view_masks(model, loader, iters = 10):
         outputs = model(x0)
         mask = model.get_masks()
 
-        masks = mask if masks is None else torch.cat((masks, mask), 0)
+        #print(mask.shape)
+        #print(x0.shape)
 
-        img = masks[0].detach().cpu().numpy()
-        img = np.squeeze(img)
-        img = np.uint8( np.round(img * 255, 0) )
-        img = np.transpose(img, (1, 2, 0))
+        img = torch.cat((x0.squeeze(2), mask), dim=1)
+
+        img = torch.cat((img, x0.squeeze(2)*mask), dim=1)
+
+        #print(mask.shape)
+
+        grid_img = torchvision.utils.make_grid(img.permute(1,0,2,3), nrow=5)
+
+        #grid_img
 
         plt.figure()
 
-        plt.imshow(img)
+        plt.imshow(grid_img.permute(1, 2, 0).detach().cpu().numpy())
         plt.show()
 
 
@@ -345,14 +351,9 @@ def view_masks(model, loader, iters = 10):
         if iter == iters:
             break
 
-    print(masks.shape)
-    
-    grid_img = torchvision.utils.make_grid(masks, nrow=5)
+        iter += 1
 
-    plt.figure()
-
-    plt.imshow(grid_img.permute(1, 2, 0))
-
+    return
 
     
 

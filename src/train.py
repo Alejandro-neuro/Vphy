@@ -82,6 +82,12 @@ def evaluate_epoch(model, loader,loss_fn, device='cpu'):
             running_loss += loss.item()
 
         total_loss = running_loss/len(loader)
+
+        if np.isnan(total_loss):
+            print("Loss is NaN!")
+            print(loss)
+            print(len(loader))
+            return 0
         
     return total_loss
 
@@ -125,8 +131,7 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
     if hasattr(model, 'pModel') and hasattr(model, 'encoder'):
         optimizer = torch.optim.Adam([
                 {'params': model.encoder.parameters()},
-                {'params':  model.pModel.alpha, 'lr': 0.05}, 
-                {'params': model.pModel.beta, 'lr': 0.005}                          
+                {'params': model.pModel.parameters(), 'lr': 0.01}                         
             ], lr=1e-2)
     else:
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)

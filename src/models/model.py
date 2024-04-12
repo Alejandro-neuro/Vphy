@@ -79,9 +79,9 @@ class Decoder(nn.Module):
 class pModel(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
-        self.alpha = torch.tensor([-0.5], requires_grad=True).float()
+        self.alpha = torch.tensor([1.0], requires_grad=True).float()
         self.alpha = nn.Parameter(self.alpha )
-        self.beta = torch.tensor([-0.5], requires_grad=True).float()
+        self.beta = torch.tensor([1.0], requires_grad=True).float()
         self.beta = nn.Parameter(self.beta )
 
     def forward(self, z,dt):    
