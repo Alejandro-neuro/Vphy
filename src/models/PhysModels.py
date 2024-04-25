@@ -76,11 +76,7 @@ class Sprin_ode(nn.Module):
       
 
       #if torch.isnan(direction).any():
-        
-        #print(pos1_t1)
-        #print(pos2_t1)
-        #print(norm)
-        #print(direction)
+       
         
 
       force  = self.k*(norm - 2*self.l)*direction

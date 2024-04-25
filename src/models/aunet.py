@@ -122,6 +122,8 @@ class Attn_UNet(nn.Module):
         self.sa6 = SelfAttention(c_in*2 , img_size)
         self.outc = nn.Conv2d(c_in*2 , c_out, kernel_size=1)
 
+        self.sigmoid = nn.Sigmoid()
+
 
     def forward(self, x):
 
@@ -146,6 +148,7 @@ class Attn_UNet(nn.Module):
         x = self.up3(x, x1)
         x = self.sa6(x)
         output = self.outc(x)
+        output = self.sigmoid(output)
         return output
     
 
@@ -167,6 +170,8 @@ class UNet(nn.Module):
         self.up2 = Up(c_in*8 , c_in*2 )
         self.up3 = Up(c_in*4 , c_in*2 )
         self.outc = nn.Conv2d(c_in*2 , c_out, kernel_size=1)
+        
+        self.sigmoid = nn.Sigmoid()
 
 
     def forward(self, x):
@@ -184,4 +189,5 @@ class UNet(nn.Module):
         x = self.up2(x, x2)
         x = self.up3(x, x1)
         output = self.outc(x)
+        output = self.sigmoid(output)
         return output

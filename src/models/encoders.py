@@ -86,16 +86,46 @@ class EncoderCNN(nn.Module):
 
       return x
     
+class DoubleConv(nn.Module):
+    def __init__(self, in_channels, out_channels,  mid_channels=None, residual=False):
+        super().__init__()
+        self.residual = residual
+        if not mid_channels:
+            mid_channels = out_channels
+        self.double_conv = nn.Sequential(
+            nn.Conv2d(in_channels, mid_channels, kernel_size=3, padding=1, bias=False),
+            nn.GroupNorm(1, mid_channels),
+            nn.GELU(),
+            nn.Conv2d(mid_channels, out_channels, kernel_size=3, padding=1, bias=False),
+            nn.GroupNorm(1, out_channels),
+        )
 
-class EncoderUNET(nn.Module):
-    def __init__(self, in_channels, initw = False):
+    def forward(self, x):
+        if self.residual:
+            return F.gelu(x + self.double_conv(x))
+        else:
+            return self.double_conv(x)
+
+
+class EncoderCNNnorm(nn.Module):
+    def __init__(self, in_channels, n_iter, initw = False):
         super().__init__()
 
-        self.unet = unet.build_unet(in_channels)
+        self.convs = nn.ModuleList()
 
-        self.l1 = nn.Linear(2500,500 )
-        self.l2 = nn.Linear(500,100 )
-        self.l3 = nn.Linear(100,1 )
+        self.in_channels = in_channels
+        self.n_iter = n_iter
+
+        self.convs.append(DoubleConv(in_channels, 2*in_channels))
+
+        for i in range(1,n_iter):
+
+          self.convs.append(DoubleConv(in_channels*(2*i), (2*(i+1))*in_channels))
+
+        self.maxpool = nn.MaxPool2d(kernel_size=2)
+
+        self.l1 = nn.Linear(486,100 )
+        self.l2 = nn.Linear(100,1 )
 
 
 

@@ -112,12 +112,13 @@ def latent_loss(input_img, outputs, expected_pred):
     total_loss = loss + KLD
 
     if torch.isnan(total_loss):
-        print("mu",mu)
-        print("var", z2_encoder.var(0))
-        print("logvar",logvar)
-        print("KLD",KLD)
         print("loss",loss)
-        print("total_loss",total_loss)
+        #print("mu",mu)
+        #print("var", z2_encoder.var(0))
+        #print("logvar",logvar)
+        #print("KLD",KLD)
+        #print("loss",loss)
+        #print("total_loss",total_loss)
     
 
     return loss + KLD

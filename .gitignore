@@ -12,3 +12,4 @@ Data/__pycache__/genData.cpython-310.pyc
 Data/__pycache__/genData.cpython-310.pyc
 color_mnist_spring/
 *.mp4
+Data/color_mnist.npz

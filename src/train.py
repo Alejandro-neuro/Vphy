@@ -205,9 +205,12 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
         wandb.log(dict_log)
 
         if np.isnan(train_loss):# or torch.isnan(val_loss):
+            
             print("Loss is NaN! Epoch:", epoch)
             wandb.finish()  
-            break
+            model.load_state_dict(best_model_state)
+            return model, train_losses, val_losses, accuracy_list  
+            
         
         
         if type == 'dynamic':

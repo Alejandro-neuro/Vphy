@@ -130,15 +130,19 @@ class AEModel(nn.Module):
     
 
 class EndPhys(nn.Module):
-    def __init__(self, in_size=50, latent_dim = 1, in_channels = 1,  dt = 0.2,  initw = False):
+    def __init__(self, in_size=50, latent_dim = 1, n_mask = 1, in_channels = 1,  dt = 0.2,  initw = False):
         super().__init__()
+
+        self.n_mask = n_mask
+        self.in_channels = in_channels 
+
         self.encoder = encoders.EncoderMLP(in_size = in_size, latent_dim = latent_dim)
         #self.encoder = encoders.EncoderCNN(in_channels=1, n_iter=3)
         #self.encoder = encoders.EncoderUNET(in_channels=1)
-        self.masker = aunet.UNet()
+        self.masker = aunet.UNet(c_in = in_channels, c_out=n_mask)
         self.masks = None
-        self.pModel = pModel()
-        #self.pModel = PhysModels.Sprin_ode()
+        #self.pModel = pModel()
+        self.pModel = PhysModels.Sprin_ode()
         self.dt = dt
     def forward(self, x):    
       frames = x.clone()
@@ -172,6 +176,75 @@ class EndPhys(nn.Module):
 
       z2_encoder = z[:,2:]
 
+      
+      return  z2_encoder, z2_phys
+    
+    def get_masks(self):
+        return self.masks
+    
+
+class EndPhysMultiple(nn.Module):
+    def __init__(self, in_size=50, latent_dim = 1, n_mask = 1, in_channels = 1,  dt = 0.2,  initw = False):
+        super().__init__()
+
+        self.n_mask = n_mask
+        self.in_channels = in_channels 
+        
+        self.encoder = encoders.EncoderMLP(in_size = in_size, latent_dim = latent_dim)
+        self.masker = aunet.UNet(c_in = in_channels, c_out=n_mask, img_size=in_size)
+        self.masks = None
+
+        self.pModel = PhysModels.Sprin_ode()
+        self.dt = dt
+    def forward(self, x):    
+      frames = x.clone()
+
+      #frame_area_list = [] 
+
+
+      for i in range(frames.shape[1]):
+          
+          #frame = frames[batch,frame,channel,w,h]
+
+          current_frame = frames[:,i,:,:,:]
+
+          #print("current_frame",current_frame.shape)
+          mask = self.masker(current_frame) 
+          #print("mask",mask.shape)
+
+          self.masks = mask if i == 0 else torch.cat((self.masks,mask),dim=1)
+
+          z_obj = None
+
+          for indx_mask in range(0, self.n_mask):
+            mask_obj = mask[:,indx_mask:indx_mask+1,:,:]
+            #print("mask_obj",mask_obj.shape)
+            mask_frame = current_frame * mask_obj
+            mask_frame = torch.mean(mask_frame, dim=1, keepdim=True)
+            #print("mask_frame",mask_frame.shape)
+            z_obj = self.encoder(mask_frame)
+            z_obj = z_obj.unsqueeze(1)
+            #print("z_obj",z_obj.shape)
+            z_hor = z_obj if indx_mask == 0 else torch.cat((z_hor,z_obj),dim=2)
+            #print("z_hor",z_hor.shape)
+          
+          
+          z_temp = z_hor
+          z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
+      z = z.squeeze(2)
+
+          #frame_area_list= frame_area.unsqueeze(1) if i == 0 else torch.cat((frame_area_list,frame_area.unsqueeze(1)),dim=1)
+      #print(frame_area_list)
+      for i in range(frames.shape[1]-2):
+          
+          z_window = z[:,i:i+2,:]
+
+          pred_window = self.pModel(z_window,self.dt)
+          
+          z2_phys = pred_window if i == 0 else torch.cat((z2_phys,pred_window),dim=1)
+
+
+      z2_encoder = z[:,2:]
       
       return  z2_encoder, z2_phys
     

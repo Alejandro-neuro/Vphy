@@ -113,10 +113,10 @@ class Dataset_decoder(torch.utils.data.Dataset):
       
 class Dataset_from_folder(torch.utils.data.Dataset):
       'Characterizes a dataset for PyTorch'
-      def __init__(self, x):
+      def __init__(self, x, toGray = False):
             'Initialization'
             self.x = x
-            self.transform = transforms.Compose([transforms.Grayscale(num_output_channels=1) ])
+            self.transform = None if toGray == False else transforms.Compose([transforms.Grayscale(num_output_channels=1) ])
             self.convert_tensor = transforms.ToTensor()
 
       def __len__(self):
@@ -127,10 +127,9 @@ class Dataset_from_folder(torch.utils.data.Dataset):
             'Generates one sample of data'     
             
             input = torch.from_numpy(self.x[index].transpose( (0,3,1,2)))
+            out = input
 
-            if self.transform:
-                  input = self.transform(input)
-                  out = self.transform(input)
+          
 
             return input, out
             

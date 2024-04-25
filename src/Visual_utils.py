@@ -323,7 +323,31 @@ def view_masks(model, loader, iters = 10):
 
         x0 = input_Data
 
+        print(x0.shape)
+
+        test_img = x0[0,0,:,:,:]
+
+        print("max", test_img.max())
+
+        
+        plt.figure()
+
+        plt.imshow(test_img.permute(2, 1, 0).detach().cpu().numpy(), vmin=0, vmax=255)
+        plt.show()
+
         x0 = x0.to(device=device, dtype=torch.float)
+
+        print(x0.shape)
+
+        test_img = x0[0,0,:,:,:]
+
+        print("max", test_img.max())
+
+        
+        plt.figure()
+
+        plt.imshow(test_img.permute(2, 1, 0).detach().cpu().numpy(), vmin=0, vmax=255)
+        plt.show()
 
         outputs = model(x0)
         mask = model.get_masks()
@@ -331,13 +355,27 @@ def view_masks(model, loader, iters = 10):
         #print(mask.shape)
         #print(x0.shape)
 
-        img = torch.cat((x0.squeeze(2), mask), dim=1)
+        #img = torch.cat((x0.squeeze(2), mask), dim=1)
 
-        img = torch.cat((img, x0.squeeze(2)*mask), dim=1)
+        #img = torch.cat((img, x0.squeeze(2)*mask), dim=1)
 
-        #print(mask.shape)
+        mask = mask.unsqueeze(2)
+        mask = mask.repeat(1,1,3,1,1)
+        img = torch.cat((x0, mask[:,0:12,:,:,:]), dim=1)
 
-        grid_img = torchvision.utils.make_grid(img.permute(1,0,2,3), nrow=5)
+        img = torch.cat((img, mask[:,12:24,:,:,:]), dim=1)
+
+        
+
+        img = img.squeeze(0)
+        print(img.shape)
+
+        #grid_img = torchvision.utils.make_grid(img.permute(1,0,2,3), nrow=3)
+
+        #img = img.permute(1,0,2,3)
+        grid_img = torchvision.utils.make_grid(img, nrow=12)
+
+        print(grid_img.shape)
 
         #grid_img
 
