@@ -138,13 +138,13 @@ class EndPhys(nn.Module):
 
         self.use_mask = False
 
-        #self.encoder = encoders.EncoderMLP(in_size = in_size, latent_dim = latent_dim)
-        self.encoder = encoders.EncoderCNN(in_channels=1,channels = [1,32,64,128])
+        self.encoder = encoders.EncoderMLP(in_size = in_size, in_chan=in_channels, latent_dim = latent_dim)
+        #self.encoder = encoders.EncoderCNN(in_channels=1,channels = [1,32,64,128])
         #self.encoder = encoders.EncoderUNET(in_channels=1)
         #self.masker = aunet.UNet(c_in = in_channels, c_out=n_mask)
         self.masks = None
-        self.pModel = pModel()
-        #self.pModel = PhysModels.Sprin_ode()
+        #self.pModel = pModel()
+        self.pModel = PhysModels.Sprin_ode()
         self.dt = dt
     def forward(self, x):    
       frames = x.clone()

@@ -58,6 +58,9 @@ class Sprin_ode(nn.Module):
         self.l = nn.Parameter(self.l )
 
     def forward(self, z,dt):    
+      #print("z",z.shape)
+      
+      #z = z.reshape(-1, 2, 2)
 
       device = "cuda" if torch.cuda.is_available() else "cpu"
       dt = torch.tensor([dt], requires_grad=False).float().to(device)
@@ -70,6 +73,9 @@ class Sprin_ode(nn.Module):
 
       vel1_t1 = (pos1_t1 - pos1_t0)/dt
       vel2_t1 = (pos2_t1 - pos2_t0)/dt 
+
+      #print("pos1_t0",pos1_t0)
+      #print("pos2_t0",pos2_t0)
       
       norm = torch.norm(pos1_t0 - pos2_t0, dim=1, keepdim=True) 
       direction = (( pos1_t1 - pos2_t1 )/ (norm+1e-4)  )
@@ -79,7 +85,8 @@ class Sprin_ode(nn.Module):
        
         
 
-      force  = self.k*(norm - 2*self.l)*direction
+      #force  = self.k*(norm - 2*self.l)*direction
+      force = -(self.k*( pos1_t1 - pos2_t1 ) + self.l*direction)
 
       pos1_t2 = pos1_t1 + vel1_t1*dt + force*dt*dt
       pos2_t2 = pos2_t1 + vel2_t1*dt - force*dt*dt

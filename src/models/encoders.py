@@ -6,10 +6,10 @@ from . import unet
 
 
 class EncoderMLP(nn.Module):
-    def __init__(self, in_size = 50, latent_dim=1, initw = False):
+    def __init__(self, in_size = 50,in_chan = 1,  latent_dim=1, initw = False):
         super().__init__()
 
-        self.l1 = nn.Linear(in_size*in_size,500 )
+        self.l1 = nn.Linear(in_size*in_size*in_chan,500 )
         self.l2 = nn.Linear(500,100 )
         self.l3 = nn.Linear(100,latent_dim)
 
@@ -28,7 +28,8 @@ class EncoderMLP(nn.Module):
 
     def forward(self, x):
 
-      x = x.view(x.shape[0], -1)
+    
+      x = x.reshape(x.shape[0], -1)
       x = self.relu(self.l1(x))
       x = self.relu(self.l2(x))
       x = self.l3(x)
