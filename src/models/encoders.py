@@ -36,24 +36,25 @@ class EncoderMLP(nn.Module):
       return x
     
 class EncoderCNN(nn.Module):
-    def __init__(self, in_channels, n_iter, initw = False):
+    def __init__(self, in_channels, channels = [1,32,64,128], initw = False):
         super().__init__()
 
-        self.convs = nn.ModuleList()
+        
 
         self.in_channels = in_channels
-        self.n_iter = n_iter
-
-        self.convs.append(nn.Conv2d(in_channels, 2*in_channels, kernel_size=3, stride=1, padding=0, bias=True))
-
-        for i in range(1,n_iter):
-
-          self.convs.append(nn.Conv2d(in_channels*(2*i), (2*(i+1))*in_channels, kernel_size=3, stride=1, padding=0, bias=True))
+        self.n_iter = len(channels)
+      
+        self.convs = nn.ModuleList()
+        self.norms = nn.ModuleList()
+        for i in range(0, self.n_iter-1):
+          self.convs.append(nn.Conv2d( channels[i], channels[i+1], kernel_size=3, stride=1, padding=0, bias=True))
+          self.norms.append(nn.BatchNorm2d(channels[i+1]))
 
         self.maxpool = nn.MaxPool2d(kernel_size=2)
 
-        self.l1 = nn.Linear(486,100 )
-        self.l2 = nn.Linear(100,1 )
+        self.l1 = nn.Linear(56448,1000 )
+        self.l2 = nn.Linear(1000,100 )
+        self.l3 = nn.Linear(100,1 )
 
 
 
@@ -72,17 +73,22 @@ class EncoderCNN(nn.Module):
 
     def forward(self, x):
 
-      for i in range(len(self.convs) -1):
+      for i in range(self.n_iter-2):
             x = self.convs[i](x)
+            #x = self.norms[i](x)
             x = torch.relu(x)
-            x = self.maxpool(x)             
+            if i == 1:
+                x = self.maxpool(x)            
 
       x = self.convs[-1](x)
 
       x = x.view(x.shape[0], -1)
 
+      
+
       x = self.relu(self.l1(x))
-      x = self.l2(x)
+      x = self.relu(self.l2(x))
+      x = self.l3(x)
 
       return x
     

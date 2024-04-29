@@ -136,13 +136,15 @@ class EndPhys(nn.Module):
         self.n_mask = n_mask
         self.in_channels = in_channels 
 
-        self.encoder = encoders.EncoderMLP(in_size = in_size, latent_dim = latent_dim)
-        #self.encoder = encoders.EncoderCNN(in_channels=1, n_iter=3)
+        self.use_mask = False
+
+        #self.encoder = encoders.EncoderMLP(in_size = in_size, latent_dim = latent_dim)
+        self.encoder = encoders.EncoderCNN(in_channels=1,channels = [1,32,64,128])
         #self.encoder = encoders.EncoderUNET(in_channels=1)
-        self.masker = aunet.UNet(c_in = in_channels, c_out=n_mask)
+        #self.masker = aunet.UNet(c_in = in_channels, c_out=n_mask)
         self.masks = None
-        #self.pModel = pModel()
-        self.pModel = PhysModels.Sprin_ode()
+        self.pModel = pModel()
+        #self.pModel = PhysModels.Sprin_ode()
         self.dt = dt
     def forward(self, x):    
       frames = x.clone()
@@ -153,22 +155,24 @@ class EndPhys(nn.Module):
       for i in range(frames.shape[1]):
           
           #frame = frames[batch,frame,channel,w,h]
-          
-          #frame_area = frame.count_nonzero(dim=(1,2,3))
-          
-          #z_temp = self.encoder(frames[:,i:i+1,:,:]) 
-          current_frame = frames[:,i,:,:,:]
-          mask = self.masker(current_frame) 
-          mask_frame = current_frame * mask
 
-          self.masks = mask if i == 0 else torch.cat((self.masks,mask),dim=1)
+          current_frame = frames[:,i,:,:,:]
+
+          if self.use_mask:             
           
-          z_temp = self.encoder(mask_frame)
+            mask = self.masker(current_frame) 
+            mask_frame = current_frame * mask
+            self.masks = mask if i == 0 else torch.cat((self.masks,mask),dim=1)
+          
+            z_temp = self.encoder(mask_frame)
+
+          else:
+            z_temp = self.encoder(current_frame)
+
           z_temp = z_temp.unsqueeze(1)
           z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
 
-          #frame_area_list= frame_area.unsqueeze(1) if i == 0 else torch.cat((frame_area_list,frame_area.unsqueeze(1)),dim=1)
-      #print(frame_area_list)
+ 
       for i in range(frames.shape[1]-2):
           
           z2_phys = self.pModel(z[:,i:i+2],self.dt) if i == 0 else torch.cat((z2_phys,self.pModel(z[:,i:i+2],self.dt)),dim=1)

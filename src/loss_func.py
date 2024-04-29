@@ -112,6 +112,7 @@ def latent_loss(input_img, outputs, expected_pred):
     total_loss = loss + KLD
 
     if torch.isnan(total_loss):
+        raise ValueError("Loss is NaN")
         print("loss",loss)
         #print("mu",mu)
         #print("var", z2_encoder.var(0))

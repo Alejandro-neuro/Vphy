@@ -172,7 +172,16 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
     best_model_state = None
 
     # Model training
-    train_loss = evaluate_epoch(model, train_loader, loss_fn, device=device)
+    try:
+        train_loss = evaluate_epoch(model, train_loader, loss_fn, device=device)
+    except:
+
+        print("Loss is NaN! Epoch:", epoch)
+        wandb.finish()  
+        model.load_state_dict(best_model_state)
+        return model, train_losses, val_losses, accuracy_list  
+
+
     # Model validation
     val_loss = evaluate_epoch(model, val_loader, loss_fn, device=device)
 
@@ -204,7 +213,7 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
 
         wandb.log(dict_log)
 
-        if np.isnan(train_loss):# or torch.isnan(val_loss):
+        if np.isnan(train_loss) :# or torch.isnan(val_loss):
             
             print("Loss is NaN! Epoch:", epoch)
             wandb.finish()  
