@@ -6,7 +6,7 @@ from . import unet
 
 
 class EncoderMLP(nn.Module):
-    def __init__(self, in_size = 50,in_chan = 1,  latent_dim=1, initw = False):
+    def __init__(self, in_size = 50,in_chan = 1,  latent_dim=1, initw = True):
         super().__init__()
 
         self.l1 = nn.Linear(in_size*in_size*in_chan,500*in_chan )
@@ -33,6 +33,8 @@ class EncoderMLP(nn.Module):
       x = self.relu(self.l1(x))
       x = self.relu(self.l2(x))
       x = self.l3(x)
+
+      x = self.sigmoid(x)
 
       return x
     
@@ -90,6 +92,8 @@ class EncoderCNN(nn.Module):
       x = self.relu(self.l1(x))
       x = self.relu(self.l2(x))
       x = self.l3(x)
+
+      
 
       return x
     

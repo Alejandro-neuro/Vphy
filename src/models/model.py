@@ -130,7 +130,7 @@ class AEModel(nn.Module):
     
 
 class EndPhys(nn.Module):
-    def __init__(self, in_size=50, latent_dim = 1, n_mask = 1, in_channels = 1,  dt = 0.2,  initw = False):
+    def __init__(self, in_size=50, latent_dim = 1, n_mask = 1, in_channels = 1,  dt = 0.2, pmodel = "gravity_ode",  initw = False):
         super().__init__()
 
         self.n_mask = n_mask
@@ -144,7 +144,7 @@ class EndPhys(nn.Module):
         #self.masker = aunet.UNet(c_in = in_channels, c_out=n_mask)
         self.masks = None
         #self.pModel = pModel()
-        self.pModel = PhysModels.Sprin_ode()
+        self.pModel = PhysModels.getModel(pmodel)
         self.dt = dt
     def forward(self, x):    
       frames = x.clone()

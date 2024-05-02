@@ -98,40 +98,53 @@ class Sprin_ode(nn.Module):
 class gravity_ode(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
-        self.g = torch.tensor([1.0], requires_grad=True).float()
-        self.g = nn.Parameter(self.g )
-
-        
+        self.g = torch.tensor([100.0], requires_grad=True).float()
+        self.g = nn.Parameter(self.g )        
 
     def forward(self, z,dt):    
-      #print("z",z.shape)
+    
       
       #z = z.reshape(-1, 2, 2)
 
       device = "cuda" if torch.cuda.is_available() else "cpu"
       dt = torch.tensor([dt], requires_grad=False).float().to(device)
 
+      batch_size = z.shape[0]
+
       pos_t0 = z[:,0,:]
       pos_t1 = z[:,1,:]
+      vel = (pos_t1 - pos_t0)
 
-      vel = (pos_t1 - pos_t0)/dt
+      pos_t1 = pos_t1.view(batch_size, -1, 2)
+      vel = vel.view(batch_size, -1, 2)   
 
-      
-      
-      norm = torch.norm(pos1_t0 - pos2_t0, dim=1, keepdim=True) 
-      direction = (( pos1_t1 - pos2_t1 )/ (norm+1e-4)  )
-      
+      distance = torch.cdist(pos_t1, pos_t1.roll(-1,1)).diagonal(dim1=1, dim2=2)
+      distance = distance # guarantee no division by zero
+      distance = distance.pow(3) # cube the distance
+      distance = (1/distance) +1e-3  # inverse the distance
+      distance = distance.unsqueeze(2).repeat(1,1,2) # repeat the distance to match the shape of the direction
 
-      #if torch.isnan(direction).any():
-       
-        
+      direction = (pos_t1 - pos_t1.roll(-1,1))
 
-      #force  = self.k*(norm - 2*self.l)*direction
-      force = -(self.k*( pos1_t1 - pos2_t1 ) + self.l*direction)
+      forces = -self.g * torch.mul( direction , distance )
+      forces = forces - forces.roll(1,1)
 
-      pos1_t2 = pos1_t1 + vel1_t1*dt + force*dt*dt
-      pos2_t2 = pos2_t1 + vel2_t1*dt - force*dt*dt
-      
-      z_hat = torch.cat([pos1_t2 ,pos2_t2],dim=1).unsqueeze(1)
+      z_hat = pos_t1 + vel + forces*dt*dt    
 
-      return  z_hat
+      #check Nan values
+      if torch.isnan(z_hat).any():
+        print("Nan values in gravity_ode")
+
+      return  z_hat.view(-1,6).unsqueeze(1)
+    
+def getModel(name):
+    if name == "Damped_oscillation":
+        return Damped_oscillation()
+    elif name == "Oscillation":
+        return Oscillation()
+    elif name == "Sprin_ode":
+        return Sprin_ode()
+    elif name == "gravity_ode":
+        return gravity_ode()
+    else:
+        return None

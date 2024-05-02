@@ -131,7 +131,7 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
     if hasattr(model, 'pModel') and hasattr(model, 'encoder'):
         optimizer = torch.optim.Adam([
                 {'params': model.encoder.parameters()},
-                {'params': model.pModel.parameters(), 'lr': 0.1}                         
+                {'params': model.pModel.parameters(), 'lr': 0.05}                         
             ], lr=1e-2)
     else:
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
