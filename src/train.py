@@ -149,19 +149,20 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
 
     model_name = model.__class__.__name__
 
-    wandb.init(
-            # set the wandb project where this run will be logged
-            project="Vphysics-Project-IC",
-            name = "exp_"+model_name+"_"+dt_string,
-            
-            # track hyperparameters and run metadata
-            config={
-            "learning_rate": cfg.optimize.lr,
-            "architecture": model_name,
-            "dataset": "NEURON",
-            "epochs": cfg.train.epochs,
-            }
-        )
+    if cfg.log_wandb:
+        wandb.init(
+                # set the wandb project where this run will be logged
+                project="Vphysics-Project-IC",
+                name = "exp_"+model_name+"_"+dt_string,
+                
+                # track hyperparameters and run metadata
+                config={
+                "learning_rate": cfg.optimize.lr,
+                "architecture": model_name,
+                "dataset": "NEURON",
+                "epochs": cfg.train.epochs,
+                }
+            )
 
     log = []
     train_losses = []
@@ -178,7 +179,8 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
     except:
 
         print("Loss is NaN! Epoch:", epoch)
-        wandb.finish()  
+        if cfg.log_wandb:
+            wandb.finish()  
         model.load_state_dict(best_model_state)
         return model, log
 
@@ -197,8 +199,8 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
     if hasattr(model, 'pModel'):
         for name, value in model.pModel.named_parameters():
             dict_log[name] = value[0].detach().cpu().numpy()
-
-    wandb.log(dict_log)
+    if cfg.log_wandb:
+        wandb.log(dict_log)
     log.append(dict_log)
 
     for epoch in range(1, num_epochs+1):
@@ -208,24 +210,21 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
         val_loss = evaluate_epoch(model, val_loader, loss_fn, device=device)
 
         train_losses.append(train_loss)
-        val_losses.append(val_loss)
-        
-        
+        val_losses.append(val_loss)        
 
         dict_log = {"train_loss": train_loss, "validation_loss": val_loss}
-
         if hasattr(model, 'pModel'):
             for name, value in model.pModel.named_parameters():
                 dict_log[name] = value[0].detach().cpu().numpy().item()
-
         log.append(dict_log)
 
-        wandb.log(dict_log)
+        if cfg.log_wandb:
+            wandb.log(dict_log)
 
-        if np.isnan(train_loss) :# or torch.isnan(val_loss):
-            
+        if np.isnan(train_loss) :            
             print("Loss is NaN! Epoch:", epoch)
-            wandb.finish()  
+            if cfg.log_wandb:
+                wandb.finish()  
             model.load_state_dict(best_model_state)
             return model, log 
             
@@ -243,7 +242,8 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
                 early_stop += 1
             if early_stop == patience:
                 print("Early stopping! Epoch:", epoch)
-                wandb.finish()  
+                if cfg.log_wandb:
+                    wandb.finish()  
                 break
             else:
                 early_stop = 0
@@ -257,7 +257,10 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
         if epoch%(num_epochs /10 )== 0:
             print("epoch:",epoch, "\t training loss:", train_loss,
                   "\t validation loss:",val_loss)
-    wandb.finish()        
+            
+    if cfg.log_wandb:
+        wandb.finish()
+
     model.load_state_dict(best_model_state)
    
     return model, log

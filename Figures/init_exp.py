@@ -22,9 +22,14 @@ def main():
     a = []
     b = []
 
-    plt.figure()
-    for inits in [-20.0, -10.0, -1.0, 1.0,10.0,20.0]:
+    best_a = []	
+    best_b = []
 
+    plt.figure()
+
+    #[ -10.0, -5.0, -1.0,0.0, 1.0, 5.0, 10.0]:
+
+    for inits in [ -10.0, -5.0, -1.0,0.0, 1.0, 5.0, 10.0]:
     
         latentEncoder = mainmodel.EndPhys(dt = dt,  
                                           pmodel = "Damped_oscillation",
@@ -35,17 +40,26 @@ def main():
                                           train_dataloader, 
                                           test_dataloader,                                 
                                           loss_name='latent_loss')
+        
+        best_a.append(latentEncoder.pModel.alpha[0].detach().cpu().numpy().item())
+        best_b.append(latentEncoder.pModel.beta[0].detach().cpu().numpy().item())
+        
         a.append( [element["alpha"] for element in log  ])
         b.append( [element["beta"] for element in log  ] )
 
-    a = np.array(a.pop(0))
-    b = np.array(b.pop(0))
+    a = np.array(a)
+    b = np.array(b)
     cp.plotAreas(a, 4, "gamma1")
     cp.plotAreas(b, 0.01, "gamma2")
 
-    
-    
+    best_a = np.array(best_a)
+    best_b = np.array(best_b)
 
+    print("Best alpha: ", best_a.mean()) 
+    print("Best beta: ", best_b.mean())
+    print("Best alpha std: ", best_a.std())
+    print("Best beta std: ", best_b.std())
 
+    
 if __name__ == "__main__":
     main()
