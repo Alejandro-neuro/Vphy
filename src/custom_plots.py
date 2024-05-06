@@ -1,6 +1,8 @@
 # Plot the training and validation losses.
 import matplotlib.pyplot as plt
 from matplotlib.ticker import (AutoMinorLocator, MultipleLocator)
+import numpy as np
+import os
 
 colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', '#FFA500', '#800080', '#008080']
 
@@ -110,4 +112,45 @@ def plotMatrix(M,xlabel, ylabel,title, name, styleDark = False):
     
     
     plt.show()
+
+def plotAreas(x, GT = 0, parameter_name="" ):
+
+    # Create a figure and axis object
+    fig, ax = plt.subplots(figsize=(5, 5))
+
+    t = np.arange(0, x.shape[1])
+
+    # Plot all vectors
+    for i in range(x.shape[0]):
+        
+        ax.plot(t, x[i,:], color = "cyan")
+    
+
+    # Find the maximum value and its index among all vectors
+    max_values = np.max(x, axis=0)
+    min_values = np.min(x, axis=0)
+
+
+    # Fill the area under the curve of the maximum value vector and under zero
+    ax.fill_between(t, GT, max_values,  color='lightblue', alpha=0.5)
+    ax.fill_between(t, min_values, GT,  color='lightblue', alpha=0.5)
+
+    ax.axis('on')
+    ax.grid(False)
+
+    # Add legend and labels
+    ax.legend()
+    #plt.rc('text', usetex=True)
+    #ax.set_xlabel(r'epoch', fontsize=20)
+    #ax.set_ylabel(r'\gamma_1', fontsize=20)
+
+    plt.tight_layout()
+    folder = "./Figures/figs_init"
+    
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    name_plot = folder+"/"+parameter_name+".png"
+    plt.savefig(name_plot, dpi=300, transparent=True,bbox_inches='tight')
+    plt.show()
+
     

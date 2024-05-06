@@ -115,7 +115,7 @@ def freeze(model, type):
 
     return model
 
-def train(model, train_loader, val_loader, name, type ='normal', loss_name=None):
+def train(model, train_loader, val_loader, type ='normal', loss_name=None):
 
     cfg = OmegaConf.load("config.yaml")
 
@@ -163,9 +163,10 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
             }
         )
 
+    log = []
     train_losses = []
     val_losses = []
-    accuracy_list = []
+
     patience = 50 # patience for early stopping
 
     best_loss = float('inf')  # Initialize with a large value
@@ -179,11 +180,14 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
         print("Loss is NaN! Epoch:", epoch)
         wandb.finish()  
         model.load_state_dict(best_model_state)
-        return model, train_losses, val_losses, accuracy_list  
+        return model, log
 
 
     # Model validation
     val_loss = evaluate_epoch(model, val_loader, loss_fn, device=device)
+
+    train_losses.append(train_loss)
+    val_losses.append(val_loss)
 
     print("Initial Loss", "\t training loss:", train_loss,
                   "\t validation loss:",val_loss)
@@ -195,21 +199,26 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
             dict_log[name] = value[0].detach().cpu().numpy()
 
     wandb.log(dict_log)
+    log.append(dict_log)
 
     for epoch in range(1, num_epochs+1):
         # Model training
         train_loss = train_epoch(model, train_loader, loss_fn,optimizer, device=device)
         # Model validation
         val_loss = evaluate_epoch(model, val_loader, loss_fn, device=device)
-        
+
         train_losses.append(train_loss)
         val_losses.append(val_loss)
+        
+        
 
         dict_log = {"train_loss": train_loss, "validation_loss": val_loss}
 
         if hasattr(model, 'pModel'):
             for name, value in model.pModel.named_parameters():
-                dict_log[name] = value[0].detach().cpu().numpy()
+                dict_log[name] = value[0].detach().cpu().numpy().item()
+
+        log.append(dict_log)
 
         wandb.log(dict_log)
 
@@ -218,7 +227,7 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
             print("Loss is NaN! Epoch:", epoch)
             wandb.finish()  
             model.load_state_dict(best_model_state)
-            return model, train_losses, val_losses, accuracy_list  
+            return model, log 
             
         
         
@@ -250,11 +259,8 @@ def train(model, train_loader, val_loader, name, type ='normal', loss_name=None)
                   "\t validation loss:",val_loss)
     wandb.finish()        
     model.load_state_dict(best_model_state)
-    X = []
-    X.append( { 'x': range(1, num_epochs+1), 'y': train_losses, 'label': 'train_loss'} )
-    X.append({'x': range(1, num_epochs+1), 'y': val_losses, 'label': 'val_loss'} )
-    cp.plotMultiple( X,  'epoch', 'Loss','Performance', name, styleDark = True )
-    return model, train_losses, val_losses, accuracy_list  
+   
+    return model, log
 
 def trainGAN(model, train_loader, val_loader, name, type ='normal'):
 

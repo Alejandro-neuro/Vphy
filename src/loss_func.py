@@ -118,12 +118,7 @@ def latent_loss(input_img, outputs, expected_pred):
         print("loss",loss)
         raise ValueError("Loss is NaN")
         
-        #print("mu",mu)
-        #print("var", z2_encoder.var(0))
-        #print("logvar",logvar)
-        #print("KLD",KLD)
-        #print("loss",loss)
-        #print("total_loss",total_loss)
+
     
 
     return loss + KLD

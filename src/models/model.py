@@ -130,7 +130,7 @@ class AEModel(nn.Module):
     
 
 class EndPhys(nn.Module):
-    def __init__(self, in_size=50, latent_dim = 1, n_mask = 1, in_channels = 1,  dt = 0.2, pmodel = "gravity_ode",  initw = False):
+    def __init__(self, in_size=50, latent_dim = 1, n_mask = 1, in_channels = 1,  dt = 0.2, pmodel = "Damped_oscillation", init_phys = None, initw = False):
         super().__init__()
 
         self.n_mask = n_mask
@@ -139,12 +139,10 @@ class EndPhys(nn.Module):
         self.use_mask = False
 
         self.encoder = encoders.EncoderMLP(in_size = in_size, in_chan=in_channels, latent_dim = latent_dim)
-        #self.encoder = encoders.EncoderCNN(in_channels=1,channels = [1,32,64,128])
-        #self.encoder = encoders.EncoderUNET(in_channels=1)
-        #self.masker = aunet.UNet(c_in = in_channels, c_out=n_mask)
+      
         self.masks = None
         #self.pModel = pModel()
-        self.pModel = PhysModels.getModel(pmodel)
+        self.pModel = PhysModels.getModel(pmodel, init_phys)
         self.dt = dt
     def forward(self, x):    
       frames = x.clone()
@@ -167,7 +165,7 @@ class EndPhys(nn.Module):
             z_temp = self.encoder(mask_frame)
 
           else:
-            z_temp = self.encoder(current_frame)
+            z_temp = self.encoder(frames[:,i,:,:,:])
 
           z_temp = z_temp.unsqueeze(1)
           z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)

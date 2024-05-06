@@ -2,11 +2,17 @@ import torch
 import torch.nn as nn
 
 class Damped_oscillation(nn.Module):
-    def __init__(self, initw = False):
+    def __init__(self, init_phys = None):
         super().__init__()
-        self.alpha = torch.tensor([-0.5], requires_grad=True).float()
+
+        if init_phys is not None:
+            self.alpha = torch.tensor([init_phys], requires_grad=True).float()
+            self.beta = torch.tensor([init_phys], requires_grad=True).float()
+        else:
+            self.alpha = torch.tensor([0.5], requires_grad=True).float()        
+            self.beta = torch.tensor([0.5], requires_grad=True).float()
+
         self.alpha = nn.Parameter(self.alpha )
-        self.beta = torch.tensor([-0.5], requires_grad=True).float()
         self.beta = nn.Parameter(self.beta )
 
     def forward(self, z,dt):    
@@ -137,9 +143,9 @@ class gravity_ode(nn.Module):
 
       return  z_hat.view(-1,6).unsqueeze(1)
     
-def getModel(name):
+def getModel(name, init_phys = None):
     if name == "Damped_oscillation":
-        return Damped_oscillation()
+        return Damped_oscillation(init_phys)
     elif name == "Oscillation":
         return Oscillation()
     elif name == "Sprin_ode":

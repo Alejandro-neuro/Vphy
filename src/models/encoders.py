@@ -34,8 +34,6 @@ class EncoderMLP(nn.Module):
       x = self.relu(self.l2(x))
       x = self.l3(x)
 
-      x = self.sigmoid(x)
-
       return x
     
 class EncoderCNN(nn.Module):
