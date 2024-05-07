@@ -145,6 +145,8 @@ class EndPhys(nn.Module):
         self.pModel = PhysModels.getModel(pmodel, init_phys)
         self.dt = dt
     def forward(self, x):    
+      
+      order = self.pModel.order
       frames = x.clone()
 
       #frame_area_list = [] 
@@ -171,12 +173,12 @@ class EndPhys(nn.Module):
           z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
 
  
-      for i in range(frames.shape[1]-2):
+      for i in range(frames.shape[1]-order):
           
-          z2_phys = self.pModel(z[:,i:i+2],self.dt) if i == 0 else torch.cat((z2_phys,self.pModel(z[:,i:i+2],self.dt)),dim=1)
+          z2_phys = self.pModel(z[:,i:i+order],self.dt) if i == 0 else torch.cat((z2_phys,self.pModel(z[:,i:i+order],self.dt)),dim=1)
 
 
-      z2_encoder = z[:,2:]
+      z2_encoder = z[:,order:]
 
       
       return  z2_encoder, z2_phys

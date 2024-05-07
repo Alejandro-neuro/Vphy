@@ -37,6 +37,89 @@ def generateDynamics(max=1, min=0, dt = 1/100):
     cp.plotMultiple( X,  'time (ms)', 'Intensity','Intensity', 'test', styleDark = True )
     
     return t,a  
+class FitzHugh_Nagumo:
+    def __init__(self, a=0.7, b=0.8, tau=12.5, I=0.5, dt=0.01):
+        self.a = a
+        self.b = b
+        self.tau = tau
+        self.I = I
+        self.dt = dt
+
+    def step(self, v, w):
+        v_new = v + self.dt * (self.a * v - self.b * v ** 3 - w + self.I)
+        w_new = w + self.dt * (v - self.tau * w)
+        return v_new, w_new
+
+    def simulate(self, v0, w0, steps):
+        v = v0
+        w = w0
+        v_list = [v]
+        w_list = [w]
+        for _ in range(steps):
+            v, w = self.step(v, w)
+            v_list.append(v)
+            w_list.append(w)
+        return v_list, w_list
+    
+def generateFitzHughNagumo(a,DynamicsType, a0, a1):
+    fitzHugh_Nagumo_test = FitzHugh_Nagumo()
+    v0 = 0.1
+    w0 = 0.1
+    steps = 1000
+    v, w = fitzHugh_Nagumo_test.simulate(v0, w0, steps)
+
+    X = []
+    X.append( { 'x': np.arange(0,steps+1), 'y': v, 'label': 'v'} )
+    X.append( { 'x': np.arange(0,steps+1), 'y': w, 'label': 'w'} )
+    cp.plotMultiple( X,  'time (ms)', 'Intensity','FitzHugh Nagumo', 'test', styleDark = True )
+
+    return v
+    
+def generateIntegrated_Fire_model(max=1, min=0.2):
+    # Parameters for the integrate-and-fire model
+    tau_m = 10  # Membrane time constant (ms)
+    V_rest = -65  # Resting membrane potential (mV)
+    V_th = -50  # Threshold potential (mV)
+    V_reset = -70  # Reset potential after spike (mV)
+    R = 1  # Membrane resistance (Ohm)
+    I = 2  # Applied current (nA)
+
+    # Simulation parameters
+    dt = 0.01  # Time step (ms)
+    t_max = 100  # Total simulation time (ms)
+    num_steps = int(t_max / dt)  # Number of simulation steps
+
+    # Initialize variables for integrate-and-fire model
+    v_IF = V_rest  # Initial membrane potential (mV)
+
+    # Arrays to store simulation results
+    time = np.arange(0, t_max, dt)
+    I = np.sin(2 * np.pi * time / 50)  # Sinusoidal input current
+    I[I < 0] = 0  # Half-wave rectification
+    I[I > 0] = 1  # Double the current for positive values
+    v_integrate_fire = np.zeros_like(time)
+
+    for i in range(num_steps):
+   
+
+        # Integrate-and-fire model dynamics
+        dv_IF = (V_rest - v_IF + R * I[i]) / tau_m * dt
+        v_IF += dv_IF
+        if v_IF >= V_th:
+            v_IF = V_reset
+
+        # Store membrane potentials
+        v_integrate_fire[i] = v_IF
+
+    v_max = np.max(v_integrate_fire)
+    v_min = np.min(v_integrate_fire)
+    m = (max-min)/(v_max-v_min)
+    b = max - m*v_max
+
+    v_norm = m*v_integrate_fire + b
+
+    return time, v_norm
+
 def create_intensity_image(I, noise = False, shapeType = 'simple', base = None):
     if base is None:
         if shapeType == 'complex':

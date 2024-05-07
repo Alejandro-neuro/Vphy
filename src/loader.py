@@ -143,12 +143,12 @@ def getLoader(X, type , split = True,   dt=1/100, nInFrames = 3,sr = 10 ,  noise
 
             #create train and test dataloaders
 
-            train_dataset = DataLoader( Dataset(train_x, dt=dt, type=type, nInFrames = nInFrames,sr = sr ,  noise=noise, shapeType=shapeType), batch_size=32, shuffle=True)
-            val_dataset = DataLoader( Dataset(val_x, dt=dt, type=type, nInFrames = nInFrames,sr = sr ,  noise=noise, shapeType=shapeType), batch_size=32, shuffle=True)    
+            train_dataset = DataLoader( Dataset(train_x, dt=dt, type=type, nInFrames = nInFrames,sr = sr ,  noise=noise, shapeType=shapeType), batch_size=64, shuffle=True)
+            val_dataset = DataLoader( Dataset(val_x, dt=dt, type=type, nInFrames = nInFrames,sr = sr ,  noise=noise, shapeType=shapeType), batch_size=64, shuffle=True)    
 
             return train_dataset, val_dataset, train_x, val_x 
       else :
-            return DataLoader( Dataset(X, dt=dt, type=type, nInFrames = nInFrames,sr = 10 ,  noise=noise, shapeType=shapeType), batch_size=1, shuffle=False)
+            return DataLoader( Dataset(X, dt=dt, type=type, nInFrames = nInFrames,sr = sr ,  noise=noise, shapeType=shapeType), batch_size=1, shuffle=False)
 
 def getLoader_decoder(X, type , split = True,   dt=1/100, nInFrames = 3,sr = 10 ,  noise=False, shapeType='simple', batch_size=14):   
 

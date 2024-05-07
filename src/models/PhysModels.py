@@ -15,6 +15,8 @@ class Damped_oscillation(nn.Module):
         self.alpha = nn.Parameter(self.alpha )
         self.beta = nn.Parameter(self.beta )
 
+        self.order = 2
+
     def forward(self, z,dt):    
 
       device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -54,6 +56,40 @@ class Oscillation(nn.Module):
 
       return  y_hat
     
+class IntegratedFire(nn.Module):
+    def __init__(self, initw = False):
+        super().__init__()
+        self.R = torch.tensor([-0.5], requires_grad=True).float()
+        self.R = nn.Parameter(self.R )
+
+        self.tau = torch.tensor([0.5], requires_grad=True).float()
+        self.tau = nn.Parameter(self.tau )
+
+        self.Vrest = torch.tensor([0.5], requires_grad=True).float()
+        self.Vrest = nn.Parameter(self.Vrest )
+        
+
+        self.order = 1
+        
+
+    def forward(self, z,dt):    
+
+      device = "cuda" if torch.cuda.is_available() else "cpu"
+      dt = torch.tensor([dt], requires_grad=False).float().to(device)
+
+      v = z[:,0:1,0]
+      i = z[:,0:1,1]
+      
+
+      dt = dt
+
+      v_hat = v+dt * self.tau * ( self.Vrest - v + self.R*i)
+      i_hat = i
+
+      v_hat = torch.cat([v_hat,i_hat],dim=1).unsqueeze(1)
+     
+      return  v_hat
+
 class Sprin_ode(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
@@ -144,6 +180,9 @@ class gravity_ode(nn.Module):
       return  z_hat.view(-1,6).unsqueeze(1)
     
 def getModel(name, init_phys = None):
+
+    if name == "IntegratedFire":
+        return IntegratedFire()
     if name == "Damped_oscillation":
         return Damped_oscillation(init_phys)
     elif name == "Oscillation":
