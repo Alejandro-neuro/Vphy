@@ -239,8 +239,6 @@ def visualize_loader(train_dataloader):
 
         plt.imshow(grid_img.permute(1, 2, 0))
 
-
-
 def CompareLatent(model, loader, name = 'LatentSpace.png'):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
@@ -305,7 +303,6 @@ def CompareLatent_end_phys(model, loader, name = 'LatentSpace_end_phy.png'):
     X.append( { 'x': range(0, len(z2_phys_list) ), 'y': normalize(z2_phys_list ), 'label': 'z2_phys_list' , 'alpha':0.5  } )
     
     cp.plotMultiple( X,  'sample', 'value','Latent Space', name, styleDark = True )
-
 
 def view_masks(model, loader, iters = 10):
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -392,9 +389,6 @@ def view_masks(model, loader, iters = 10):
         iter += 1
 
     return
-
-    
-
 
 def CompareError(model, loader, name = 'ErrorImg.png'):
     device = "cuda" if torch.cuda.is_available() else "cpu"

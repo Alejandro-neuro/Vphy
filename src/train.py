@@ -128,6 +128,8 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
 
     #optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
+    
+
     if hasattr(model, 'pModel') and hasattr(model, 'encoder'):
         optimizer = torch.optim.Adam([
                 {'params': model.encoder.parameters()},
@@ -135,6 +137,12 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
             ], lr=1e-2)
     else:
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+    optimizer = torch.optim.Adam([
+            {'params': model.encoder.parameters()},
+            {'params': model.pModel.parameters(), 'lr': 0.05}                         
+        ], lr=1e-2)
+        
     ##{'params': model.pModel.parameters(), 'lr': 0.05}      
     ##{'params':  model.pModel.alpha, 'lr': 0.05}, 
     ##{'params': model.pModel.beta, 'lr': 0.005}
@@ -171,6 +179,7 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
     patience = 50 # patience for early stopping
 
     best_loss = float('inf')  # Initialize with a large value
+    best_val_loss = float('inf')  # Initialize with a large value
     best_model_state = None
 
     # Model training
@@ -250,11 +259,12 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
         except:
             early_stop = 0
 
-        if train_loss < best_loss:
+        if train_loss < best_loss and val_loss < best_val_loss:
             best_loss = train_loss
+            best_val_loss = val_loss
             best_model_state = model.state_dict()
 
-        if epoch%(num_epochs /10 )== 0:
+        if epoch%(num_epochs /10 )== 0 and cfg.log_wandb:
             print("epoch:",epoch, "\t training loss:", train_loss,
                   "\t validation loss:",val_loss)
             

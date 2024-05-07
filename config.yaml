@@ -4,7 +4,7 @@ optimize:
   lr: 0.001
 train:
   epochs: 50
-  batch_size: 32
+  batch_size: 64
 dataset:
   path: MNIST
   test_size: 0.2

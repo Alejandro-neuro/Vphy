@@ -44,11 +44,6 @@ def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False, show = Fals
             alpha = row['alpha']
         except:
             alpha = 1.0 
-      
-
-
-    
-
         plt.plot(x,y, color=color, linewidth =3, label=f'{row["label"]}', alpha = alpha)
     
     plt.legend(fontsize="20", loc ="upper left")
@@ -118,12 +113,14 @@ def plotAreas(x, GT = 0, parameter_name="" ):
     # Create a figure and axis object
     fig, ax = plt.subplots(figsize=(5, 5))
 
+    plt.style.use('default')
+
     t = np.arange(0, x.shape[1])
 
     # Plot all vectors
     for i in range(x.shape[0]):
         
-        ax.plot(t, x[i,:], color = "cyan")
+        ax.plot(t, x[i,:], color = "deepskyblue",  linewidth=1)
     
 
     # Find the maximum value and its index among all vectors
@@ -137,14 +134,11 @@ def plotAreas(x, GT = 0, parameter_name="" ):
 
     ax.axis('on')
     ax.grid(False)
-
-    # Add legend and labels
-    ax.legend()
-    #plt.rc('text', usetex=True)
-    #ax.set_xlabel(r'epoch', fontsize=20)
-    #ax.set_ylabel(r'\gamma_1', fontsize=20)
+    
 
     plt.tight_layout()
+    plt.tick_params(axis='x', colors='black')  # Set x-axis color to black
+    plt.tick_params(axis='y', colors='black')
     folder = "./Figures/figs_init"
     
     if not os.path.exists(folder):

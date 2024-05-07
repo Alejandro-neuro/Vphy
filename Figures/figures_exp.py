@@ -68,6 +68,7 @@ def main():
         #axes[row_index, col_index].text(0.5, 0.5, row_letters[row_index], fontsize=20, color='red', ha='center', va='center')
 
     # Adjust layout
+    plt.style.use('default')
     plt.tight_layout()
     name_sub = folder+"/fig_exp.png"
     plt.savefig(name_sub, dpi=300, transparent=True,bbox_inches='tight')
