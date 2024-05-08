@@ -19,9 +19,9 @@ def generatePendulumA(g,L,a0, a1):
     t = np.arange(0,30,1/30)
     a = (np.cos(5*t)*np.exp(-.1*t) )*np.pi/2
     
-    X = []
-    X.append( { 'x': t, 'y': a, 'label': 'Pendulum angle'} )
-    cp.plotMultiple( X,  'time (ms)', 'Angle','Pendulum angle', 'test', styleDark = True )
+    #X = []
+    #X.append( { 'x': t, 'y': a, 'label': 'Pendulum angle'} )
+    #cp.plotMultiple( X,  'time (ms)', 'Angle','Pendulum angle', 'test', styleDark = False )
     
     return t,a    
 
@@ -32,9 +32,9 @@ def generateDynamics(max=1, min=0, dt = 1/100):
     a = m*np.exp(-0.02*t)*np.cos(2*t)+b
     #a = m*np.cos(2*t)+b
     
-    X = []
-    X.append( { 'x': t, 'y': a, 'label': 'Intensity'} )
-    cp.plotMultiple( X,  'time (ms)', 'Intensity','Intensity', 'test', styleDark = True )
+    #X = []
+    #X.append( { 'x': t, 'y': a, 'label': 'Intensity'} )
+    #cp.plotMultiple( X,  'time (ms)', 'Intensity','Intensity', 'test', styleDark = False )
     
     return t,a  
 class FitzHugh_Nagumo:
@@ -68,10 +68,10 @@ def generateFitzHughNagumo(a,DynamicsType, a0, a1):
     steps = 1000
     v, w = fitzHugh_Nagumo_test.simulate(v0, w0, steps)
 
-    X = []
-    X.append( { 'x': np.arange(0,steps+1), 'y': v, 'label': 'v'} )
-    X.append( { 'x': np.arange(0,steps+1), 'y': w, 'label': 'w'} )
-    cp.plotMultiple( X,  'time (ms)', 'Intensity','FitzHugh Nagumo', 'test', styleDark = True )
+    #X = []
+    #X.append( { 'x': np.arange(0,steps+1), 'y': v, 'label': 'v'} )
+    #X.append( { 'x': np.arange(0,steps+1), 'y': w, 'label': 'w'} )
+    #cp.plotMultiple( X,  'time (ms)', 'Intensity','FitzHugh Nagumo', 'test', styleDark = True )
 
     return v
     

@@ -132,6 +132,8 @@ def plotAreas(x, GT = 0, parameter_name="" ):
     ax.fill_between(t, GT, max_values,  color='lightblue', alpha=0.5)
     ax.fill_between(t, min_values, GT,  color='lightblue', alpha=0.5)
 
+    
+
     ax.axis('on')
     ax.grid(False)
     
@@ -139,6 +141,13 @@ def plotAreas(x, GT = 0, parameter_name="" ):
     plt.tight_layout()
     plt.tick_params(axis='x', colors='black')  # Set x-axis color to black
     plt.tick_params(axis='y', colors='black')
+
+    #set fotn size axis numbers
+    plt.rc('xtick', labelsize=25)
+    plt.rc('ytick', labelsize=25)
+    plt.rc('font', family='serif')
+
+
     folder = "./Figures/figs_init"
     
     if not os.path.exists(folder):

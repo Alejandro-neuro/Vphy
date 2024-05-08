@@ -273,7 +273,7 @@ def CompareLatent(model, loader, name = 'LatentSpace.png'):
     X.append( { 'x': range(0, len(z1_list) ), 'y': normalize(z1_list ), 'label': 'z1' , 'alpha':0.5  } )
     X.append( { 'x': range(0, len(z2_list) ), 'y': normalize(z2_list ), 'label': 'z2' , 'alpha':0.5  } )
     
-    cp.plotMultiple( X,  'sample', 'value','Latent Space', name, styleDark = True )
+    cp.plotMultiple( X,  'sample', 'value','Latent Space', name, styleDark = False )
 def CompareLatent_end_phys(model, loader, name = 'LatentSpace_end_phy.png'):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
@@ -302,7 +302,7 @@ def CompareLatent_end_phys(model, loader, name = 'LatentSpace_end_phy.png'):
     X.append( { 'x': range(0, len(z2_encoder_list) ), 'y': normalize(z2_encoder_list ), 'label': 'z2_encoder_list' , 'alpha':0.5  } )
     X.append( { 'x': range(0, len(z2_phys_list) ), 'y': normalize(z2_phys_list ), 'label': 'z2_phys_list' , 'alpha':0.5  } )
     
-    cp.plotMultiple( X,  'sample', 'value','Latent Space', name, styleDark = True )
+    cp.plotMultiple( X,  'sample', 'value','Latent Space', name, styleDark = False )
 
 def view_masks(model, loader, iters = 10):
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -431,7 +431,7 @@ def CompareError(model, loader, name = 'ErrorImg.png'):
     X.append( { 'x': range(0, len(z1_list) ), 'y': normalize(z1_list ), 'label': 'Error recontruction' , 'alpha':0.5  } )
 
     
-    cp.plotMultiple( X,  'sample', 'value','Latent Space', name, styleDark = True )
+    cp.plotMultiple( X,  'sample', 'value','Latent Space', name, styleDark = False )
 
 def normalize(x):
     # normalize list of values to max value 1 and mean 0

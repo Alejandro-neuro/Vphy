@@ -1,5 +1,7 @@
-name: /Users/alejandro/Documents/Phd/Repositories/Own/Vphy/.conda
+name: vphys
 channels:
+  - pytorch
+  - defaults
   - conda-forge
   - defaults
 dependencies:
