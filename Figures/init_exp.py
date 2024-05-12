@@ -1,4 +1,8 @@
-import Data.genData as genData
+import sys,os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+
+from Data import genData as genData
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,6 +15,7 @@ from src import custom_plots as cp
 
 
 def main():
+
 
     for dyn_type in ["Motion","Scale","Intensity"]:
 

@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from omegaconf import OmegaConf
+import numpy as np
 
 def getMaxValues(x1):
     max_values_dim1, _ = torch.max(x1, dim=1)
@@ -29,9 +30,6 @@ def manual_MSE(pred_img, expected_pred):
     squared_errors = (pred_img - expected_pred) ** 2
     log_errors = 10*torch.log(squared_errors +1)
     return torch.mean(log_errors)
-
-     
-
 
 def custom_loss(input_img, outputs, expected_pred):
     lossMSE = nn.MSELoss()
@@ -97,9 +95,16 @@ def latent_loss(input_img, outputs, expected_pred):
     z2_encoder, z2_phys = outputs
 
     #print("z2_encoder",z2_encoder.shape)
+    z2_encoder = z2_encoder.reshape(-1, z2_encoder.shape[2])
+    z2_phys = z2_phys.reshape(-1, z2_phys.shape[2])
+    
+
+    #print("z2_encoder",z2_encoder.shape)
     #print("z2_phys",z2_phys.shape)
     loss_MSE = nn.MSELoss()
     loss = loss_MSE(z2_encoder, z2_phys)
+
+    
 
     
     mu = z2_encoder.mean(0)
@@ -108,7 +113,31 @@ def latent_loss(input_img, outputs, expected_pred):
     logvar = torch.log(z2_encoder.var(0))
     #print("logvar",logvar.shape)
 
-    KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+    #mu = mu.view(-1)
+    #logvar = logvar.view(-1)
+
+    mu_2 = 0.5
+    var_2 = 0.5
+
+    KLD = 0.5 * torch.sum( ((mu-mu_2).pow(2))/var_2 + logvar.exp()/var_2 - 1 - logvar - np.log(var_2) )
+
+    #KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+
+    max = torch.max(z2_encoder,0)[0]
+    min = torch.min(z2_encoder,0)[0]
+
+    #print("max",max)
+    #print("max_shape",max.shape)
+
+
+
+    log_uniform = torch.log( (1)/(max-min) )
+
+    log_uniform = log_uniform.sum()
+
+    #print("log_uniform",log_uniform.shape)
+    
+    KLD_uniform =  0
 
     #print("KLD",KLD.shape)
 
@@ -122,7 +151,6 @@ def latent_loss(input_img, outputs, expected_pred):
     
 
     return loss + KLD
-
 
 def getLoss(loss = None):
 

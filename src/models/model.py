@@ -188,17 +188,18 @@ class EndPhys(nn.Module):
     
 
 class EndPhysMultiple(nn.Module):
-    def __init__(self, in_size=50, latent_dim = 1, n_mask = 1, in_channels = 1,  dt = 0.2,  initw = False):
+    def __init__(self, in_size=50, latent_dim = 1, n_mask = 1, in_channels = 1,  dt = 0.2, pmodel = "Damped_oscillation", init_phys = None, initw = False):
         super().__init__()
 
         self.n_mask = n_mask
         self.in_channels = in_channels 
         
-        self.encoder = encoders.EncoderMLP(in_size = in_size, latent_dim = latent_dim)
-        self.masker = aunet.UNet(c_in = in_channels, c_out=n_mask, img_size=in_size)
+        self.encoder = encoders.EncoderMLP(in_size = in_size, in_chan=1, latent_dim = latent_dim)
+        self.encoder1 = encoders.EncoderMLP(in_size = in_size, in_chan=1, latent_dim = latent_dim)
+        #self.masker = aunet.UNet(c_in = in_channels, c_out=n_mask, img_size=in_size)
         self.masks = None
 
-        self.pModel = PhysModels.Sprin_ode()
+        self.pModel = PhysModels.getModel(pmodel, init_phys)
         self.dt = dt
     def forward(self, x):    
       frames = x.clone()
@@ -212,29 +213,45 @@ class EndPhysMultiple(nn.Module):
 
           current_frame = frames[:,i,:,:,:]
 
-          #print("current_frame",current_frame.shape)
-          mask = self.masker(current_frame) 
-          #print("mask",mask.shape)
+          
+          #mask = self.masker(current_frame) 
+          #self.masks = mask if i == 0 else torch.cat((self.masks,mask),dim=1)
 
-          self.masks = mask if i == 0 else torch.cat((self.masks,mask),dim=1)
+          #z_obj = None
 
-          z_obj = None
+          p1 = self.encoder(current_frame[:,0:1,:,:])
+          p2 = self.encoder1(current_frame[:,1:2,:,:])
 
-          for indx_mask in range(0, self.n_mask):
-            mask_obj = mask[:,indx_mask:indx_mask+1,:,:]
-            #print("mask_obj",mask_obj.shape)
-            mask_frame = current_frame * mask_obj
-            mask_frame = torch.mean(mask_frame, dim=1, keepdim=True)
-            #print("mask_frame",mask_frame.shape)
-            z_obj = self.encoder(mask_frame)
-            z_obj = z_obj.unsqueeze(1)
-            #print("z_obj",z_obj.shape)
-            z_hor = z_obj if indx_mask == 0 else torch.cat((z_hor,z_obj),dim=2)
-            #print("z_hor",z_hor.shape)
+          z_temp = torch.cat((p1.unsqueeze(1),p2.unsqueeze(1)),dim=2)
+
+          #for indx_mask in range(0, self.n_mask):
+            # mask_obj = mask[:,indx_mask:indx_mask+1,:,:]            
+            # mask_frame = current_frame * mask_obj
+            # mask_frame = torch.mean(mask_frame, dim=1, keepdim=True)
+
+            #mask_frame = current_frame[:,indx_mask:indx_mask+1,:,:] 
+
+            #z_obj = self.encoder(mask_frame)
+
+            # if indx_mask == 0:
+            #    z_obj = self.encoder(mask_frame)
+            # if indx_mask == 1:
+            #    z_obj = self.encoder1(mask_frame)
+            
+            #z_obj = z_obj.unsqueeze(1)
+            
+            #z_hor = z_obj if indx_mask == 0 else torch.cat((z_hor,z_obj),dim=2)
+
           
           
-          z_temp = z_hor
+          
+          
+          
+          #z_temp = z_hor
           z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
+
+         
+          
       z = z.squeeze(2)
 
           #frame_area_list= frame_area.unsqueeze(1) if i == 0 else torch.cat((frame_area_list,frame_area.unsqueeze(1)),dim=1)
@@ -247,7 +264,7 @@ class EndPhysMultiple(nn.Module):
           
           z2_phys = pred_window if i == 0 else torch.cat((z2_phys,pred_window),dim=1)
 
-
+      #print(z2_phys.shape)
       z2_encoder = z[:,2:]
       
       return  z2_encoder, z2_phys

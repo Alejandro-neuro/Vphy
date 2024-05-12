@@ -126,10 +126,18 @@ class Dataset_from_folder(torch.utils.data.Dataset):
       def __getitem__(self, index):
             'Generates one sample of data'     
             
-            input = torch.from_numpy(self.x[index].transpose( (0,3,1,2)))
-            out = input
+            #input = torch.from_numpy(self.x[index].transpose( (0,3,1,2)))
+            #input = self.x[index] ## paper #2
+            input = self.x[index].transpose( (0,3,1,2))
 
-          
+            input = input[:,0:2,:,:]
+
+            input[input < 205] = 0
+
+            input = input/255.0
+            
+            input = torch.from_numpy(input)
+            out = input         
 
             return input, out
             
@@ -143,8 +151,8 @@ def getLoader(X, type , split = True,   dt=1/100, nInFrames = 3,sr = 10 ,  noise
 
             #create train and test dataloaders
 
-            train_dataset = DataLoader( Dataset(train_x, dt=dt, type=type, nInFrames = nInFrames,sr = sr ,  noise=noise, shapeType=shapeType), batch_size=128, shuffle=True)
-            val_dataset = DataLoader( Dataset(val_x, dt=dt, type=type, nInFrames = nInFrames,sr = sr ,  noise=noise, shapeType=shapeType), batch_size=128, shuffle=True)    
+            train_dataset = DataLoader( Dataset(train_x, dt=dt, type=type, nInFrames = nInFrames,sr = sr ,  noise=noise, shapeType=shapeType), batch_size=128, shuffle=False)
+            val_dataset = DataLoader( Dataset(val_x, dt=dt, type=type, nInFrames = nInFrames,sr = sr ,  noise=noise, shapeType=shapeType), batch_size=128, shuffle=False)    
 
             return train_dataset, val_dataset, train_x, val_x 
       else :

@@ -9,7 +9,7 @@ colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', '#FFA500', '#800080', '#008080']
 colors_dark = ['#00FFFF', '#FF1493', '#00FF00', '#FF4500', '#ADFF2F', '#FF00FF', '#1E90FF', '#FF69B4', '#20B2AA', '#FF8C00']
 
 
-def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False, show = False ):
+def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False, show = False, plot_type = 'plot' ):
 
     if(show):
         plt.ioff()
@@ -44,7 +44,12 @@ def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False, show = Fals
             alpha = row['alpha']
         except:
             alpha = 1.0 
-        plt.plot(x,y, color=color, linewidth =3, label=f'{row["label"]}', alpha = alpha)
+        if plot_type == 'scatter':
+            plt.scatter(x,y, color=color, label=f'{row["label"]}', alpha = alpha)
+        elif plot_type == 'hist':
+            plt.hist(y, bins=100, color=color, label=f'{row["label"]}', alpha = alpha)
+        else:
+            plt.plot(x,y, color=color, linewidth =3, label=f'{row["label"]}', alpha = alpha)
     
     plt.legend(fontsize="20", loc ="upper left")
     plt.savefig(f'./plots/{name}.png')
@@ -52,6 +57,9 @@ def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False, show = Fals
         plt.show()
     else:
         plt.close()
+
+
+
 
 def plotMatrix(M,xlabel, ylabel,title, name, styleDark = False):
 

@@ -293,15 +293,25 @@ def CompareLatent_end_phys(model, loader, name = 'LatentSpace_end_phy.png'):
         outputs = model(x0)
         z2_encoder, z2_phys=outputs
 
+        print(z2_encoder.shape)
         
-        z2_encoder_list.append(z2_encoder.detach().cpu().numpy()[0][0])
-        z2_phys_list.append(z2_phys.detach().cpu().numpy()[0][0]) 
+
+        
+        #z2_encoder_list.append(z2_encoder.detach().cpu().numpy()[0][0])
+        #z2_phys_list.append(z2_phys.detach().cpu().numpy()[0][0]) 
+        z2_encoder_list=z2_encoder.detach().cpu().numpy()[0,:,0]
+        z2_phys_list=z2_phys.detach().cpu().numpy()[0,:,0]
+        break
 
 
     X = []
-    X.append( { 'x': range(0, len(z2_encoder_list) ), 'y': normalize(z2_encoder_list ), 'label': 'z2_encoder_list' , 'alpha':0.5  } )
-    X.append( { 'x': range(0, len(z2_phys_list) ), 'y': normalize(z2_phys_list ), 'label': 'z2_phys_list' , 'alpha':0.5  } )
+    #X.append( { 'x': range(0, len(z2_encoder_list) ), 'y': normalize(z2_encoder_list ), 'label': 'z2_encoder_list' , 'alpha':0.5  } )
+    #X.append( { 'x': range(0, len(z2_phys_list) ), 'y': normalize(z2_phys_list ), 'label': 'z2_phys_list' , 'alpha':0.5  } )
     
+    X.append( { 'x': range(0, len(z2_encoder_list) ), 'y': z2_encoder_list , 'label': 'z2_encoder_list' , 'alpha':0.5  } )
+    X.append( { 'x': range(0, len(z2_phys_list) ), 'y': z2_phys_list , 'label': 'z2_phys_list' , 'alpha':0.5  } )
+    
+
     cp.plotMultiple( X,  'sample', 'value','Latent Space', name, styleDark = False )
 
 def view_masks(model, loader, iters = 10):
@@ -432,6 +442,182 @@ def CompareError(model, loader, name = 'ErrorImg.png'):
 
     
     cp.plotMultiple( X,  'sample', 'value','Latent Space', name, styleDark = False )
+
+def visualize_latent_dist(model, loader):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model.to(device)
+
+    z2_encoder_list = None
+    z2_phys_list = None
+
+
+    for data in loader:
+
+        input_Data, out_Data = data
+
+        x0 = input_Data
+
+        x0 = x0.to(device=device, dtype=torch.float)
+
+        outputs = model(x0)
+        z2_encoder, z2_phys=outputs
+
+        #print(z2_encoder.shape)
+
+        z2_encoder = z2_encoder.squeeze(0)
+        z2_phys = z2_phys.squeeze(0)
+        
+
+        
+        #z2_encoder_list.append(z2_encoder.detach().cpu().numpy()[0][0])
+        #z2_phys_list.append(z2_phys.detach().cpu().numpy()[0][0]) 
+        z2_encoder_list=z2_encoder.detach().cpu().numpy() if z2_encoder_list is None else np.concatenate((z2_encoder_list, z2_encoder.detach().cpu().numpy() ))
+        z2_phys_list=z2_phys.detach().cpu().numpy() if z2_phys_list is None else np.concatenate((z2_phys_list, z2_phys.detach().cpu().numpy() ))
+        
+
+
+    X = []
+    #X.append( { 'x': range(0, len(z2_encoder_list) ), 'y': normalize(z2_encoder_list ), 'label': 'z2_encoder_list' , 'alpha':0.5  } )
+    #X.append( { 'x': range(0, len(z2_phys_list) ), 'y': normalize(z2_phys_list ), 'label': 'z2_phys_list' , 'alpha':0.5  }
+    #print(z2_encoder_list.shape)
+    n_epoch = z2_encoder_list.shape[0]
+    d_dim = z2_encoder_list.shape[1]
+
+    for i in range(d_dim):
+    
+        X.append( { 'x': range(0, n_epoch ), 'y': z2_encoder_list[:,i] , 'label': 'z2_encoder_list_'+str(i) , 'alpha':0.5  } )
+        #X.append( { 'x': range(0, n_epoch ), 'y': z2_phys_list[:,i] , 'label': 'z2_phys_list_'+str(i) , 'alpha':0.5  } )
+    
+
+    cp.plotMultiple( X,  'sample', 'value','Latent Space', "data distribution", show=True, styleDark = False, plot_type='hist'	 )
+    #cp.plotMultiple( X,  'sample', 'value','Latent Space', "data distribution", show=True,styleDark = False, plot_type='plot'	 )
+
+def get_center_mass(image):
+    
+    image = image.detach().cpu().numpy()*255
+    # Threshold the image to create a binary mask
+    _, binary_mask = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
+
+    # Calculate moments
+    moments = cv2.moments(binary_mask)
+
+    # Calculate center of mass
+    if moments['m00'] != 0:
+        center_of_mass_x = int(moments['m10'] / moments['m00'])
+        center_of_mass_y = int(moments['m01'] / moments['m00'])
+        center_of_mass = [center_of_mass_x, center_of_mass_y]
+        #print("Center of Mass:", center_of_mass)
+    else:
+        print("No center of mass found, image is likely empty.")
+
+    return np.array(center_of_mass)
+
+def vis_frame_masks(img):
+
+    img_hor = None
+
+    for  f in range(img.shape[0]):
+
+        m1 = img[f,0,:,:].detach().cpu().numpy() 
+        m2 = img[f,1,:,:].detach().cpu().numpy() 
+        
+
+        img_ver = np.concatenate((m1, m2), axis=0)
+
+        img_ver = np.concatenate((img_ver, np.abs(m1+m2)), axis=0)
+
+        img_hor = img_ver if f == 0 else np.concatenate((img_hor, img_ver), axis=1)
+
+    plt.figure()
+    plt.imshow(img_hor, cmap='gray')
+    plt.show()
+        
+
+   
+
+
+def visualize_cm(model, loader):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model.to(device)
+
+    z2_encoder_list = None
+    z2_phys_list = None
+
+
+    iter = 0
+
+    for data in loader:
+
+        iter += 1
+
+        if iter != 10:
+                continue
+
+        input_Data, out_Data = data
+
+        x0 = input_Data
+
+        x0 = x0.to(device=device, dtype=torch.float)
+
+        vis_frame_masks(x0[0])
+
+        list_cm = []
+
+        for frame in range(2,x0.shape[1]):
+
+            
+
+            img_0 = x0[0,frame,0,:,:]
+            img_1 = x0[0,frame,1,:,:]
+            
+            cm_0 = get_center_mass(img_0)
+            cm_1 = get_center_mass(img_1)
+
+            
+
+            cm = np.concatenate((cm_0, cm_1))
+            
+
+            list_cm = cm if list_cm == [] else np.vstack((list_cm, cm))
+
+
+        outputs = model(x0)
+        z2_encoder, z2_phys=outputs
+
+        #print(z2_encoder.shape)
+
+        z2_encoder = z2_encoder.squeeze(0)
+        z2_phys = z2_phys.squeeze(0)
+        
+
+        
+        #z2_encoder_list.append(z2_encoder.detach().cpu().numpy()[0][0])
+        #z2_phys_list.append(z2_phys.detach().cpu().numpy()[0][0]) 
+        z2_encoder_list=z2_encoder.detach().cpu().numpy() 
+        z2_phys_list=z2_phys.detach().cpu().numpy() 
+
+        break
+
+  
+    z2_encoder_list  = z2_encoder_list 
+    plt.figure()
+
+    t = range(z2_encoder_list.shape[0])
+    plt.plot(t,z2_encoder_list[:,0], '-b', label='z2_encoder_list_0')
+    plt.plot(t,z2_encoder_list[:,1], '-g',label='z2_encoder_list_1')
+    plt.plot(t,z2_encoder_list[:,2], '-y',label='z2_encoder_list_2')
+    plt.plot(t,z2_encoder_list[:,3], '-r',label='z2_encoder_list_3')
+    plt.legend()
+    plt.show()
+
+    plt.plot(t,list_cm[:,0], '--b',label='center_mass_0')
+    plt.plot(t,list_cm[:,1], '--g',label='center_mass_1')
+    plt.plot(t,list_cm[:,2], '--y',label='center_mass_2')
+    plt.plot(t,list_cm[:,3], '--r',label='center_mass_3')
+
+    plt.legend()
+    plt.show()
+
 
 def normalize(x):
     # normalize list of values to max value 1 and mean 0

@@ -140,7 +140,7 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
 
     optimizer = torch.optim.Adam([
             {'params': model.encoder.parameters()},
-            {'params': model.pModel.parameters(), 'lr': 0.05}                         
+            {'params': model.pModel.parameters(), 'lr': 0.1}                         
         ], lr=1e-2)
         
     ##{'params': model.pModel.parameters(), 'lr': 0.05}      
@@ -207,7 +207,8 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
 
     if hasattr(model, 'pModel'):
         for name, value in model.pModel.named_parameters():
-            dict_log[name] = value[0].detach().cpu().numpy()
+            dict_log[name] = value[0].detach().cpu().numpy().item()
+
     if cfg.log_wandb:
         wandb.log(dict_log)
     log.append(dict_log)
@@ -267,6 +268,11 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
         if epoch%(num_epochs /10 )== 0 and cfg.log_wandb:
             print("epoch:",epoch, "\t training loss:", train_loss,
                   "\t validation loss:",val_loss)
+            
+        #if epoch == 2:
+        #    return model, log
+            
+        
             
     if cfg.log_wandb:
         wandb.finish()

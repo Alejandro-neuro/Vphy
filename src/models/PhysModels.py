@@ -96,7 +96,7 @@ class Sprin_ode(nn.Module):
         self.k = torch.tensor([1.0], requires_grad=True).float()
         self.k = nn.Parameter(self.k )
 
-        self.l = torch.tensor([10.0], requires_grad=True).float()
+        self.l = torch.tensor([1.0], requires_grad=True).float()
         self.l = nn.Parameter(self.l )
 
     def forward(self, z,dt):    
@@ -182,7 +182,10 @@ class gravity_ode(nn.Module):
 def getModel(name, init_phys = None):
 
     if name == "IntegratedFire":
+
         return IntegratedFire()
+    if name == "ODE_2ObjectsSpring":
+        return ODE_2ObjectsSpring(init_phys[0], init_phys[1])
     if name == "Damped_oscillation":
         return Damped_oscillation(init_phys)
     elif name == "Oscillation":
@@ -193,3 +196,83 @@ def getModel(name, init_phys = None):
         return gravity_ode()
     else:
         return None
+    
+class ODE_2ObjectsSpring(nn.Module):
+    def __init__(self, k, eq_distance):
+        super().__init__()
+
+        self.k = torch.tensor([k], requires_grad=True).float()
+        self.eq_distance = torch.tensor([eq_distance], requires_grad=True).float()
+
+        self.k = nn.Parameter(self.k)
+        self.eq_distance = nn.Parameter(self.eq_distance)
+
+    def forward(self, x, dt):
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        dt = torch.tensor([dt], requires_grad=False).float().to(device)
+    
+        
+        p1 = x[:,1,0:2]
+        p2 = x[:,1,2:4]
+
+        p1_0 = x[:,0,0:2]
+        p2_0 = x[:,0,2:4]
+
+        v1 = (p1 - p1_0)/dt
+        v2 = (p2 - p2_0)/dt 
+
+        #print("p1",p1.shape)
+        #print("x",x.shape)
+
+    
+
+        
+
+        #F = self.k*(p1 - p2) - self.eq_distance*(p1 - p2) / torch.norm(p1 - p2)
+
+        # From other code
+        norm = torch.norm(p1 - p2) 
+        norm2 = torch.cdist(p1, p2)
+
+        euclidean_distance = torch.sum((p1 - p2)**2, dim=1, keepdim=True).sqrt() + 1e-4
+
+        
+
+        # print("norm",norm.shape)
+        # print("norm2",norm2.shape)
+        # print("euclidean_distance",euclidean_distance.shape)
+
+        # print("p1",p1)
+        # print("p2",p2)
+        # print("euclidean_distance",euclidean_distance)
+        # direction = (p1 - p2)/euclidean_distance
+        # print("direction",direction)
+
+        if False:
+            raise ValueError("Nan values in ODE_2ObjectsSpring")
+
+        direction = (p1 - p2)/euclidean_distance
+        Force = self.k*(euclidean_distance - 2*self.eq_distance)*direction
+
+        #F = -self.k*(p1 - p2) - self.eq_distance*((p1 - p2) / euclidean_distance)
+        if torch.isnan(euclidean_distance).any():
+            print("Nan values in euclidean_distance")
+        
+        if torch.isnan(direction).any():
+            print("Nan values in direction")
+
+        if torch.isnan(Force).any():
+            print("Nan values in Force")
+
+        p1_new = p1 + v1*dt - Force*dt*dt
+        p2_new = p2 + v2*dt + Force*dt*dt
+
+        
+        z_hat = torch.cat([p1_new ,p2_new],dim=1).unsqueeze(1)
+
+        #print("z",x)
+
+        #print("z_hat",z_hat)
+
+        return z_hat
+    
