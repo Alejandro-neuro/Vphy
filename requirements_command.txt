@@ -1,0 +1,19 @@
+matplotlib==3.8.4
+numpy==1.26.4
+omegaconf==2.3.0
+opencv
+pandas==2.2.2
+Pillow==10.3.0
+scikit_learn==1.4.2
+torch==2.2.2
+torchvision==0.17.2
+tqdm==4.66.4
+wandb
+
+
+matplotlib numpy omegaconf opencv_python pandas Pillow scikit_learn torch torchvision tqdm
+
+
+-c conda-forge scikit-learn  pytorch menpo
+
+conda config --add channels conda-forge scikit-learn  pytorch menpo

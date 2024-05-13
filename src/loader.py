@@ -151,8 +151,8 @@ def getLoader(X, type , split = True,   dt=1/100, nInFrames = 3,sr = 10 ,  noise
 
             #create train and test dataloaders
 
-            train_dataset = DataLoader( Dataset(train_x, dt=dt, type=type, nInFrames = nInFrames,sr = sr ,  noise=noise, shapeType=shapeType), batch_size=128, shuffle=False)
-            val_dataset = DataLoader( Dataset(val_x, dt=dt, type=type, nInFrames = nInFrames,sr = sr ,  noise=noise, shapeType=shapeType), batch_size=128, shuffle=False)    
+            train_dataset = DataLoader( Dataset(train_x, dt=dt, type=type, nInFrames = nInFrames,sr = sr ,  noise=noise, shapeType=shapeType), batch_size=32, shuffle=False)
+            val_dataset = DataLoader( Dataset(val_x, dt=dt, type=type, nInFrames = nInFrames,sr = sr ,  noise=noise, shapeType=shapeType), batch_size=32, shuffle=False)    
 
             return train_dataset, val_dataset, train_x, val_x 
       else :

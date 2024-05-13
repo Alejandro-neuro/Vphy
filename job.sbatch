@@ -14,5 +14,7 @@ module load cuda/11.2 cudnn/11.2-8.1.1.33
 
 echo 'conda activate vphys'
 
+export WANDB_API_KEY="5627524443770cf7995a564065ff75a9522b1a48"
+
 
 srun python Vphy_c/Figures/init_exp.py

@@ -105,7 +105,8 @@ def latent_loss(input_img, outputs, expected_pred):
     loss = loss_MSE(z2_encoder, z2_phys)
 
     
-
+    #z2_encoder = z2_encoder.reshape(-1,2)
+    #z2_phys = z2_phys.reshape(-1, 2)
     
     mu = z2_encoder.mean(0)
 
@@ -119,9 +120,10 @@ def latent_loss(input_img, outputs, expected_pred):
     mu_2 = 0.5
     var_2 = 0.5
 
-    KLD = 0.5 * torch.sum( ((mu-mu_2).pow(2))/var_2 + logvar.exp()/var_2 - 1 - logvar - np.log(var_2) )
+    
+    #KLD = 0.5 * torch.sum( ((mu-mu_2).pow(2))/var_2 + logvar.exp()/var_2 - 1 - logvar - np.log(var_2) )
 
-    #KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+    KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
     max = torch.max(z2_encoder,0)[0]
     min = torch.min(z2_encoder,0)[0]
@@ -141,7 +143,7 @@ def latent_loss(input_img, outputs, expected_pred):
 
     #print("KLD",KLD.shape)
 
-    total_loss = loss + KLD
+    total_loss = 2*loss + 0.5*KLD
 
     if torch.isnan(total_loss):
         print("loss",loss)

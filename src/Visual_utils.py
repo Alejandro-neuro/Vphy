@@ -550,7 +550,7 @@ def visualize_cm(model, loader):
 
         iter += 1
 
-        if iter != 10:
+        if iter != 9:
                 continue
 
         input_Data, out_Data = data
@@ -561,7 +561,7 @@ def visualize_cm(model, loader):
 
         vis_frame_masks(x0[0])
 
-        list_cm = []
+        list_cm = None
 
         for frame in range(2,x0.shape[1]):
 
@@ -576,9 +576,10 @@ def visualize_cm(model, loader):
             
 
             cm = np.concatenate((cm_0, cm_1))
-            
 
-            list_cm = cm if list_cm == [] else np.vstack((list_cm, cm))
+          
+
+            list_cm = cm if frame == 2 else np.vstack((list_cm, cm))
 
 
         outputs = model(x0)
@@ -600,6 +601,9 @@ def visualize_cm(model, loader):
 
   
     z2_encoder_list  = z2_encoder_list 
+
+    print(z2_encoder_list.shape)
+    print(list_cm.shape)
     plt.figure()
 
     t = range(z2_encoder_list.shape[0])
@@ -609,6 +613,13 @@ def visualize_cm(model, loader):
     plt.plot(t,z2_encoder_list[:,3], '-r',label='z2_encoder_list_3')
     plt.legend()
     plt.show()
+
+    # plt.plot(t,z2_phys_list[:,0], '-b', label='z2_phy_list_0')
+    # plt.plot(t,z2_phys_list[:,1], '-g',label='z2_phy_list_1')
+    # plt.plot(t,z2_phys_list[:,2], '-y',label='z2_phy_list_2')
+    # plt.plot(t,z2_phys_list[:,3], '-r',label='z2_phy_list_3')
+    # plt.legend()
+    # plt.show()
 
     plt.plot(t,list_cm[:,0], '--b',label='center_mass_0')
     plt.plot(t,list_cm[:,1], '--g',label='center_mass_1')

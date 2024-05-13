@@ -264,8 +264,8 @@ class ODE_2ObjectsSpring(nn.Module):
         if torch.isnan(Force).any():
             print("Nan values in Force")
 
-        p1_new = p1 + v1*dt - Force*dt*dt
-        p2_new = p2 + v2*dt + Force*dt*dt
+        p1_new = p1 + v1*dt + Force*dt*dt
+        p2_new = p2 + v2*dt - Force*dt*dt
 
         
         z_hat = torch.cat([p1_new ,p2_new],dim=1).unsqueeze(1)
