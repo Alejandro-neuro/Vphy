@@ -140,7 +140,8 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
 
     optimizer = torch.optim.Adam([
             {'params': model.encoder.parameters()},
-            {'params': model.pModel.parameters(), 'lr': 0.1}                         
+            {'params':  model.pModel.k, 'lr': 1.0}, 
+            {'params': model.pModel.eq_distance, 'lr': 0.1}                        
         ], lr=1e-2)
         
     ##{'params': model.pModel.parameters(), 'lr': 0.05}      
