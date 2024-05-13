@@ -602,8 +602,8 @@ def visualize_cm(model, loader):
   
     z2_encoder_list  = z2_encoder_list 
 
-    print(z2_encoder_list.shape)
-    print(list_cm.shape)
+    print(z2_encoder_list)
+    print(list_cm)
     plt.figure()
 
     t = range(z2_encoder_list.shape[0])
@@ -614,12 +614,12 @@ def visualize_cm(model, loader):
     plt.legend()
     plt.show()
 
-    # plt.plot(t,z2_phys_list[:,0], '-b', label='z2_phy_list_0')
-    # plt.plot(t,z2_phys_list[:,1], '-g',label='z2_phy_list_1')
-    # plt.plot(t,z2_phys_list[:,2], '-y',label='z2_phy_list_2')
-    # plt.plot(t,z2_phys_list[:,3], '-r',label='z2_phy_list_3')
-    # plt.legend()
-    # plt.show()
+    plt.plot(t,z2_phys_list[:,0], '-b', label='z2_phy_list_0')
+    plt.plot(t,z2_phys_list[:,1], '-g',label='z2_phy_list_1')
+    plt.plot(t,z2_phys_list[:,2], '-y',label='z2_phy_list_2')
+    plt.plot(t,z2_phys_list[:,3], '-r',label='z2_phy_list_3')
+    plt.legend()
+    plt.show()
 
     plt.plot(t,list_cm[:,0], '--b',label='center_mass_0')
     plt.plot(t,list_cm[:,1], '--g',label='center_mass_1')
@@ -628,6 +628,20 @@ def visualize_cm(model, loader):
 
     plt.legend()
     plt.show()
+
+    plt.plot(z2_encoder_list[:,0],z2_encoder_list[:,1], '--b',label='center_mass_0')
+    plt.plot(z2_encoder_list[:,2],z2_encoder_list[:,3], '--r',label='center_mass_1')
+    
+    plt.legend()
+    plt.show()
+
+    plt.plot(list_cm[:,0],list_cm[:,1], '--b',label='center_mass_0')
+    plt.plot(list_cm[:,2],list_cm[:,3], '--r',label='center_mass_1')
+    
+    plt.legend()
+    plt.show()
+
+
 
 
 def normalize(x):

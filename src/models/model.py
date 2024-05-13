@@ -9,6 +9,8 @@ from . import encoders
 from . import PhysModels
 from . import aunet
 
+import matplotlib.pyplot as plt
+
 class Encoder(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
@@ -212,6 +214,18 @@ class EndPhysMultiple(nn.Module):
           #frame = frames[batch,frame,channel,w,h]
 
           current_frame = frames[:,i,:,:,:]
+          p1 = self.encoder(current_frame[:,0:1,:,:])
+          p2 = self.encoder1(current_frame[:,1:2,:,:])
+
+          #print("p1",p1)
+          #print("p2",p2)
+          
+
+          z_temp = torch.cat((p1.unsqueeze(1),p2.unsqueeze(1)),dim=2)
+          #print("z_temp",z_temp)
+          z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
+
+          #print(frames.shape)
 
           
           #mask = self.masker(current_frame) 
@@ -219,10 +233,18 @@ class EndPhysMultiple(nn.Module):
 
           #z_obj = None
 
-          p1 = self.encoder(current_frame[:,0:1,:,:])
-          p2 = self.encoder1(current_frame[:,1:2,:,:])
+        #   mask1 = current_frame[0,0,:,:].detach().cpu().numpy()
+        #   mask2 = current_frame[0,1,:,:].detach().cpu().numpy()
 
-          z_temp = torch.cat((p1.unsqueeze(1),p2.unsqueeze(1)),dim=2)
+        #   print(mask1.shape)
+
+        #   plt.imshow(mask1*255)
+        #   plt.show()
+        #   plt.imshow(mask2*255)
+        #   plt.show()
+        #   break
+
+          
 
           #for indx_mask in range(0, self.n_mask):
             # mask_obj = mask[:,indx_mask:indx_mask+1,:,:]            
@@ -248,14 +270,12 @@ class EndPhysMultiple(nn.Module):
           
           
           #z_temp = z_hor
-          z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
+          
 
          
           
       z = z.squeeze(2)
 
-          #frame_area_list= frame_area.unsqueeze(1) if i == 0 else torch.cat((frame_area_list,frame_area.unsqueeze(1)),dim=1)
-      #print(frame_area_list)
       for i in range(frames.shape[1]-2):
           
           z_window = z[:,i:i+2,:]

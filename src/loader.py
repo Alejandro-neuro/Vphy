@@ -132,9 +132,9 @@ class Dataset_from_folder(torch.utils.data.Dataset):
 
             input = input[:,0:2,:,:]
 
-            input[input < 205] = 0
+            #input[input < 205] = 0
 
-            input = input/255.0
+            #input = input/255.0
             
             input = torch.from_numpy(input)
             out = input         
@@ -184,8 +184,8 @@ def getLoader_folder(X, split = True):
 
             #create train and test dataloaders
 
-            train_dataset = DataLoader( Dataset_from_folder(train_x), batch_size=32, shuffle=True)
-            val_dataset = DataLoader( Dataset_from_folder(val_x), batch_size=32, shuffle=False)    
+            train_dataset = DataLoader( Dataset_from_folder(train_x), batch_size=64, shuffle=True)
+            val_dataset = DataLoader( Dataset_from_folder(val_x), batch_size=64, shuffle=False)    
 
             return train_dataset, val_dataset, train_x, val_x 
       else :

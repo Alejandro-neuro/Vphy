@@ -207,6 +207,8 @@ class ODE_2ObjectsSpring(nn.Module):
         self.k = nn.Parameter(self.k)
         self.eq_distance = nn.Parameter(self.eq_distance)
 
+        self.relu = nn.ReLU()
+
     def forward(self, x, dt):
         device = "cuda" if torch.cuda.is_available() else "cpu"
         dt = torch.tensor([dt], requires_grad=False).float().to(device)
@@ -231,10 +233,18 @@ class ODE_2ObjectsSpring(nn.Module):
         #F = self.k*(p1 - p2) - self.eq_distance*(p1 - p2) / torch.norm(p1 - p2)
 
         # From other code
-        norm = torch.norm(p1 - p2) 
-        norm2 = torch.cdist(p1, p2)
+        norm = torch.norm((p1 - p2), dim=1, keepdim=True) 
+        #print("norm",norm)
+        #norm2 = torch.cdist(p1, p2)
 
-        euclidean_distance = torch.sum((p1 - p2)**2, dim=1, keepdim=True).sqrt() + 1e-4
+        diff = (p1 - p2)
+        #print("diff",diff.shape)
+
+        #euclidean_distance = torch.sum((p1 - p2)**2, dim=1, keepdim=True).sqrt() + 1e-4
+
+        euclidean_distance = torch.norm(diff, dim=1, keepdim=True) + 1e-5
+
+        #print("euclidean_distance",euclidean_distance)
 
         
 
@@ -251,8 +261,8 @@ class ODE_2ObjectsSpring(nn.Module):
         if False:
             raise ValueError("Nan values in ODE_2ObjectsSpring")
 
-        direction = (p1 - p2)/euclidean_distance
-        Force = self.k*(euclidean_distance - 2*self.eq_distance)*direction
+        direction = (p2 - p1)/euclidean_distance
+        Force = self.k*(euclidean_distance - torch.abs(self.eq_distance) )*direction
 
         #F = -self.k*(p1 - p2) - self.eq_distance*((p1 - p2) / euclidean_distance)
         if torch.isnan(euclidean_distance).any():
@@ -264,11 +274,11 @@ class ODE_2ObjectsSpring(nn.Module):
         if torch.isnan(Force).any():
             print("Nan values in Force")
 
-        p1_new = p1 + v1*dt + Force*dt*dt
-        p2_new = p2 + v2*dt - Force*dt*dt
+        p1_new = 2*p1 -p1_0 + Force*dt*dt
+        p2_new = 2*p2 -p2_0 - Force*dt*dt
 
         
-        z_hat = torch.cat([p1_new ,p2_new],dim=1).unsqueeze(1)
+        z_hat = torch.cat((p1_new.unsqueeze(1) ,p2_new.unsqueeze(1)),dim=2)
 
         #print("z",x)
 

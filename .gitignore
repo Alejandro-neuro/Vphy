@@ -14,3 +14,4 @@ color_mnist_spring/
 *.mp4
 Data/color_mnist.npz
 .DS_Store
+custom_dataset.npy
