@@ -96,7 +96,7 @@ def freeze(model, type):
         param.requires_grad = True
     if type == 'encoder':
         for name, param in model.named_parameters():
-            if not 'encoder' in name:  
+            if  'encoder' in name:  
                 param.requires_grad = False
     if type == 'decoder':
         for name, param in model.named_parameters():
@@ -110,7 +110,7 @@ def freeze(model, type):
 
     if type == 'pModel':
         for name, param in model.named_parameters():
-                if name != 'pModel.alpha' and name != 'pModel.beta' : 
+                if name != 'pModel.k' and name != 'pModel.eq_distance' : 
                     param.requires_grad = False
 
     return model
@@ -140,7 +140,7 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
 
     optimizer = torch.optim.Adam([
             {'params': model.encoder.parameters()},
-            {'params':  model.pModel.k, 'lr': 0.1}, 
+            {'params':  model.pModel.k, 'lr': 0.5}, 
             {'params': model.pModel.eq_distance, 'lr': 0.01}                        
         ], lr=1e-2)
         
@@ -215,6 +215,20 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
     log.append(dict_log)
 
     for epoch in range(1, num_epochs+1):
+
+        # if epoch == (num_epochs //2):
+        #     #model = freeze(model, 'pModel')
+        #     loss_fn = loss_func.getLoss("latent_loss_MSE")
+            # optimizer = torch.optim.Adam([
+            #     {'params': model.encoder.parameters()},
+            #     {'params':  model.pModel.k, 'lr': 1.0}, 
+            #     {'params': model.pModel.eq_distance, 'lr': 1.0}                        
+            # ], lr=1e-2)
+            
+            # for param in model.pModel.parameters():
+            #     param.data = param.data + torch.tensor([1.0], requires_grad=True).float()
+
+
         # Model training
         train_loss = train_epoch(model, train_loader, loss_fn,optimizer, device=device)
         # Model validation

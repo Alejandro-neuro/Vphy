@@ -563,7 +563,7 @@ def visualize_cm(model, loader):
 
         list_cm = None
 
-        for frame in range(2,x0.shape[1]):
+        for frame in range(0,x0.shape[1]):
 
             
 
@@ -579,7 +579,7 @@ def visualize_cm(model, loader):
 
           
 
-            list_cm = cm if frame == 2 else np.vstack((list_cm, cm))
+            list_cm = cm if frame == 0 else np.vstack((list_cm, cm))
 
 
         outputs = model(x0)
@@ -604,6 +604,23 @@ def visualize_cm(model, loader):
 
     print(z2_encoder_list)
     print(list_cm)
+
+    y1 = z2_encoder_list.max()
+    y0 = z2_encoder_list.min()
+
+    x1 = list_cm.max()  
+    x0 = list_cm.min()
+
+    m = (y1-y0)/(x1-x0)
+
+    b = y1 - m*x1
+
+    print("m",m)
+    print("m_12",m*12)
+
+    #z2_encoder_list = (1/m) * (z2_encoder_list - b)
+    #z2_phys_list = (1/m) * (z2_phys_list - b)
+
     plt.figure()
 
     t = range(z2_encoder_list.shape[0])

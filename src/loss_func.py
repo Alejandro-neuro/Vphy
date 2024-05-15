@@ -139,6 +139,68 @@ def latent_loss(input_img, outputs, expected_pred):
         raise ValueError("Loss is NaN")    
     return total_loss
 
+def latent_loss_multiple(input_img, outputs, expected_pred):
+
+    z2_encoder, z2_phys = outputs
+
+    # loss = 0
+    # KLD_loss =0
+
+    # for i in [0, 2]:
+    #     z2_encoder_i = z2_encoder[:,:,i:i+2]
+    #     z2_phys_i = z2_phys[:,:,i:i+2]
+
+    #     loss_MSE = nn.MSELoss()
+    #     loss += loss_MSE(z2_encoder_i, z2_phys_i)
+
+    #     z2_encoder_i = z2_encoder_i.reshape(-1, 2)
+    #     z2_phys_i = z2_phys_i.reshape(-1, 2)
+
+    #     mu = z2_encoder_i.mean(0)
+    #     logvar = torch.log(z2_encoder_i.var(0))
+
+    #     KLD_loss += -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+
+   
+    loss_MSE = nn.MSELoss()
+    loss = loss_MSE(z2_encoder, z2_phys)     
+
+    z2_encoder = z2_encoder.reshape(-1, 2)
+    z2_phys = z2_phys.reshape(-1, 2)
+
+    #z2_encoder = z2_encoder.reshape(-1)
+    #z2_phys = z2_phys.reshape(-1)
+
+    mu = z2_encoder.mean(0)
+    logvar = torch.log(z2_encoder.var(0))
+
+    # mu_2 = 32
+    # var_2 = 32 
+    # KLD_loss = 0.5 * torch.sum( ((mu-mu_2).pow(2))/var_2 + logvar.exp()/var_2 - 1 - logvar - np.log(var_2) )
+
+    
+
+    KLD_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()) 
+
+    total_loss = loss +KLD_loss
+
+    if torch.isnan(total_loss):
+        print("loss",loss)
+        raise ValueError("Loss is NaN")    
+    return total_loss
+
+def latent_loss_MSE(input_img, outputs, expected_pred):
+
+    z2_encoder, z2_phys = outputs
+
+
+
+   
+    loss_MSE = nn.MSELoss()
+    loss = loss_MSE(z2_encoder, z2_phys)     
+ 
+    return loss
+
 def getLoss(loss = None):
 
     if loss == None:
@@ -154,6 +216,10 @@ def getLoss(loss = None):
         return nn.MSELoss()
     if loss == "latent_loss":
         return latent_loss
+    if loss == "latent_loss_multiple":
+        return latent_loss_multiple
+    if loss == "latent_loss_MSE":
+        return latent_loss_MSE
     if loss == "MAE":
         loss_fn = nn.L1Loss()
         return loss_fn 

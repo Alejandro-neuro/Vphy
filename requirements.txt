@@ -1,13 +1,9 @@
 matplotlib
 numpy
 omegaconf
-opencv
+conda-forge::opencv
 pandas
 Pillow
 anaconda::scikit-learn
-pytorch::pytorch
-pytorch::torchvision
-pytorch::pytorch-cuda
-torchvision
 tqdm
 wandb

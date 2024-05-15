@@ -195,6 +195,8 @@ class EndPhysMultiple(nn.Module):
 
         self.n_mask = n_mask
         self.in_channels = in_channels 
+
+        self.latent_dim =latent_dim 
         
         self.encoder = encoders.EncoderMLP(in_size = in_size, in_chan=1, latent_dim = latent_dim)
         self.encoder1 = encoders.EncoderMLP(in_size = in_size, in_chan=1, latent_dim = latent_dim)
@@ -213,81 +215,46 @@ class EndPhysMultiple(nn.Module):
           
           #frame = frames[batch,frame,channel,w,h]
 
-          current_frame = frames[:,i,:,:,:]
-          p1 = self.encoder(current_frame[:,0:1,:,:])
-          p2 = self.encoder1(current_frame[:,1:2,:,:])
-
-          #print("p1",p1)
-          #print("p2",p2)
+          #print(frames.shape)
           
 
-          z_temp = torch.cat((p1.unsqueeze(1),p2.unsqueeze(1)),dim=2)
+          current_frame = frames[:,i,:,:,:]
+          #print(current_frame.shape)
+          if self.latent_dim == 2:
+            mask1 = current_frame[:,0:1,:,:]
+            mask2 = current_frame[:,1:2,:,:]
+            p1 = self.encoder(mask1)
+            p2 = self.encoder(mask2)            
+
+            z_temp = torch.cat((p1.unsqueeze(1),p2.unsqueeze(1)),dim=2)
+
+          if self.latent_dim == 4:
+             mask1 = current_frame[:,0:1,:,:]
+             mask2 = current_frame[:,1:2,:,:]
+             z_temp = self.encoder(mask1+mask2 )
+             z_temp = z_temp.unsqueeze(1)
           #print("z_temp",z_temp)
           z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
 
-          #print(frames.shape)
-
-          
-          #mask = self.masker(current_frame) 
-          #self.masks = mask if i == 0 else torch.cat((self.masks,mask),dim=1)
-
-          #z_obj = None
-
-        #   mask1 = current_frame[0,0,:,:].detach().cpu().numpy()
-        #   mask2 = current_frame[0,1,:,:].detach().cpu().numpy()
-
-        #   print(mask1.shape)
-
-        #   plt.imshow(mask1*255)
-        #   plt.show()
-        #   plt.imshow(mask2*255)
-        #   plt.show()
-        #   break
-
-          
-
-          #for indx_mask in range(0, self.n_mask):
-            # mask_obj = mask[:,indx_mask:indx_mask+1,:,:]            
-            # mask_frame = current_frame * mask_obj
-            # mask_frame = torch.mean(mask_frame, dim=1, keepdim=True)
-
-            #mask_frame = current_frame[:,indx_mask:indx_mask+1,:,:] 
-
-            #z_obj = self.encoder(mask_frame)
-
-            # if indx_mask == 0:
-            #    z_obj = self.encoder(mask_frame)
-            # if indx_mask == 1:
-            #    z_obj = self.encoder1(mask_frame)
-            
-            #z_obj = z_obj.unsqueeze(1)
-            
-            #z_hor = z_obj if indx_mask == 0 else torch.cat((z_hor,z_obj),dim=2)
-
-          
-          
-          
-          
-          
-          #z_temp = z_hor
-          
-
          
+
+      #print("z",z)
           
       z = z.squeeze(2)
-
-      for i in range(frames.shape[1]-2):
+      z2_phys = z[:,0:2,:]
+      for i in range(frames.shape[1]-2):       
           
-          z_window = z[:,i:i+2,:]
+
+          z_window = z2_phys[:,i:i+2,:]
 
           pred_window = self.pModel(z_window,self.dt)
           
-          z2_phys = pred_window if i == 0 else torch.cat((z2_phys,pred_window),dim=1)
+          z2_phys = torch.cat((z2_phys,pred_window),dim=1)
 
       #print(z2_phys.shape)
-      z2_encoder = z[:,2:]
+      #z2_encoder = z[:,2:]
       
-      return  z2_encoder, z2_phys
+      return  z, z2_phys
     
     def get_masks(self):
         return self.masks

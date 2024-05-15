@@ -209,6 +209,29 @@ class ODE_2ObjectsSpring(nn.Module):
 
         self.relu = nn.ReLU()
 
+    def force_eq(self, p1, p2):
+        diff = (p1 - p2)
+        euclidean_distance = torch.norm(diff, dim=1, keepdim=True)
+        direction = (p2 - p1)/euclidean_distance
+        Force = self.k*(euclidean_distance - 2*torch.abs(self.eq_distance) )*direction
+        return Force
+    def vel_eq(self, v):
+        
+        return v
+    
+    def runge_kutta_force(self,f, p1, p2, dt):
+        k1 = f(p1, p2)
+        k2 = f(p1 + dt/2, p2 + dt/2)
+        k3 = f(p1 + dt/2, p2 + dt/2)
+        k4 = f(p1 + dt, p2 + dt)
+        return (k1 + 2*k2 + 2*k3 + k4)/6
+    def runge_kutta_vel(self,f, v, dt):
+        k1 = f(v)
+        k2 = f(v + dt/2)
+        k3 = f(v + dt/2)
+        k4 = f(v + dt)
+        return (k1 + 2*k2 + 2*k3 + k4)/6
+
     def forward(self, x, dt):
         device = "cuda" if torch.cuda.is_available() else "cpu"
         dt = torch.tensor([dt], requires_grad=False).float().to(device)
@@ -221,61 +244,32 @@ class ODE_2ObjectsSpring(nn.Module):
         p2_0 = x[:,0,2:4]
 
         v1 = (p1 - p1_0)/dt
-        v2 = (p2 - p2_0)/dt 
-
-        #print("p1",p1.shape)
-        #print("x",x.shape)
-
-    
-
-        
-
-        #F = self.k*(p1 - p2) - self.eq_distance*(p1 - p2) / torch.norm(p1 - p2)
-
-        # From other code
-        norm = torch.norm((p1 - p2), dim=1, keepdim=True) 
-        #print("norm",norm)
-        #norm2 = torch.cdist(p1, p2)
+        v2 = (p2 - p2_0)/dt
+            
 
         diff = (p1 - p2)
-        #print("diff",diff.shape)
-
-        #euclidean_distance = torch.sum((p1 - p2)**2, dim=1, keepdim=True).sqrt() + 1e-4
-
-        euclidean_distance = torch.norm(diff, dim=1, keepdim=True) + 1e-5
-
-        #print("euclidean_distance",euclidean_distance)
 
         
+        #Force = self.runge_kutta_force(self.force_eq, p1, p2, dt)
 
-        # print("norm",norm.shape)
-        # print("norm2",norm2.shape)
-        # print("euclidean_distance",euclidean_distance.shape)
-
-        # print("p1",p1)
-        # print("p2",p2)
-        # print("euclidean_distance",euclidean_distance)
-        # direction = (p1 - p2)/euclidean_distance
-        # print("direction",direction)
-
-        if False:
-            raise ValueError("Nan values in ODE_2ObjectsSpring")
-
-        direction = (p2 - p1)/euclidean_distance
-        Force = self.k*(euclidean_distance - torch.abs(self.eq_distance) )*direction
-
-        #F = -self.k*(p1 - p2) - self.eq_distance*((p1 - p2) / euclidean_distance)
-        if torch.isnan(euclidean_distance).any():
-            print("Nan values in euclidean_distance")
-        
-        if torch.isnan(direction).any():
-            print("Nan values in direction")
-
-        if torch.isnan(Force).any():
-            print("Nan values in Force")
-
+        Force = self.force_eq(p1, p2)
         p1_new = 2*p1 -p1_0 + Force*dt*dt
         p2_new = 2*p2 -p2_0 - Force*dt*dt
+
+        #Force = self.runge_kutta_force(self.force_eq, p1, p2, dt)
+
+        #v11 = 
+        #p1_new = p1 + self.runge_kutta_vel(self.vel_eq, v1 + Force , dt)
+        #p2_new = p2 + self.runge_kutta_vel(self.vel_eq, v2 - Force , dt)
+
+
+
+        
+
+            #p1_0 = p1
+            #p2_0 = p2
+            #p1 = p1_new
+            #p2 = p2_new
 
         
         z_hat = torch.cat((p1_new.unsqueeze(1) ,p2_new.unsqueeze(1)),dim=2)

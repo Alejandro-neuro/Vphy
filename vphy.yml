@@ -1,0 +1,22 @@
+name: vphy
+channels:
+  - pytorch
+  - nvidia
+  - defaults
+  - conda-forge
+  - defaults
+dependencies:
+- python=3.11
+- matplotlib
+- numpy
+- omegaconf
+- conda-forge::opencv
+- pandas
+- Pillow
+- anaconda::scikit-learn
+- pytorch::pytorch
+- pytorch::torchvision
+- pytorch::pytorch-cuda
+- torchvision
+- tqdm
+- wandb

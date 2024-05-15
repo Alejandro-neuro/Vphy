@@ -15,3 +15,5 @@ color_mnist_spring/
 Data/color_mnist.npz
 .DS_Store
 custom_dataset.npy
+*.npz
+*.npy
