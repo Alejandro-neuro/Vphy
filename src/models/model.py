@@ -174,13 +174,20 @@ class EndPhys(nn.Module):
           z_temp = z_temp.unsqueeze(1)
           z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
 
- 
+      z2_phys = z[:,0:2,:]
+      z2_encoder = z
       for i in range(frames.shape[1]-order):
           
-          z2_phys = self.pModel(z[:,i:i+order],self.dt) if i == 0 else torch.cat((z2_phys,self.pModel(z[:,i:i+order],self.dt)),dim=1)
+          z_window = z[:,i:i+order]
+
+          pred_window = self.pModel(z_window,self.dt)
+          
+          z2_phys = torch.cat((z2_phys,pred_window),dim=1)
+          
+          #z2_phys = self.pModel(z[:,i:i+order],self.dt) if i == 0 else torch.cat((z2_phys,self.pModel(z[:,i:i+order],self.dt)),dim=1)
 
 
-      z2_encoder = z[:,order:]
+      
 
       
       return  z2_encoder, z2_phys
@@ -198,8 +205,8 @@ class EndPhysMultiple(nn.Module):
 
         self.latent_dim =latent_dim 
         
-        self.encoder = encoders.EncoderMLP(in_size = in_size, in_chan=1, latent_dim = latent_dim)
-        self.encoder1 = encoders.EncoderMLP(in_size = in_size, in_chan=1, latent_dim = latent_dim)
+        self.encoder = encoders.EncoderMLP(in_size = in_size, in_chan=1, latent_dim = latent_dim, initw = False)
+        self.encoder1 = encoders.EncoderMLP(in_size = in_size, in_chan=1, latent_dim = latent_dim, initw = initw)
         #self.masker = aunet.UNet(c_in = in_channels, c_out=n_mask, img_size=in_size)
         self.masks = None
 

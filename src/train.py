@@ -6,6 +6,7 @@ from src import loss_func
 from src import optimizer_Factory
 from src import custom_plots as cp
 from torch.autograd import Variable
+import torch.optim as optim
 
 from datetime import datetime
 
@@ -50,6 +51,13 @@ def train_epoch(model, loader,loss_fn, optimizer, device='cpu'):
         outputs = model(x0)
         # Compute the loss and its gradients
         loss  = loss_fn(x0 , outputs ,x1 )
+
+        # l2_lambda = 0.001  # Regularization strength
+        # l2_reg = torch.tensor(0.).to(device)
+        # for param in model.parameters():
+        #     l2_reg += torch.norm(param)
+
+        # loss += l2_lambda * l2_reg
         
         loss.backward()
         optimizer.step()
@@ -115,7 +123,7 @@ def freeze(model, type):
 
     return model
 
-def train(model, train_loader, val_loader, type ='normal', loss_name=None):
+def train(model, train_loader, val_loader, type ='normal', init_phys = 10.0,loss_name=None):
 
     cfg = OmegaConf.load("config.yaml")
 
@@ -132,17 +140,32 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
 
     if hasattr(model, 'pModel') and hasattr(model, 'encoder'):
         optimizer = torch.optim.Adam([
-                {'params': model.encoder.parameters()},
-                {'params': model.pModel.parameters(), 'lr': 0.05}                         
+                {'params': model.encoder.parameters(), 'name': 'encoder'},
+                {'params':  model.pModel.alpha, 'lr': 1.0, 'name': 'alpha'}, 
+                {'params': model.pModel.beta, 'lr': 1.0, 'name': 'beta'}                       
             ], lr=1e-2)
     else:
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
+    
     optimizer = torch.optim.Adam([
-            {'params': model.encoder.parameters()},
-            {'params':  model.pModel.k, 'lr': 0.5}, 
-            {'params': model.pModel.eq_distance, 'lr': 0.01}                        
-        ], lr=1e-2)
+                {'params': model.encoder.parameters(), 'name': 'encoder'},
+                {'params':  model.pModel.alpha, 'lr': np.abs(init_phys), 'name': 'alpha'}, 
+                {'params': model.pModel.beta, 'lr': np.abs(init_phys), 'name': 'beta'}                       
+            ], lr=1e-2)
+
+    scheduler =optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
+
+    
+            
+
+
+    # optimizer = torch.optim.Adam([
+    #         {'params': model.encoder.parameters()},
+    #         {'params':  model.pModel.k, 'lr': 1.5}, 
+    #         {'params': model.pModel.eq_distance, 'lr': 1.5}                        
+    #     ], lr=1e-2)
+    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10, eta_min=0)
+    #scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
         
     ##{'params': model.pModel.parameters(), 'lr': 0.05}      
     ##{'params':  model.pModel.alpha, 'lr': 0.05}, 
@@ -150,7 +173,7 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
     model.to(device)
     #create vectors for the training and validation loss
 
-    model = freeze(model, type)
+    #model = freeze(model, type)
 
     now = datetime.now()
 
@@ -177,7 +200,7 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
     train_losses = []
     val_losses = []
 
-    patience = 50 # patience for early stopping
+    patience = 5 # patience for early stopping
 
     best_loss = float('inf')  # Initialize with a large value
     best_val_loss = float('inf')  # Initialize with a large value
@@ -216,21 +239,47 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
 
     for epoch in range(1, num_epochs+1):
 
+        # if epoch == 1:
+
+        #     model.pModel.k.requires_grad = True
+        #     model.pModel.eq_distance.requires_grad = False
+
         # if epoch == (num_epochs //2):
-        #     #model = freeze(model, 'pModel')
+        #     model.pModel.k.requires_grad = True
+        #     model.pModel.eq_distance.requires_grad = True
+        # #     model = freeze(model, 'pModel')
+        # #     loss_fn = loss_func.getLoss("latent_loss_MSE")
+        # #     for name, param in model.named_parameters():
+        # #         print(name, param.requires_grad)
+        # #     optimizer = torch.optim.Adam([
+        # #         {'params': model.encoder.parameters()},
+        # #         {'params':  model.pModel.k, 'lr': 1.0}, 
+        # #         {'params': model.pModel.eq_distance, 'lr': 1.0}                        
+        # #     ], lr=1e-2)
+
+        # if int(num_epochs % 20)==0:
+
+        #     model.pModel.k.requires_grad = not  model.pModel.k.requires_grad
+        #     model.pModel.eq_distance.requires_grad = not  model.pModel.eq_distance.requires_grad
+
+        # if epoch <20:
         #     loss_fn = loss_func.getLoss("latent_loss_MSE")
-            # optimizer = torch.optim.Adam([
-            #     {'params': model.encoder.parameters()},
-            #     {'params':  model.pModel.k, 'lr': 1.0}, 
-            #     {'params': model.pModel.eq_distance, 'lr': 1.0}                        
-            # ], lr=1e-2)
+        # else:
+        #     loss_fn = loss_func.getLoss("latent_loss_multiple")
+
+        if (epoch + 1) % 50 == 0:
+            for param_group in optimizer.param_groups:
+                if 'beta' in param_group['name'] or 'alpha' in param_group['name']:
+                    param_group['lr'] = param_group['lr']*0.1
+
+
             
-            # for param in model.pModel.parameters():
-            #     param.data = param.data + torch.tensor([1.0], requires_grad=True).float()
+            
 
 
         # Model training
         train_loss = train_epoch(model, train_loader, loss_fn,optimizer, device=device)
+        #scheduler.step()
         # Model validation
         val_loss = evaluate_epoch(model, val_loader, loss_fn, device=device)
 
@@ -275,10 +324,11 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
         except:
             early_stop = 0
 
-        if train_loss < best_loss and val_loss < best_val_loss:
+        if  val_loss < best_val_loss:
             best_loss = train_loss
             best_val_loss = val_loss
             best_model_state = model.state_dict()
+            
 
         if epoch%(num_epochs /10 )== 0 and cfg.log_wandb:
             print("epoch:",epoch, "\t training loss:", train_loss,
@@ -288,7 +338,7 @@ def train(model, train_loader, val_loader, type ='normal', loss_name=None):
         #    return model, log
             
         
-            
+
     if cfg.log_wandb:
         wandb.finish()
 

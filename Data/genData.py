@@ -2,12 +2,11 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from src import custom_plots as cp
-from src import Visual_utils as vu
 import pandas as pd
 from src import custom_plots as cp
 from PIL import Image, ImageDraw
 import math
-import cv2
+
 
 from omegaconf import OmegaConf
 
@@ -26,10 +25,11 @@ def generatePendulumA(g,L,a0, a1):
     return t,a    
 
 def generateDynamics(max=1, min=0, dt = 1/100):
-    t = np.arange(0,100, dt)
+    t = np.arange(0,54, dt)
     m = (max-min)/(1-(-1))
     b= max - m
-    a = m*np.exp(-0.02*t)*np.cos(2*t)+b
+    #a = m*np.exp(-0.02*t)*np.cos(2*t)+b
+    a = m*np.exp(-0.04*t)*np.cos(2*t)+b
     #a = m*np.cos(2*t)+b
     
     #X = []
@@ -133,7 +133,10 @@ def create_intensity_image(I, noise = False, shapeType = 'simple', base = None):
     img_array = np.array(base)
 
     #resize image
-    img_array = cv2.resize(img_array, (width, height))
+    img_array = Image.fromarray(img_array)
+    img_array = img_array.resize((width, height))
+    img_array = np.array(img_array)
+    #img_array = cv2.resize(img_array, (width, height))
 
     img_array = img_array / np.max(img_array)
 
@@ -189,6 +192,30 @@ def create_scale_image(I, noise = False, shapeType = 'complex', base = None):
 
     return image
 
+def create_half_radius_circle_image(X, n=50):
+    # Create an empty image
+    image = np.zeros((n, n), dtype=np.float32)
+    
+    # Center of the image
+    center = (n // 2, n // 2)
+    
+    # Radii for the left and right halves
+    radius_left = 10 + X
+    radius_right = 10 - X
+    
+    # Draw the circle
+    for i in range(n):
+        for j in range(n):
+            distance = np.sqrt((i - center[0])**2 + (j - center[1])**2)
+            if j < center[1]:  # Left half
+                if distance <= radius_left:
+                    image[i, j] = 1.0
+            else:  # Right half
+                if distance <= radius_right:
+                    image[i, j] = 1.0
+    
+    return image
+
 def create_pendulum_image(I, noise = False, shapeType = 'complex', base = None):
     # Create a blank image
     width, height = Image_size, Image_size
@@ -229,53 +256,3 @@ def create_pendulum_image(I, noise = False, shapeType = 'complex', base = None):
     #image.save(f'pendulum_{angle_deg}deg.png')
 
     return np.array(image)/255
-    #image.show()
-
-def generateVideo(a,DynamicsType, name):
-    
-
-    # Create a video of the swinging pendulum
-    video_name = name+'.mp4'
-    frame_rate = 30
-    duration = len(a) / frame_rate
-    num_frames = frame_rate * duration
-
-    # Initialize VideoWriter
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    video = cv2.VideoWriter(video_name, fourcc, frame_rate, (50, 50))
-
-    if DynamicsType == "Scale":
-        ImageGenerator = create_scale_Image
-    if DynamicsType == "Intensity":
-        ImageGenerator = create_intensity_image
-    if DynamicsType == "Motion":
-        ImageGenerator = create_pendulum_image
-
-    
-
-
-    # Generate frames and add to video
-    for angle in a:
-        # Create pendulum image
-        frame_image = ImageGenerator(angle)
-
-        #clipped_img_array = np.clip(frame_image, 0, 255)
-
-        # If you want to convert the data type to uint8 after clipping
-        #clipped_img_array = clipped_img_array.astype(np.uint8)
-
-        #if(len(frame_image.shape) < 3):
-         #   frame_image = np.stack((frame_image,)*3, axis=-1)
-        
-        clipped_img_array = frame_image * 255
-        clipped_img_array = clipped_img_array.astype(np.uint8)
-        
-        # Convert PIL image to OpenCV format
-        cv2_frame = cv2.cvtColor(clipped_img_array, cv2.COLOR_RGB2BGR)
-        
-        # Add frame to the video
-        video.write(cv2_frame)
-
-    # Release the video writer
-    video.release()
-

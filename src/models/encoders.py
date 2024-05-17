@@ -22,9 +22,9 @@ class EncoderMLP(nn.Module):
         if initw:
 
           #xavier_normal
-          nn.init.xavier_normal_(self.l1.weight)
-          nn.init.xavier_normal_(self.l2.weight)
-          nn.init.xavier_normal_(self.l3.weight)
+          nn.init.kaiming_normal_(self.l1.weight)
+          nn.init.kaiming_normal_(self.l2.weight)
+          nn.init.kaiming_normal_(self.l3.weight)
 
     def forward(self, x):
 

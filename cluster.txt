@@ -1,5 +1,5 @@
 ssh acastanedagarc@linux-bastion.tudelft.nl
-ssh login1.hpc.tudelft.nl
+ssh login3.hpc.tudelft.nl
 
 /tudelft.net/staff-bulk/ewi/insy/VisionLab/acastanedagarc
 

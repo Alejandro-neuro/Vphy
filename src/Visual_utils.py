@@ -483,14 +483,26 @@ def visualize_latent_dist(model, loader):
     n_epoch = z2_encoder_list.shape[0]
     d_dim = z2_encoder_list.shape[1]
 
+    print("n_epoch",n_epoch)
+    print("d_dim",d_dim)
+
     for i in range(d_dim):
     
         X.append( { 'x': range(0, n_epoch ), 'y': z2_encoder_list[:,i] , 'label': 'z2_encoder_list_'+str(i) , 'alpha':0.5  } )
         #X.append( { 'x': range(0, n_epoch ), 'y': z2_phys_list[:,i] , 'label': 'z2_phys_list_'+str(i) , 'alpha':0.5  } )
-    
-
+        
     cp.plotMultiple( X,  'sample', 'value','Latent Space', "data distribution", show=True, styleDark = False, plot_type='hist'	 )
-    #cp.plotMultiple( X,  'sample', 'value','Latent Space', "data distribution", show=True,styleDark = False, plot_type='plot'	 )
+    X = []
+    
+    for i in range(d_dim):
+        X.append( { 'x': range(0, 500 ), 'y': z2_encoder_list[::10,i] , 'label': 'z2_encoder_list_'+str(i) , 'alpha':0.5  } )
+        print("max",i,z2_encoder_list[:,i].max())
+        print("min",i,z2_encoder_list[:,i].min())
+        
+    cp.plotMultiple( X,  'sample', 'value','Latent Space', "data distribution", show=True,styleDark = False, plot_type='scatter' )
+    cp.plotMultiple( X,  'sample', 'value','Latent Space', "data distribution", show=True,styleDark = False, plot_type='plot' )
+
+    
 
 def get_center_mass(image):
     
@@ -532,10 +544,6 @@ def vis_frame_masks(img):
     plt.imshow(img_hor, cmap='gray')
     plt.show()
         
-
-   
-
-
 def visualize_cm(model, loader):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
@@ -657,10 +665,6 @@ def visualize_cm(model, loader):
     
     plt.legend()
     plt.show()
-
-
-
-
 def normalize(x):
     # normalize list of values to max value 1 and mean 0
 
@@ -672,3 +676,52 @@ def normalize(x):
     except:
 
         return np.array(x)
+
+
+def generateVideo(a,DynamicsType, name):
+    
+
+    # Create a video of the swinging pendulum
+    video_name = name+'.mp4'
+    frame_rate = 30
+    duration = len(a) / frame_rate
+    num_frames = frame_rate * duration
+
+    # Initialize VideoWriter
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    video = cv2.VideoWriter(video_name, fourcc, frame_rate, (50, 50))
+
+    if DynamicsType == "Scale":
+        ImageGenerator = create_scale_Image
+    if DynamicsType == "Intensity":
+        ImageGenerator = create_intensity_image
+    if DynamicsType == "Motion":
+        ImageGenerator = create_pendulum_image
+
+    
+
+
+    # Generate frames and add to video
+    for angle in a:
+        # Create pendulum image
+        frame_image = ImageGenerator(angle)
+
+        #clipped_img_array = np.clip(frame_image, 0, 255)
+
+        # If you want to convert the data type to uint8 after clipping
+        #clipped_img_array = clipped_img_array.astype(np.uint8)
+
+        #if(len(frame_image.shape) < 3):
+         #   frame_image = np.stack((frame_image,)*3, axis=-1)
+        
+        clipped_img_array = frame_image * 255
+        clipped_img_array = clipped_img_array.astype(np.uint8)
+        
+        # Convert PIL image to OpenCV format
+        cv2_frame = cv2.cvtColor(clipped_img_array, cv2.COLOR_RGB2BGR)
+        
+        # Add frame to the video
+        video.write(cv2_frame)
+
+    # Release the video writer
+    video.release()

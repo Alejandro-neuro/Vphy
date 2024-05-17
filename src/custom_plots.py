@@ -130,6 +130,8 @@ def plotAreas(x, GT = 0, parameter_name="" ):
         
         ax.plot(t, x[i,:], color = "deepskyblue",  linewidth=1)
     
+    ax.plot(t, GT,'--', color = "deepskyblue",  linewidth=1)
+
 
     # Find the maximum value and its index among all vectors
     max_values = np.max(x, axis=0)
@@ -151,8 +153,8 @@ def plotAreas(x, GT = 0, parameter_name="" ):
     plt.tick_params(axis='y', colors='black')
 
     #set fotn size axis numbers
-    plt.rc('xtick', labelsize=25)
-    plt.rc('ytick', labelsize=25)
+    plt.rc('xtick', labelsize=40)
+    plt.rc('ytick', labelsize=40)
     plt.rc('font', family='serif')
 
 
@@ -161,7 +163,9 @@ def plotAreas(x, GT = 0, parameter_name="" ):
     if not os.path.exists(folder):
         os.makedirs(folder)
     name_plot = folder+"/"+parameter_name+".png"
+    name_plot_eps = folder+"/"+parameter_name+".eps"
     plt.savefig(name_plot, dpi=300, transparent=True,bbox_inches='tight')
+    plt.savefig(name_plot_eps, format='eps')
     plt.show()
 
     
