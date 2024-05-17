@@ -123,7 +123,7 @@ def freeze(model, type):
 
     return model
 
-def train(model, train_loader, val_loader, type ='normal', init_phys = 10.0,loss_name=None):
+def train(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_name=None):
 
     cfg = OmegaConf.load("config.yaml")
 
@@ -135,6 +135,9 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 10.0,loss
     #optimizer = optimizer_Factory.getOptimizer(model)    
 
     #optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+    if init_phys == 0:
+        init_phys = 1.0
 
     
 
@@ -267,10 +270,13 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 10.0,loss
         # else:
         #     loss_fn = loss_func.getLoss("latent_loss_multiple")
 
-        if (epoch + 1) % 50 == 0:
+        if (epoch + 1) % 200 == 0:
             for param_group in optimizer.param_groups:
                 if 'beta' in param_group['name'] or 'alpha' in param_group['name']:
-                    param_group['lr'] = param_group['lr']*0.1
+                    if param_group['lr'] > 0.5:
+                        param_group['lr'] = param_group['lr']*0.1
+                    if param_group['lr'] < 0.5:
+                        param_group['lr'] = 0.5
 
 
             
@@ -328,6 +334,9 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 10.0,loss
             best_loss = train_loss
             best_val_loss = val_loss
             best_model_state = model.state_dict()
+
+            best_a = model.pModel.alpha[0].detach().cpu().numpy().item()
+            best_b = model.pModel.beta[0].detach().cpu().numpy().item()
             
 
         if epoch%(num_epochs /10 )== 0 and cfg.log_wandb:
@@ -341,6 +350,12 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 10.0,loss
 
     if cfg.log_wandb:
         wandb.finish()
+
+    print("best model a",best_a)
+    print("best last a", model.pModel.alpha[0].detach().cpu().numpy().item())
+
+    print("best model b", best_b)
+    print("best last b", model.pModel.beta[0].detach().cpu().numpy().item())
 
     model.load_state_dict(best_model_state)
    

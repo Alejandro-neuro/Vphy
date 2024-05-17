@@ -252,7 +252,7 @@ class EndPhysMultiple(nn.Module):
       for i in range(frames.shape[1]-2):       
           
 
-          z_window = z2_phys[:,i:i+2,:]
+          z_window = z[:,i:i+2,:]
 
           pred_window = self.pModel(z_window,self.dt)
           

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import (AutoMinorLocator, MultipleLocator)
 import numpy as np
 import os
-
+from matplotlib import pyplot
 colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', '#FFA500', '#800080', '#008080']
 
 colors_dark = ['#00FFFF', '#FF1493', '#00FF00', '#FF4500', '#ADFF2F', '#FF00FF', '#1E90FF', '#FF69B4', '#20B2AA', '#FF8C00']
@@ -15,18 +15,14 @@ def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False, show = Fals
         plt.ioff()
     
     plt.figure()
-    if(styleDark):
-        plt.style.use('dark_background')
-    else:
-        plt.style.use('default')
+    # if(styleDark):
+    #     plt.style.use('dark_background')
+    # else:
+    #     plt.style.use('default')
 
-    fig, axarr = plt.subplots(figsize=(20, 10), dpi= 80)
-    plt.title(title,size=40)
-    plt.xlabel(xlabel,size=30)
-    plt.ylabel(ylabel,size=30)
-    plt.rc('xtick', labelsize=20)
-    plt.rc('ytick', labelsize=20)
-    plt.rc('font', family='serif')
+    fig, ax = plt.subplots(figsize=(10, 10), dpi= 300)
+    #plt.title(title,size=40)
+    
 
     #create a funtion that iterates over the list of lists and plots each one
     for i,row in enumerate(X):
@@ -34,6 +30,7 @@ def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False, show = Fals
         y = row['y']
         try:
             color = row['color']
+            
         except:
             if(styleDark):
                 color = colors_dark[i]
@@ -42,17 +39,74 @@ def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False, show = Fals
         #Set alpha default one if not defined
         try:
             alpha = row['alpha']
+            #alpha = 1.0
         except:
             alpha = 1.0 
+            
+        try:
+            linestyle = row['linestyle']
+        except:
+            linestyle = '-'
+        
+        try:
+            linewidth = row['linewidth']
+        except:
+            linewidth = 3.0
+
+        try:
+            plot_type = row['plot_type']
+        except:
+            plot_type = 'plot'
+
+
+
         if plot_type == 'scatter':
-            plt.scatter(x,y, color=color, label=f'{row["label"]}', alpha = alpha)
+            ax.scatter(x,y, color=color, label=f'{row["label"]}', alpha = alpha, s=5 )
         elif plot_type == 'hist':
-            plt.hist(y, bins=100, color=color, label=f'{row["label"]}', alpha = alpha)
+            ax.hist(y, bins=100, color=color, label=f'{row["label"]}', alpha = alpha, linestyle = linestyle)
         else:
-            plt.plot(x,y, color=color, linewidth =3, label=f'{row["label"]}', alpha = alpha)
+            ax.plot(x,y, color=color, linewidth =linewidth, label=f'{row["label"]}', alpha = alpha, linestyle = linestyle)
     
-    plt.legend(fontsize="20", loc ="upper left")
-    plt.savefig(f'./plots/{name}.png')
+    #first_legend = plt.legend(fontsize="30", loc ="upper right")
+    aa, = plt.plot(0,0, color='k', label='Train')
+    aa1, =plt.plot(0,0, color='k', linestyle = '--', label='Test')
+    lines = ax.get_lines()
+
+    if True:
+        first_legend = ax.legend(handles=lines[:-2], fontsize="30", loc ="lower right")
+    else:
+
+        first_legend = ax.legend(handles=lines[:-2], fontsize="30", loc ="upper right")
+        ax.add_artist(first_legend)
+        
+        
+        
+        second_legend= plt.legend(handles=lines[-2:], fontsize="40", loc ="upper left")
+
+    #set limits
+    #plt.xlim(0, 100)
+    #plt.ylim(0, 0.2)
+
+    
+
+    plt.rcParams['text.usetex'] = True
+    #plt.legend(handles=[second_legend], loc='lower right')
+
+    plt.grid(True, alpha=0.5)
+
+    plt.xlabel(r'$ z_{real}$',size=50)
+    plt.ylabel(r'$z_E$',size=50 )#, rotation=0)
+    plt.tick_params(axis='y', which='major', pad=25)
+    plt.rc('xtick', labelsize=35)
+    plt.rc('ytick', labelsize=35)
+
+    plt.rc('font', family='serif')
+    
+    folder = "./Figures/figs_init"
+    name_plot = folder+"/"+name+".png"
+    name_plot_eps = folder+"/"+name+".eps"
+    plt.savefig(name_plot, dpi=300, transparent=True,bbox_inches='tight')
+    plt.savefig(name_plot_eps, format='eps')
     if(show):
         plt.show()
     else:
@@ -121,7 +175,7 @@ def plotAreas(x, GT = 0, parameter_name="" ):
     # Create a figure and axis object
     fig, ax = plt.subplots(figsize=(5, 5))
 
-    plt.style.use('default')
+    #plt.style.use('default')
 
     t = np.arange(0, x.shape[1])
 
@@ -130,7 +184,7 @@ def plotAreas(x, GT = 0, parameter_name="" ):
         
         ax.plot(t, x[i,:], color = "deepskyblue",  linewidth=1)
     
-    ax.plot(t, GT,'--', color = "deepskyblue",  linewidth=1)
+    #ax.plot(t, GT,'--', color = "deepskyblue",  linewidth=1)
 
 
     # Find the maximum value and its index among all vectors
@@ -147,14 +201,16 @@ def plotAreas(x, GT = 0, parameter_name="" ):
     ax.axis('on')
     ax.grid(False)
     
-
+    plt.rcParams['text.usetex'] = False
     plt.tight_layout()
     plt.tick_params(axis='x', colors='black')  # Set x-axis color to black
     plt.tick_params(axis='y', colors='black')
+    plt.xscale('log')
+    #ax.set_xscale('log')
 
     #set fotn size axis numbers
-    plt.rc('xtick', labelsize=40)
-    plt.rc('ytick', labelsize=40)
+    plt.rc('xtick', labelsize=30)
+    plt.rc('ytick', labelsize=20)
     plt.rc('font', family='serif')
 
 

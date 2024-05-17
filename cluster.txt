@@ -12,7 +12,7 @@ conda init
 
 squeue -u acastanedagarc
 
-conda env create -f ./Vphy_c/vphysyml
+conda env create -f ./vphysyml
 
 pipreqs . --ignore .conda --force
 
@@ -20,7 +20,7 @@ Pip install XXXX —user
 conda env remove --name pytorch_test_cluster
 
 
-conda install --yes --file Vphy_c/requirements.txt
+conda install --yes --file requirements.txt
 
 
 

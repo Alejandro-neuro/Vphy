@@ -124,12 +124,14 @@ class Dataset_from_folder(torch.utils.data.Dataset):
             return len(self.x)
 
       def __getitem__(self, index):
-            'Generates one sample of data'     
+            'Generates one sample of data'
             
-            if self.x[index].shape[-1] > 3:
+            input = self.x[index]     
+            
+            if self.x[index].shape[-1] != self.x[index].shape[-2]:
                   input = self.x[index].transpose( (0,3,1,2))
 
-            input = self.x[index]
+            
 
             if self.x[index].shape[1] > 2:                  
                   input = input[:,0:2,:,:]      

@@ -192,7 +192,7 @@ def create_scale_image(I, noise = False, shapeType = 'complex', base = None):
 
     return image
 
-def create_half_radius_circle_image(X, n=50):
+def create_half_radius_circle_image(X, noise = False, shapeType = 'complex', base = None, n=50):
     # Create an empty image
     image = np.zeros((n, n), dtype=np.float32)
     

@@ -128,27 +128,8 @@ def latent_loss_multiple(input_img, outputs, expected_pred):
 
     z2_encoder, z2_phys = outputs
 
-    # loss = 0
-    # KLD_loss =0
-
-    # for i in [0, 2]:
-    #     z2_encoder_i = z2_encoder[:,:,i:i+2]
-    #     z2_phys_i = z2_phys[:,:,i:i+2]
-
-    #     loss_MSE = nn.MSELoss()
-    #     loss += loss_MSE(z2_encoder_i, z2_phys_i)
-
-    #     z2_encoder_i = z2_encoder_i.reshape(-1, 2)
-    #     z2_phys_i = z2_phys_i.reshape(-1, 2)
-
-    #     mu = z2_encoder_i.mean(0)
-    #     logvar = torch.log(z2_encoder_i.var(0))
-
-    #     KLD_loss += -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-
-    #z2_encoder = z2_encoder.reshape(-1,4)
-    #z2_phys = z2_phys.reshape(-1,4)
-
+    z2_encoder = z2_encoder.reshape(-1, z2_encoder.shape[2])
+    z2_phys = z2_phys.reshape(-1, z2_phys.shape[2])  
    
     loss_MSE = nn.MSELoss()
     loss = loss_MSE(z2_encoder, z2_phys)     
@@ -162,15 +143,15 @@ def latent_loss_multiple(input_img, outputs, expected_pred):
     mu = z2_encoder.mean(0)
     logvar = torch.log(z2_encoder.var(0))
 
-    mu_2 = 0
-    var_2 = 10 
-    KLD_loss = 0.5 * torch.sum( ((mu-mu_2).pow(2))/var_2 + logvar.exp()/var_2 - 1 - logvar - np.log(var_2) )
+    # mu_2 = 0
+    # var_2 = 10 
+    # KLD_loss = 0.5 * torch.sum( ((mu-mu_2).pow(2))/var_2 + logvar.exp()/var_2 - 1 - logvar - np.log(var_2) )
 
     
 
-    #KLD_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()) 
+    KLD_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()) 
 
-    total_loss = 4*loss +KLD_loss
+    total_loss = loss +KLD_loss
 
     if torch.isnan(total_loss):
         print("loss",loss)

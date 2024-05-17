@@ -201,12 +201,12 @@ class ODE_2ObjectsSpring(nn.Module):
     def __init__(self, k, eq_distance):
         super().__init__()        
                
-        self.k = torch.tensor([k], requires_grad=True).float()
-        self.k = nn.Parameter(self.k)
+        self.beta = torch.tensor([eq_distance], requires_grad=True).float()
+        self.beta = nn.Parameter(self.beta)
 
         
-        self.eq_distance = torch.tensor([eq_distance], requires_grad=True).float()
-        self.eq_distance = nn.Parameter(self.eq_distance)
+        self.alpha = torch.tensor([k], requires_grad=True).float()
+        self.alpha = nn.Parameter(self.alpha)
 
         self.relu = nn.ReLU()
 
@@ -216,7 +216,7 @@ class ODE_2ObjectsSpring(nn.Module):
         direction = (p2 - p1)/euclidean_distance
         #Force = self.k*(euclidean_distance - self.eq_distance )*direction
         #Force = torch.exp(self.k)*diff - torch.exp(self.k)*torch.exp(self.eq_distance)*direction
-        Force = self.k*(euclidean_distance - torch.abs(self.eq_distance) )*direction
+        Force = self.alpha*(euclidean_distance - 2*torch.abs(self.beta) )*direction
         return Force
     def vel_eq(self, v):
         

@@ -1,0 +1,303 @@
+conda activate vphys
+
+CommandNotFoundError: Your shell has not been properly configured to use 'conda activate'.
+To initialize your shell, run
+
+    $ conda init <SHELL_NAME>
+
+Currently supported shells are:
+  - bash
+  - fish
+  - tcsh
+  - xonsh
+  - zsh
+  - powershell
+
+See 'conda init --help' for more information and options.
+
+IMPORTANT: You may need to close and restart your shell after running 'conda init'.
+
+
+/home/nfs/acastanedagarc/Vphy_c/Figures/init_exp.py:72: SyntaxWarning: invalid escape sequence '\p'
+  print("Best gamma1: ", gamma1.mean() , "\pm", gamma1.std())
+/home/nfs/acastanedagarc/Vphy_c/Figures/init_exp.py:73: SyntaxWarning: invalid escape sequence '\p'
+  print("Best gamma2: ", gamma2.mean() , "\pm", gamma2.std())
+wandb: Currently logged in as: alejandro_c. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.17.0 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.16.5
+wandb: Run data is saved locally in /home/nfs/acastanedagarc/wandb/run-20240517_143134-wb1rkogi
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run exp_EndPhys_17_05_24_14
+wandb: ⭐️ View project at https://wandb.ai/alejandro_c/Vphysics-Project-IC
+wandb: 🚀 View run at https://wandb.ai/alejandro_c/Vphysics-Project-IC/runs/wb1rkogi/workspace
+wandb: - 0.007 MB of 0.007 MB uploadedwandb: \ 0.007 MB of 0.007 MB uploadedwandb: | 0.014 MB of 0.014 MB uploadedwandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:           alpha ▇█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:            beta █▇▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:      train_loss █▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: validation_loss █▅▃▂▂▂▁▂▂▂▂▂▁▂▂▂▂▂▁▂▂▂▁▁▂▁▂▁▁▂▂▂▂▂▂▂▂▁▂▂
+wandb: 
+wandb: Run summary:
+wandb:           alpha 3.94019
+wandb:            beta 0.14127
+wandb:      train_loss 0.01755
+wandb: validation_loss 0.70376
+wandb: 
+wandb: 🚀 View run exp_EndPhys_17_05_24_14 at: https://wandb.ai/alejandro_c/Vphysics-Project-IC/runs/wb1rkogi/workspace
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20240517_143134-wb1rkogi/logs
+wandb: wandb version 0.17.0 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.16.5
+wandb: Run data is saved locally in /home/nfs/acastanedagarc/wandb/run-20240517_143307-vj4w90tc
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run exp_EndPhys_17_05_24_14
+wandb: ⭐️ View project at https://wandb.ai/alejandro_c/Vphysics-Project-IC
+wandb: 🚀 View run at https://wandb.ai/alejandro_c/Vphysics-Project-IC/runs/vj4w90tc/workspace
+wandb: - 0.007 MB of 0.014 MB uploadedwandb: \ 0.007 MB of 0.014 MB uploadedwandb: | 0.014 MB of 0.014 MB uploadedwandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:           alpha ▄█▇▆▄▂▁▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂
+wandb:            beta ▄██▇▅▄▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:      train_loss █▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: validation_loss ▂█▄▄▃▃▂▁▂▁▁▁▁▂▁▂▂▁▂▂▂▂▂▂▁▂▂▂▁▁▂▁▁▁▂▂▁▁▂▁
+wandb: 
+wandb: Run summary:
+wandb:           alpha 3.93804
+wandb:            beta 0.15869
+wandb:      train_loss 0.01085
+wandb: validation_loss 0.60799
+wandb: 
+wandb: 🚀 View run exp_EndPhys_17_05_24_14 at: https://wandb.ai/alejandro_c/Vphysics-Project-IC/runs/vj4w90tc/workspace
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20240517_143307-vj4w90tc/logs
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: | Waiting for wandb.init()...wandb: wandb version 0.17.0 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.16.5
+wandb: Run data is saved locally in /home/nfs/acastanedagarc/wandb/run-20240517_143436-6kbnv8g8
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run exp_EndPhys_17_05_24_14
+wandb: ⭐️ View project at https://wandb.ai/alejandro_c/Vphysics-Project-IC
+wandb: 🚀 View run at https://wandb.ai/alejandro_c/Vphysics-Project-IC/runs/6kbnv8g8/workspace
+wandb: - 0.014 MB of 0.014 MB uploadedwandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:           alpha ▁▇█▇▆▅▄▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃
+wandb:            beta ▃██▇▆▅▄▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:      train_loss █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: validation_loss ▄█▂▂▂▂▁▂▁▂▂▁▁▂▂▁▁▁▁▁▁▁▁▁▂▂▁▂▁▁▁▁▂▁▂▁▁▂▂▂
+wandb: 
+wandb: Run summary:
+wandb:           alpha 3.65631
+wandb:            beta 0.51517
+wandb:      train_loss 0.01751
+wandb: validation_loss 0.75153
+wandb: 
+wandb: 🚀 View run exp_EndPhys_17_05_24_14 at: https://wandb.ai/alejandro_c/Vphysics-Project-IC/runs/6kbnv8g8/workspace
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20240517_143436-6kbnv8g8/logs
+wandb: wandb version 0.17.0 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.16.5
+wandb: Run data is saved locally in /home/nfs/acastanedagarc/wandb/run-20240517_143606-tx51n0a3
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run exp_EndPhys_17_05_24_14
+wandb: ⭐️ View project at https://wandb.ai/alejandro_c/Vphysics-Project-IC
+wandb: 🚀 View run at https://wandb.ai/alejandro_c/Vphysics-Project-IC/runs/tx51n0a3/workspace
+wandb: - 0.007 MB of 0.007 MB uploadedwandb: \ 0.007 MB of 0.007 MB uploadedwandb: | 0.014 MB of 0.014 MB uploadedwandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:           alpha ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:            beta ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:      train_loss █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: validation_loss ▂▁▆▇▄▅▇▆▇▄▆▆█▅▅▇▅█▆▆▅▅▆▇▆▇▆▆▇▇▇█▅▄█▅▇▄▇▆
+wandb: 
+wandb: Run summary:
+wandb:           alpha 0.0
+wandb:            beta 0.0
+wandb:      train_loss 0.03269
+wandb: validation_loss 0.76315
+wandb: 
+wandb: 🚀 View run exp_EndPhys_17_05_24_14 at: https://wandb.ai/alejandro_c/Vphysics-Project-IC/runs/tx51n0a3/workspace
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20240517_143606-tx51n0a3/logs
+wandb: wandb version 0.17.0 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.16.5
+wandb: Run data is saved locally in /home/nfs/acastanedagarc/wandb/run-20240517_143736-w5ykl0fw
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run exp_EndPhys_17_05_24_14
+wandb: ⭐️ View project at https://wandb.ai/alejandro_c/Vphysics-Project-IC
+wandb: 🚀 View run at https://wandb.ai/alejandro_c/Vphysics-Project-IC/runs/w5ykl0fw/workspace
+wandb: - 0.007 MB of 0.007 MB uploadedwandb: \ 0.007 MB of 0.014 MB uploadedwandb: | 0.007 MB of 0.014 MB uploadedwandb: / 0.014 MB of 0.014 MB uploadedwandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:           alpha ▂█▆▃▁▁▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂
+wandb:            beta ▅█▅▃▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:      train_loss █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: validation_loss ▅▃█▄▃▃▆▁▅▄▄▅▃▅▃▃▁▄▃▄▄▄▃▄▄▄▄▃▅▅▃▄▃▄▃▃▅▅▄▄
+wandb: 
+wandb: Run summary:
+wandb:           alpha 3.94846
+wandb:            beta 0.18992
+wandb:      train_loss 0.02632
+wandb: validation_loss 0.66831
+wandb: 
+wandb: 🚀 View run exp_EndPhys_17_05_24_14 at: https://wandb.ai/alejandro_c/Vphysics-Project-IC/runs/w5ykl0fw/workspace
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20240517_143736-w5ykl0fw/logs
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.17.0 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.16.5
+wandb: Run data is saved locally in /home/nfs/acastanedagarc/wandb/run-20240517_143907-j9qkepqu
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run exp_EndPhys_17_05_24_14
+wandb: ⭐️ View project at https://wandb.ai/alejandro_c/Vphysics-Project-IC
+wandb: 🚀 View run at https://wandb.ai/alejandro_c/Vphysics-Project-IC/runs/j9qkepqu/workspace
+wandb: - 0.014 MB of 0.014 MB uploadedwandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:           alpha ▁█▂▂▁▁▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂
+wandb:            beta █▁▃▆██▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇
+wandb:      train_loss █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: validation_loss █▃▂▂▁▁▁▁▁▁▂▂▁▁▂▁▁▂▁▂▂▁▁▁▂▁▁▂▁▁▂▁▁▁▂▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:           alpha 3.94155
+wandb:            beta 0.1509
+wandb:      train_loss 0.01634
+wandb: validation_loss 0.64447
+wandb: 
+wandb: 🚀 View run exp_EndPhys_17_05_24_14 at: https://wandb.ai/alejandro_c/Vphysics-Project-IC/runs/j9qkepqu/workspace
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20240517_143907-j9qkepqu/logs
+wandb: wandb version 0.17.0 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.16.5
+wandb: Run data is saved locally in /home/nfs/acastanedagarc/wandb/run-20240517_144035-33jifygi
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run exp_EndPhys_17_05_24_14
+wandb: ⭐️ View project at https://wandb.ai/alejandro_c/Vphysics-Project-IC
+wandb: 🚀 View run at https://wandb.ai/alejandro_c/Vphysics-Project-IC/runs/33jifygi/workspace
+wandb: - 0.007 MB of 0.014 MB uploadedwandb: \ 0.007 MB of 0.014 MB uploadedwandb: | 0.014 MB of 0.014 MB uploadedwandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:           alpha ▅█▆▂▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:            beta ▇█▅▃▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:      train_loss █▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: validation_loss ▅█▄▂▂▁▁▁▁▂▁▂▂▁▂▂▂▁▁▁▁▂▁▁▂▂▂▂▂▂▁▁▂▁▂▁▂▂▂▂
+wandb: 
+wandb: Run summary:
+wandb:           alpha 3.94302
+wandb:            beta 0.15274
+wandb:      train_loss 0.00634
+wandb: validation_loss 0.62005
+wandb: 
+wandb: 🚀 View run exp_EndPhys_17_05_24_14 at: https://wandb.ai/alejandro_c/Vphysics-Project-IC/runs/33jifygi/workspace
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20240517_144035-33jifygi/logs
+Dynamics type:  Motion
+Using device: cuda
+Initial Loss 	 training loss: 1.9240146577358246 	 validation loss: 1.7748498916625977
+epoch: 20 	 training loss: 0.011824836255982518 	 validation loss: 0.5989779233932495
+epoch: 40 	 training loss: 0.00463315995875746 	 validation loss: 0.6389462947845459
+epoch: 60 	 training loss: 0.010676727630198002 	 validation loss: 0.758003294467926
+epoch: 80 	 training loss: 0.004305508860852569 	 validation loss: 0.6651668548583984
+epoch: 100 	 training loss: 0.0065925586968660355 	 validation loss: 0.8131018280982971
+epoch: 120 	 training loss: 0.006159754935652018 	 validation loss: 0.6343182921409607
+epoch: 140 	 training loss: 0.016381391789764166 	 validation loss: 0.6375095248222351
+epoch: 160 	 training loss: 0.007612578454427421 	 validation loss: 0.7473169565200806
+epoch: 180 	 training loss: 0.012739277794025838 	 validation loss: 0.7759712338447571
+epoch: 200 	 training loss: 0.017551914497744292 	 validation loss: 0.7037553787231445
+Using device: cuda
+Initial Loss 	 training loss: 1.8369333446025848 	 validation loss: 1.868733525276184
+epoch: 20 	 training loss: 0.675044983625412 	 validation loss: 1.3369715213775635
+epoch: 40 	 training loss: 0.011588494235184044 	 validation loss: 0.7119258046150208
+epoch: 60 	 training loss: 0.017695226008072495 	 validation loss: 0.680693507194519
+epoch: 80 	 training loss: 0.01060019456781447 	 validation loss: 0.6822177171707153
+epoch: 100 	 training loss: 0.009984726086258888 	 validation loss: 0.7406572103500366
+epoch: 120 	 training loss: 0.013644487829878926 	 validation loss: 0.702523946762085
+epoch: 140 	 training loss: 0.03438439010642469 	 validation loss: 0.6502061486244202
+epoch: 160 	 training loss: 0.009195744001772255 	 validation loss: 0.7350948452949524
+epoch: 180 	 training loss: 0.017697308212518692 	 validation loss: 0.6745727062225342
+epoch: 200 	 training loss: 0.01085061312187463 	 validation loss: 0.6079898476600647
+Using device: cuda
+Initial Loss 	 training loss: 1.5907023549079895 	 validation loss: 2.2070069313049316
+epoch: 20 	 training loss: 0.12982136383652687 	 validation loss: 0.8943118453025818
+epoch: 40 	 training loss: 0.02379819890484214 	 validation loss: 0.6967020630836487
+epoch: 60 	 training loss: 0.007373741711489856 	 validation loss: 0.760100781917572
+epoch: 80 	 training loss: 0.017310711089521646 	 validation loss: 0.6745610237121582
+epoch: 100 	 training loss: 0.01033676357474178 	 validation loss: 0.8168627619743347
+epoch: 120 	 training loss: 0.015032670460641384 	 validation loss: 0.6129735708236694
+epoch: 140 	 training loss: 0.030310478527098894 	 validation loss: 0.7152951955795288
+epoch: 160 	 training loss: 0.006403513718396425 	 validation loss: 0.7233896851539612
+epoch: 180 	 training loss: 0.005884971120394766 	 validation loss: 0.6663164496421814
+epoch: 200 	 training loss: 0.017511903890408576 	 validation loss: 0.7515316009521484
+Using device: cuda
+Initial Loss 	 training loss: 1.7927689850330353 	 validation loss: 1.7202311754226685
+epoch: 20 	 training loss: 0.039879958145320415 	 validation loss: 0.6873875260353088
+epoch: 40 	 training loss: 0.03106129774823785 	 validation loss: 0.6816913485527039
+epoch: 60 	 training loss: 0.033057044725865126 	 validation loss: 0.7332912087440491
+epoch: 80 	 training loss: 0.034719593822956085 	 validation loss: 0.698313295841217
+epoch: 100 	 training loss: 0.04294833820313215 	 validation loss: 0.7040206789970398
+epoch: 120 	 training loss: 0.031518501695245504 	 validation loss: 0.711762011051178
+epoch: 140 	 training loss: 0.03222227655351162 	 validation loss: 0.7347510457038879
+epoch: 160 	 training loss: 0.03867800114676356 	 validation loss: 0.6705465912818909
+epoch: 180 	 training loss: 0.03431846387684345 	 validation loss: 0.6622273921966553
+epoch: 200 	 training loss: 0.03268983634188771 	 validation loss: 0.7631474733352661
+Using device: cuda
+Initial Loss 	 training loss: 1.5734077990055084 	 validation loss: 2.1132025718688965
+epoch: 20 	 training loss: 0.009361180011183023 	 validation loss: 0.8031546473503113
+epoch: 40 	 training loss: 0.010538975242525339 	 validation loss: 0.7065321207046509
+epoch: 60 	 training loss: 0.005312759254593402 	 validation loss: 0.7122935652732849
+epoch: 80 	 training loss: 0.0046704328851774335 	 validation loss: 0.673058271408081
+epoch: 100 	 training loss: 0.009573025861755013 	 validation loss: 0.6459205746650696
+epoch: 120 	 training loss: 0.021409074659459293 	 validation loss: 0.6924896836280823
+epoch: 140 	 training loss: 0.010289502562955022 	 validation loss: 0.7305872440338135
+epoch: 160 	 training loss: 0.0044557476649060845 	 validation loss: 0.7555575370788574
+epoch: 180 	 training loss: 0.019036153331398964 	 validation loss: 0.6547328233718872
+epoch: 200 	 training loss: 0.026321465149521828 	 validation loss: 0.6683077812194824
+Using device: cuda
+Initial Loss 	 training loss: 1.4761964082717896 	 validation loss: 2.039713144302368
+epoch: 20 	 training loss: 0.007799258572049439 	 validation loss: 0.7034398317337036
+epoch: 40 	 training loss: 0.006767769111320376 	 validation loss: 0.7408164143562317
+epoch: 60 	 training loss: 0.010745752602815628 	 validation loss: 0.67479008436203
+epoch: 80 	 training loss: 0.007265011430718005 	 validation loss: 0.6904892325401306
+epoch: 100 	 training loss: 0.007252132287248969 	 validation loss: 0.7756387591362
+epoch: 120 	 training loss: 0.007389610284008086 	 validation loss: 0.694313108921051
+epoch: 140 	 training loss: 0.011497533181682229 	 validation loss: 0.7017377018928528
+epoch: 160 	 training loss: 0.00558571214787662 	 validation loss: 0.6776927709579468
+epoch: 180 	 training loss: 0.015209761331789196 	 validation loss: 0.688787043094635
+epoch: 200 	 training loss: 0.0163418265292421 	 validation loss: 0.6444656252861023
+Using device: cuda
+Initial Loss 	 training loss: 1.5100588500499725 	 validation loss: 1.4884374141693115
+epoch: 20 	 training loss: 0.0298706223256886 	 validation loss: 0.7438883185386658
+epoch: 40 	 training loss: 0.0063332009594887495 	 validation loss: 0.68055659532547
+epoch: 60 	 training loss: 0.005119652138091624 	 validation loss: 0.7416028380393982
+epoch: 80 	 training loss: 0.009283573599532247 	 validation loss: 0.6864867806434631
+epoch: 100 	 training loss: 0.01920693344436586 	 validation loss: 0.7146731615066528
+epoch: 120 	 training loss: 0.003950587939471006 	 validation loss: 0.7487573027610779
+epoch: 140 	 training loss: 0.015179502195678651 	 validation loss: 0.5758354663848877
+epoch: 160 	 training loss: 0.005635730572976172 	 validation loss: 0.5759598016738892
+epoch: 180 	 training loss: 0.008056264312472194 	 validation loss: 0.6604353189468384
+epoch: 200 	 training loss: 0.006339702173136175 	 validation loss: 0.6200501918792725
+Traceback (most recent call last):
+  File "/home/nfs/acastanedagarc/Vphy_c/Figures/init_exp.py", line 76, in <module>
+    main()
+  File "/home/nfs/acastanedagarc/Vphy_c/Figures/init_exp.py", line 66, in main
+    cp.plotAreas(a, 3.99, dyn_type+"_gamma1")
+  File "/home/nfs/acastanedagarc/Vphy_c/src/custom_plots.py", line 133, in plotAreas
+    ax.plot(t, GT,'--', color = "deepskyblue",  linewidth=1)
+  File "/home/nfs/acastanedagarc/.conda/envs/vphys/lib/python3.12/site-packages/matplotlib/axes/_axes.py", line 1724, in plot
+    lines = [*self._get_lines(self, *args, data=data, **kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nfs/acastanedagarc/.conda/envs/vphys/lib/python3.12/site-packages/matplotlib/axes/_base.py", line 303, in __call__
+    yield from self._plot_args(
+               ^^^^^^^^^^^^^^^^
+  File "/home/nfs/acastanedagarc/.conda/envs/vphys/lib/python3.12/site-packages/matplotlib/axes/_base.py", line 499, in _plot_args
+    raise ValueError(f"x and y must have same first dimension, but "
+ValueError: x and y must have same first dimension, but have shapes (201,) and (1,)
+srun: error: influ2: task 0: Exited with exit code 1
+srun: launch/slurm: _step_signal: Terminating StepId=10060165.0

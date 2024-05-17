@@ -14,14 +14,14 @@ def main():
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-    for dyn_type in ["Motion","Scale","Intensity"]:
+    for dyn_type in ["Scale"]:
 
         if dyn_type == "Motion":
                 ImageGenerator = genData.create_pendulum_image
                 t,a = genData.generateDynamics(0.5,(-0.5))
         if dyn_type == "Scale":
-                ImageGenerator = genData.create_scale_image
-                t,a = genData.generateDynamics(2,0)
+                ImageGenerator = genData.create_half_radius_circle_image
+                t,a = genData.generateDynamics(max=10.0, min = -10.0, dt = 0.1)
         if dyn_type == "Intensity":
                 ImageGenerator = genData.create_intensity_image
                 t,a = genData.generateDynamics(1,0.2)
@@ -29,7 +29,7 @@ def main():
 
         for i in range(n_images):
             
-            x = ImageGenerator(a[i*20], noise=False)
+            x = ImageGenerator(a[i*3], noise=False)
 
             x = (x*255).astype(np.uint8)
 

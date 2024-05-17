@@ -1,0 +1,37 @@
+conda activate vphys
+
+CommandNotFoundError: Your shell has not been properly configured to use 'conda activate'.
+To initialize your shell, run
+
+    $ conda init <SHELL_NAME>
+
+Currently supported shells are:
+  - bash
+  - fish
+  - tcsh
+  - xonsh
+  - zsh
+  - powershell
+
+See 'conda init --help' for more information and options.
+
+IMPORTANT: You may need to close and restart your shell after running 'conda init'.
+
+
+/home/nfs/acastanedagarc/Figures/init_exp.py:72: SyntaxWarning: invalid escape sequence '\p'
+  print("Best gamma1: ", gamma1.mean() , "\pm", gamma1.std())
+/home/nfs/acastanedagarc/Figures/init_exp.py:73: SyntaxWarning: invalid escape sequence '\p'
+  print("Best gamma2: ", gamma2.mean() , "\pm", gamma2.std())
+Dynamics type:  Motion
+Traceback (most recent call last):
+  File "/home/nfs/acastanedagarc/Figures/init_exp.py", line 76, in <module>
+    main()
+  File "/home/nfs/acastanedagarc/Figures/init_exp.py", line 25, in main
+    data_folder = np.load('Data/dataset_motion.npy')
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nfs/acastanedagarc/.conda/envs/vphys/lib/python3.12/site-packages/numpy/lib/npyio.py", line 427, in load
+    fid = stack.enter_context(open(os_fspath(file), "rb"))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'Data/dataset_motion.npy'
+srun: error: gpu11: task 0: Exited with exit code 1
+srun: launch/slurm: _step_signal: Terminating StepId=10059779.0
