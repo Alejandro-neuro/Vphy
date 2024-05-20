@@ -92,15 +92,19 @@ def adversarial_loss(discriminated, real):
 
 def latent_loss(input_img, outputs, expected_pred,print_loss = False):
 
-    z2_encoder, z2_phys = outputs
+    z2_encoder, z2_phys, zroll = outputs
 
     
     
     z2_encoder = z2_encoder.reshape(-1, z2_encoder.shape[-1])
     z2_phys = z2_phys.reshape(-1, z2_phys.shape[-1])  
+    zroll = zroll.reshape(-1, zroll.shape[-1])
 
     loss_MSE = nn.MSELoss()
-    loss = loss_MSE(z2_encoder, z2_phys)
+    loss1 = loss_MSE(z2_encoder, z2_phys)
+    loss2 = loss_MSE(z2_encoder, zroll)
+    loss = loss1#+loss2
+
 
     
 
@@ -118,7 +122,7 @@ def latent_loss(input_img, outputs, expected_pred,print_loss = False):
     KLD_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
 
-    total_loss = loss + KLD_loss
+    total_loss = 2*loss + KLD_loss
 
     if torch.isnan(loss):
         return KLD_loss

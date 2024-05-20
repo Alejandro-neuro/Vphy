@@ -98,7 +98,7 @@ def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False, show = Fals
 
     plt.xlabel(r'${}$'.format(xlabel),size=50)
     plt.ylabel(r'${}$'.format(ylabel),size=50 )#, rotation=0)
-    plt.tick_params(axis='y', which='major', pad=25)
+    plt.tick_params(axis='y', which='major')#, pad=25)
     plt.rc('xtick', labelsize=35)
     plt.rc('ytick', labelsize=35)
 

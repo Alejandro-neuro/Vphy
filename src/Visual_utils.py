@@ -649,7 +649,22 @@ def visualize_cm(model, loader):
             
 
             img_0 = x0[0,frame,0,:,:]
+            
             img_1 = x0[0,frame,1,:,:]
+
+            img_0[img_0 < 0.8] = 0
+            img_1[img_1 < 0.8] = 0
+
+            if frame == 0:
+
+                
+                plt.figure()
+                plt.imshow(img_0.detach().cpu().numpy(), cmap='gray')
+                plt.show()
+
+                plt.figure()
+                plt.imshow(img_1.detach().cpu().numpy(), cmap='gray')
+                plt.show()
             
             cm_0 = get_center_mass(img_0)
             cm_1 = get_center_mass(img_1)

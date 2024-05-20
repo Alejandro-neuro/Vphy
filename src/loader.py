@@ -133,8 +133,8 @@ class Dataset_from_folder(torch.utils.data.Dataset):
 
             
 
-            if self.x[index].shape[1] > 2:                  
-                  input = input[:,0:2,:,:]      
+            # if self.x[index].shape[1] > 2:                  
+            #       input = input[:,0:2,:,:]      
             
             input = torch.from_numpy(input)
             out = input         

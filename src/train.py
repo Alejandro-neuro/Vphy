@@ -143,7 +143,7 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_
     #optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     if init_phys == 0:
-        init_phys = 0.05
+        init_phys = 0.1
     
     if init_phys < 0:
 
@@ -152,7 +152,7 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_
     elif init_phys > 1:
         init_phys = np.ceil(np.log(init_phys)) * 0.5
     else:
-        init_phys = 0.1
+        init_phys = 1.0
 
     #init_phys = np.abs(init_phys)
     
@@ -361,7 +361,7 @@ def train_m(model, train_loader, val_loader, type ='normal', init_phys = 1.0,los
                 {'params': model.m, 'lr':0.1, 'name': 'm'},
                 {'params': model.b, 'lr':0.1, 'name': 'b'},
                 {'params':  model.pModel.k, 'lr': np.abs(init_phys), 'name': 'k'}, 
-                {'params': model.pModel.eq_distance, 'lr': np.abs(init_phys), 'name': 'eq_distance'}                       
+                {'params': model.pModel.eq_distance, 'lr': np.abs(0.05), 'name': 'eq_distance'}                       
             ], lr=1e-2)
 
 
@@ -431,7 +431,7 @@ def train_m(model, train_loader, val_loader, type ='normal', init_phys = 1.0,los
     log.append(dict_log)
 
     for epoch in range(1, num_epochs+1):
-
+            
         if (epoch + 1) % 300 == 0:
             for param_group in optimizer.param_groups:
                 if 'eq_distance' in param_group['name'] or 'k' in param_group['name']:
@@ -447,8 +447,13 @@ def train_m(model, train_loader, val_loader, type ='normal', init_phys = 1.0,los
         else:
             print_loss = False
         # Model training
+        #start_time = time.time()
         train_loss = train_epoch(model, train_loader, loss_fn,optimizer, device=device, print_loss = print_loss)
-        
+        #end_time = time.time() 
+        #print time in seconds
+        #epoch_duration = end_time - start_time
+        #print(f"Epoch {epoch + 1}/{num_epochs} took {epoch_duration:.2f} seconds")
+
         # Model validation
         val_loss = evaluate_epoch(model, val_loader, loss_fn, device=device)
 

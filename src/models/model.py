@@ -177,14 +177,19 @@ class EndPhys(nn.Module):
           z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
     
       z2_phys = z[:,0:order,:]
+      z_renorm = z[:,0:order,:]
       z2_encoder = z
       for i in range(frames.shape[1]-order):
           
-          z_window = z[:,i:i+order]
+          z_window = z2_phys[:,i:i+2,:]
+          z_window2 = z[:,i:i+2,:]
+
 
           pred_window = self.pModel(z_window,self.dt)
-                 
+          pred_window2 = self.pModel(z_window2,self.dt)
+          
           z2_phys = torch.cat((z2_phys,pred_window),dim=1)
+          z_renorm = torch.cat((z_renorm,pred_window2),dim=1)
           
           #z2_phys = self.pModel(z[:,i:i+order],self.dt) if i == 0 else torch.cat((z2_phys,self.pModel(z[:,i:i+order],self.dt)),dim=1)
 
@@ -192,7 +197,7 @@ class EndPhys(nn.Module):
       
 
       
-      return  z2_encoder, z2_phys
+      return  z2_encoder, z2_phys, z_renorm
     
     def get_masks(self):
         return self.masks
@@ -247,9 +252,9 @@ class EndPhysMultiple(nn.Module):
             z_temp = torch.cat((p1.unsqueeze(1),p2.unsqueeze(1)),dim=2)
 
           if self.latent_dim == 4:
-             mask1 = current_frame[:,0:1,:,:]
-             mask2 = current_frame[:,1:2,:,:]
-             z_temp = self.encoder(mask1+mask2 )
+             input = torch.sum(current_frame,1, keepdim=True)
+             #print(input.shape)
+             z_temp = self.encoder(input )
              z_temp = z_temp.unsqueeze(1)
           #print("z_temp",z_temp)
           z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
