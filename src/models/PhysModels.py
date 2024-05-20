@@ -35,6 +35,76 @@ class Damped_oscillation(nn.Module):
 
       return  y_hat
     
+class dyn_1storder(nn.Module):
+    def __init__(self, init_phys = None):
+        super().__init__()
+
+        if init_phys is not None:
+            self.alpha = torch.tensor([init_phys], requires_grad=True).float()
+            self.beta = torch.tensor([init_phys], requires_grad=True).float()
+        else:
+            self.alpha = torch.tensor([0.5], requires_grad=True).float()        
+            self.beta = torch.tensor([0.5], requires_grad=True).float()
+
+        self.alpha = nn.Parameter(self.alpha )
+        self.beta = nn.Parameter(self.beta )
+
+        self.order = 1
+
+    def forward(self, z,dt):    
+
+      device = "cuda" if torch.cuda.is_available() else "cpu"
+      dt = torch.tensor([dt], requires_grad=False).float().to(device)
+
+      y1 = z[:,0:1]
+
+      dt = dt
+
+      #for i in range(5):
+
+      #y_hat = y1+ (y1-y0) -dt*dt *self.alpha* y1
+
+      y_hat = y1 -dt*(self.alpha)*y1 
+
+      return  y_hat
+class Clifford_Attractor(nn.Module):
+    def __init__(self, init_phys = None):
+        super().__init__()
+
+        self.a = torch.tensor([1.0], requires_grad=True).float()
+        self.a = nn.Parameter(self.a )
+
+        self.b = torch.tensor([1.0], requires_grad=True).float()
+        self.b = nn.Parameter(self.b )
+
+        self.c = torch.tensor([1.0], requires_grad=True).float()
+        self.c = nn.Parameter(self.c )
+
+        self.d = torch.tensor([1.0], requires_grad=True).float()
+        self.d = nn.Parameter(self.d )
+
+        self.order = 1
+
+    def forward(self, z,dt):    
+
+      device = "cuda" if torch.cuda.is_available() else "cpu"
+
+      x = z[:,0,0:1]
+      y = z[:,0,1:2]
+
+
+      for i in range(10):
+
+        x_hat = torch.sin(self.a*y) + 0.6*torch.cos(self.a*x)
+        y_hat = torch.sin(self.b*x) + 1.2*torch.cos(self.b*y)
+
+        x = x_hat
+        y = y_hat
+    
+      z_hat = torch.cat([x_hat,y_hat],dim=1).unsqueeze(1)
+
+      return  z_hat
+    
 class Oscillation(nn.Module):
     def __init__(self, initw = False):
         super().__init__()
@@ -184,6 +254,10 @@ def getModel(name, init_phys = None):
     if name == "IntegratedFire":
 
         return IntegratedFire()
+    if name == "dyn_1storder":
+        return dyn_1storder(init_phys)
+    if name == "Clifford_Attractor":    
+        return Clifford_Attractor()
     if name == "ODE_2ObjectsSpring":
         return ODE_2ObjectsSpring(init_phys[0], init_phys[1])
     if name == "Damped_oscillation":
@@ -197,16 +271,17 @@ def getModel(name, init_phys = None):
     else:
         return None
     
+
 class ODE_2ObjectsSpring(nn.Module):
     def __init__(self, k, eq_distance):
         super().__init__()        
                
-        self.beta = torch.tensor([eq_distance], requires_grad=True).float()
-        self.beta = nn.Parameter(self.beta)
+        self.eq_distance = torch.tensor([eq_distance], requires_grad=True).float()
+        self.eq_distance = nn.Parameter(self.eq_distance)
 
         
-        self.alpha = torch.tensor([k], requires_grad=True).float()
-        self.alpha = nn.Parameter(self.alpha)
+        self.k = torch.tensor([k], requires_grad=True).float()
+        self.k = nn.Parameter(self.k)
 
         self.relu = nn.ReLU()
 
@@ -216,7 +291,7 @@ class ODE_2ObjectsSpring(nn.Module):
         direction = (p2 - p1)/euclidean_distance
         #Force = self.k*(euclidean_distance - self.eq_distance )*direction
         #Force = torch.exp(self.k)*diff - torch.exp(self.k)*torch.exp(self.eq_distance)*direction
-        Force = self.alpha*(euclidean_distance - 2*torch.abs(self.beta) )*direction
+        Force = self.k*(euclidean_distance - 2*torch.abs(self.eq_distance) )*direction
         return Force
     def vel_eq(self, v):
         

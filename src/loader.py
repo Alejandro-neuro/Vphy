@@ -184,8 +184,8 @@ def getLoader_folder(X, split = True):
 
             #create train and test dataloaders
 
-            train_dataset = DataLoader( Dataset_from_folder(train_x), batch_size=128, shuffle=True)
-            val_dataset = DataLoader( Dataset_from_folder(val_x), batch_size=128, shuffle=False)    
+            train_dataset = DataLoader( Dataset_from_folder(train_x), batch_size=64, shuffle=True)
+            val_dataset = DataLoader( Dataset_from_folder(val_x), batch_size=64, shuffle=False)    
 
             return train_dataset, val_dataset, train_x, val_x 
       else :

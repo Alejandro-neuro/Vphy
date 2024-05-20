@@ -488,14 +488,17 @@ def visualize_latent_dist(model, loader):
 
     for i in range(d_dim):
     
-        X.append( { 'x': range(0, n_epoch ), 'y': z2_encoder_list[:,i] , 'label': 'z2_encoder_list_'+str(i) , 'alpha':0.5  } )
+        X.append( { 'x': range(0, n_epoch ), 'y': z2_encoder_list[:,i] , 'label': 'z2_encoder_list_'+str(i) , 'alpha':0.5, 'plot_type':'hist'  } )
         #X.append( { 'x': range(0, n_epoch ), 'y': z2_phys_list[:,i] , 'label': 'z2_phys_list_'+str(i) , 'alpha':0.5  } )
         
     cp.plotMultiple( X,  'sample', 'value','Latent Space', "data distribution", show=True, styleDark = False, plot_type='hist'	 )
     X = []
+
+    t = np.arange(0, n_epoch, 1)
+    t = t[::10]
     
     for i in range(d_dim):
-        X.append( { 'x': range(0, 500 ), 'y': z2_encoder_list[::10,i] , 'label': 'z2_encoder_list_'+str(i) , 'alpha':0.5  } )
+        X.append( { 'x': t, 'y': z2_encoder_list[::10,i] , 'label': 'z2_encoder_list_'+str(i) , 'alpha':0.5  } )
         print("max",i,z2_encoder_list[:,i].max())
         print("min",i,z2_encoder_list[:,i].min())
         
@@ -543,6 +546,74 @@ def vis_frame_masks(img):
     plt.figure()
     plt.imshow(img_hor, cmap='gray')
     plt.show()
+
+def vis_chaos(model, loader):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model.to(device)
+
+    z2_encoder_list = None
+    z2_phys_list = None
+
+    iter = 0
+    for data in loader:
+
+        iter += 1
+
+        if iter != 9:
+                continue
+
+        input_Data, out_Data = data
+
+        x0 = input_Data
+
+        x0 = x0.to(device=device, dtype=torch.float)
+
+        print(x0.shape)
+
+        list_cm = None
+
+        for frame in range(0,x0.shape[1]):
+
+            
+
+            img_0 = x0[0,frame,0,:,:]
+            
+            cm_0 = get_center_mass(img_0)
+
+            
+
+            
+
+          
+
+            list_cm = cm_0 if frame == 0 else np.vstack((list_cm, cm_0))
+
+       
+        outputs = model(x0)
+        z2_encoder, z2_phys,  =outputs
+
+        z2_encoder = z2_encoder.squeeze(0)
+        z2_phys = z2_phys.squeeze(0)
+        
+
+        
+        #z2_encoder_list.append(z2_encoder.detach().cpu().numpy()[0][0])
+        #z2_phys_list.append(z2_phys.detach().cpu().numpy()[0][0]) 
+        z2_encoder_list=z2_encoder.detach().cpu().numpy() 
+        z2_phys_list=z2_phys.detach().cpu().numpy() 
+
+    plt.figure()
+    plt.plot(z2_encoder_list[:,0], z2_encoder_list[:,1], label='Encoder')
+    plt.show()
+
+    plt.figure()
+    plt.plot(z2_phys_list[:,0], z2_phys_list[:,1], label='Phys')
+    plt.show()
+
+    plt.plot(list_cm[:,0],list_cm[:,1], '--b',label='center_mass_0')
+    
+    plt.legend()
+    plt.show()
         
 def visualize_cm(model, loader):
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -550,6 +621,8 @@ def visualize_cm(model, loader):
 
     z2_encoder_list = None
     z2_phys_list = None
+
+    z_norm_list = None
 
 
     iter = 0
@@ -591,12 +664,13 @@ def visualize_cm(model, loader):
 
 
         outputs = model(x0)
-        z2_encoder, z2_phys=outputs
+        z2_encoder, z2_phys, z_norm =outputs
 
         #print(z2_encoder.shape)
 
         z2_encoder = z2_encoder.squeeze(0)
         z2_phys = z2_phys.squeeze(0)
+        z_norm = z_norm.squeeze(0)
         
 
         
@@ -604,14 +678,26 @@ def visualize_cm(model, loader):
         #z2_phys_list.append(z2_phys.detach().cpu().numpy()[0][0]) 
         z2_encoder_list=z2_encoder.detach().cpu().numpy() 
         z2_phys_list=z2_phys.detach().cpu().numpy() 
+        z_norm_list=z_norm.detach().cpu().numpy()   
 
         break
 
   
     z2_encoder_list  = z2_encoder_list 
+    z_noralized = []
+    for i in range(z2_encoder_list.shape[1]):
 
-    print(z2_encoder_list)
-    print(list_cm)
+        y1 = z2_encoder_list[:,i].max()
+        y0 = z2_encoder_list[:,i].min()
+
+        x1 = list_cm[:,i].max()  
+        x0 = list_cm[:,i].min()
+
+        m = (y1-y0)/(x1-x0)
+        b = y1 - m*x1
+
+        z_noralized.append( (1/m) * (z2_encoder_list[:,i] - b) )
+
 
     y1 = z2_encoder_list.max()
     y0 = z2_encoder_list.min()
@@ -632,10 +718,17 @@ def visualize_cm(model, loader):
     plt.figure()
 
     t = range(z2_encoder_list.shape[0])
-    plt.plot(t,z2_encoder_list[:,0], '-b', label='z2_encoder_list_0')
+    plt.plot(t,z2_encoder_list[:,0], '-b', label='z2_encoder_list_0')    
     plt.plot(t,z2_encoder_list[:,1], '-g',label='z2_encoder_list_1')
     plt.plot(t,z2_encoder_list[:,2], '-y',label='z2_encoder_list_2')
     plt.plot(t,z2_encoder_list[:,3], '-r',label='z2_encoder_list_3')
+    plt.legend()
+    plt.show()
+
+    plt.plot(t,z_norm_list[:,0], '-b', label='z_norm_list0')
+    plt.plot(t,z_norm_list[:,1], '-g',label='z_norm_list1')
+    plt.plot(t,z_norm_list[:,2], '-y',label='z_norm_list2')
+    plt.plot(t,z_norm_list[:,3], '-r',label='z_norm_list3')
     plt.legend()
     plt.show()
 
@@ -650,6 +743,14 @@ def visualize_cm(model, loader):
     plt.plot(t,list_cm[:,1], '--g',label='center_mass_1')
     plt.plot(t,list_cm[:,2], '--y',label='center_mass_2')
     plt.plot(t,list_cm[:,3], '--r',label='center_mass_3')
+
+    plt.legend()
+    plt.show()
+
+    plt.plot(t,z_noralized[0], '--b',label='center_mass_0')
+    plt.plot(t,z_noralized[1], '--g',label='center_mass_1')
+    plt.plot(t,z_noralized[2], '--y',label='center_mass_2')
+    plt.plot(t,z_noralized[3], '--r',label='center_mass_3')
 
     plt.legend()
     plt.show()

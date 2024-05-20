@@ -9,6 +9,8 @@ from . import encoders
 from . import PhysModels
 from . import aunet
 
+import numpy as np
+
 import matplotlib.pyplot as plt
 
 class Encoder(nn.Module):
@@ -140,7 +142,7 @@ class EndPhys(nn.Module):
 
         self.use_mask = False
 
-        self.encoder = encoders.EncoderMLP(in_size = in_size, in_chan=in_channels, latent_dim = latent_dim)
+        self.encoder = encoders.EncoderMLP(in_size = in_size, in_chan=in_channels, latent_dim = latent_dim, initw = False)
       
         self.masks = None
         #self.pModel = pModel()
@@ -152,8 +154,8 @@ class EndPhys(nn.Module):
       frames = x.clone()
 
       #frame_area_list = [] 
-      
 
+     
       for i in range(frames.shape[1]):
           
           #frame = frames[batch,frame,channel,w,h]
@@ -173,15 +175,15 @@ class EndPhys(nn.Module):
 
           z_temp = z_temp.unsqueeze(1)
           z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
-
-      z2_phys = z[:,0:2,:]
+    
+      z2_phys = z[:,0:order,:]
       z2_encoder = z
       for i in range(frames.shape[1]-order):
           
           z_window = z[:,i:i+order]
 
           pred_window = self.pModel(z_window,self.dt)
-          
+                 
           z2_phys = torch.cat((z2_phys,pred_window),dim=1)
           
           #z2_phys = self.pModel(z[:,i:i+order],self.dt) if i == 0 else torch.cat((z2_phys,self.pModel(z[:,i:i+order],self.dt)),dim=1)
@@ -204,6 +206,13 @@ class EndPhysMultiple(nn.Module):
         self.in_channels = in_channels 
 
         self.latent_dim =latent_dim 
+
+        self.m = nn.Parameter(torch.rand(1, requires_grad=True).float()+1.0 )
+        self.b = nn.Parameter(torch.rand(1, requires_grad=True).float() )
+        self.m = nn.Parameter(self.m )
+        self.b = nn.Parameter(self.b )
+
+        self.renorm = nn.Linear(4,4)
         
         self.encoder = encoders.EncoderMLP(in_size = in_size, in_chan=1, latent_dim = latent_dim, initw = False)
         self.encoder1 = encoders.EncoderMLP(in_size = in_size, in_chan=1, latent_dim = latent_dim, initw = initw)
@@ -214,6 +223,8 @@ class EndPhysMultiple(nn.Module):
         self.dt = dt
     def forward(self, x):    
       frames = x.clone()
+
+      device = "cuda" if torch.cuda.is_available() else "cpu"   
 
       #frame_area_list = [] 
 
@@ -248,20 +259,37 @@ class EndPhysMultiple(nn.Module):
       #print("z",z)
           
       z = z.squeeze(2)
-      z2_phys = z[:,0:2,:]
+      #print("z",z[0:5,0:5])
+      m = torch.zeros(4).to(device)
+      m[:] = self.m
+      b = torch.zeros(4).to(device)
+      b[2:] = self.b
+      
+      z_renorm = z#+b
+      #z_renorm = self.renorm(z)
+      #print("z_renorm",z_renorm[0:5,0:5])
+      z_renorm = z[:,0:2,:]
+
+      z2_phys = z_renorm[:,0:2,:]
+
+      
       for i in range(frames.shape[1]-2):       
           
 
-          z_window = z[:,i:i+2,:]
+          z_window = z2_phys[:,i:i+2,:]
+          z_window2 = z[:,i:i+2,:]
+
 
           pred_window = self.pModel(z_window,self.dt)
+          pred_window2 = self.pModel(z_window2,self.dt)
           
           z2_phys = torch.cat((z2_phys,pred_window),dim=1)
+          z_renorm = torch.cat((z_renorm,pred_window2),dim=1)
 
       #print(z2_phys.shape)
       #z2_encoder = z[:,2:]
       
-      return  z, z2_phys
+      return  z, z2_phys, z_renorm
     
     def get_masks(self):
         return self.masks

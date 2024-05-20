@@ -20,7 +20,7 @@ def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False, show = Fals
     # else:
     #     plt.style.use('default')
 
-    fig, ax = plt.subplots(figsize=(10, 10), dpi= 300)
+    fig, ax = plt.subplots(figsize=(20, 10), dpi= 300)
     #plt.title(title,size=40)
     
 
@@ -68,8 +68,10 @@ def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False, show = Fals
             ax.plot(x,y, color=color, linewidth =linewidth, label=f'{row["label"]}', alpha = alpha, linestyle = linestyle)
     
     #first_legend = plt.legend(fontsize="30", loc ="upper right")
-    aa, = plt.plot(0,0, color='k', label='Train')
-    aa1, =plt.plot(0,0, color='k', linestyle = '--', label='Test')
+
+    if False:
+        aa, = plt.plot(0,0, color='k', label='Train')
+        aa1, =plt.plot(0,0, color='k', linestyle = '--', label='Test')
     lines = ax.get_lines()
 
     if True:
@@ -94,8 +96,8 @@ def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False, show = Fals
 
     plt.grid(True, alpha=0.5)
 
-    plt.xlabel(r'$ z_{real}$',size=50)
-    plt.ylabel(r'$z_E$',size=50 )#, rotation=0)
+    plt.xlabel(r'${}$'.format(xlabel),size=50)
+    plt.ylabel(r'${}$'.format(ylabel),size=50 )#, rotation=0)
     plt.tick_params(axis='y', which='major', pad=25)
     plt.rc('xtick', labelsize=35)
     plt.rc('ytick', labelsize=35)

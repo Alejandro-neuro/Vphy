@@ -11,9 +11,10 @@ import torch.optim as optim
 from datetime import datetime
 
 import wandb
+import time
 
 
-def train_epoch(model, loader,loss_fn, optimizer, device='cpu'):
+def train_epoch(model, loader,loss_fn, optimizer, device='cpu', print_loss = False):
     """
     Trains a neural network model for one epoch using the specified data loader and optimizer.
     Args:
@@ -50,7 +51,7 @@ def train_epoch(model, loader,loss_fn, optimizer, device='cpu'):
         # Make predictions for this batch
         outputs = model(x0)
         # Compute the loss and its gradients
-        loss  = loss_fn(x0 , outputs ,x1 )
+        loss  = loss_fn(x0 , outputs ,x1, print_loss )
 
         # l2_lambda = 0.001  # Regularization strength
         # l2_reg = torch.tensor(0.).to(device)
@@ -123,6 +124,11 @@ def freeze(model, type):
 
     return model
 
+def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
+    torch.save(state, filename)
+    if is_best:
+        torch.save(state, 'best_model.pth.tar')
+
 def train(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_name=None):
 
     cfg = OmegaConf.load("config.yaml")
@@ -137,46 +143,229 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_
     #optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     if init_phys == 0:
-        init_phys = 1.0
+        init_phys = 0.05
+    
+    if init_phys < 0:
 
+        init_phys = (init_phys*-1)*0.5
+
+    elif init_phys > 1:
+        init_phys = np.ceil(np.log(init_phys)) * 0.5
+    else:
+        init_phys = 0.1
+
+    #init_phys = np.abs(init_phys)
     
 
     if hasattr(model, 'pModel') and hasattr(model, 'encoder'):
         optimizer = torch.optim.Adam([
                 {'params': model.encoder.parameters(), 'name': 'encoder'},
-                {'params':  model.pModel.alpha, 'lr': 1.0, 'name': 'alpha'}, 
-                {'params': model.pModel.beta, 'lr': 1.0, 'name': 'beta'}                       
+                {'params':  model.pModel.parameters(), 'lr': init_phys,  'name': 'alpha' }#,'momentum': 0.9 ,  'name': 'alpha', 'alpha': 0.8},                     
             ], lr=1e-2)
     else:
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    
-    optimizer = torch.optim.Adam([
-                {'params': model.encoder.parameters(), 'name': 'encoder'},
-                {'params':  model.pModel.alpha, 'lr': np.abs(init_phys), 'name': 'alpha'}, 
-                {'params': model.pModel.beta, 'lr': np.abs(init_phys), 'name': 'beta'}                       
-            ], lr=1e-2)
+    #'momentum': 0.8 ,
+    # optimizer = torch.optim.Adam([
+    #             {'params': model.encoder.parameters(), 'name': 'encoder'},
+    #             {'params':  model.pModel.alpha, 'lr':init_phys , 'name': 'alpha'}, 
+    #             {'params': model.pModel.beta, 'lr': init_phys, 'name': 'beta'}                       
+    #         ], lr=1e-2)
 
     scheduler =optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
+    
+    model.to(device)
+    
+
+    now = datetime.now()
+
+    dt_string = now.strftime("%d_%m_%y_%H")
+
+    model_name = model.__class__.__name__
+
+    if cfg.log_wandb:
+        wandb.init(
+                # set the wandb project where this run will be logged
+                project="Vphysics-Project-IC",
+                name = "exp_"+model_name+"_"+dt_string,
+                
+                # track hyperparameters and run metadata
+                config={
+                "learning_rate": cfg.optimize.lr,
+                "architecture": model_name,
+                "dataset": "NEURON",
+                "epochs": cfg.train.epochs,
+                }
+            )
+
+    log = []
+    train_losses = []
+    val_losses = []
+
+    patience = 5 # patience for early stopping
+
+    best_loss = float('inf')  # Initialize with a large value
+    best_val_loss = float('inf')  # Initialize with a large value
+    best_model_state = None
+
+    # Model training
+    try:
+        train_loss = evaluate_epoch(model, train_loader, loss_fn, device=device)
+    except:
+
+        print("Loss is NaN! Epoch:", epoch)
+        if cfg.log_wandb:
+            wandb.finish()  
+        model.load_state_dict(best_model_state)
+        return model, log
 
     
+    # Model validation
+    val_loss = evaluate_epoch(model, val_loader, loss_fn, device=device)
+
+    train_losses.append(train_loss)
+    val_losses.append(val_loss)
+
+    print("Initial Loss", "\t training loss:", train_loss,
+                  "\t validation loss:",val_loss)
+
+    dict_log = {"train_loss": train_loss, "validation_loss": val_loss}
+
+    if hasattr(model, 'pModel'):
+        for name, value in model.pModel.named_parameters():
+            dict_log[name] = value[0].detach().cpu().numpy().item()
+
+    if cfg.log_wandb:
+        wandb.log(dict_log)
+    log.append(dict_log)
+
+    for epoch in range(1, num_epochs+1):       
+
+        if (epoch + 1) % (num_epochs//2) == 0:
+            for param_group in optimizer.param_groups:
+                if 'beta' in param_group['name'] or 'alpha' in param_group['name']:
+                    if param_group['lr'] > 0.05:
+                        param_group['lr'] = param_group['lr']*0.5
+                    
+
+        # Model training
+        train_loss = train_epoch(model, train_loader, loss_fn,optimizer, device=device)
+        #scheduler.step()
+        # Model validation
+        val_loss = evaluate_epoch(model, val_loader, loss_fn, device=device)
+
+        train_losses.append(train_loss)
+        val_losses.append(val_loss)        
+
+        dict_log = {"train_loss": train_loss, "validation_loss": val_loss}
+        if hasattr(model, 'pModel'):
+            for name, value in model.pModel.named_parameters():
+                dict_log[name] = value[0].detach().cpu().numpy().item()
+        log.append(dict_log)
+
+        if cfg.log_wandb:
+            wandb.log(dict_log)
+
+        if np.isnan(train_loss) :            
+            print("Loss is NaN! Epoch:", epoch)
+            if cfg.log_wandb:
+                wandb.finish()  
+            model.load_state_dict(best_model_state)
+            return model, log 
+            
+        
+        
+        if type == 'dynamic':
+            if epoch % 2 == 0:
+                model = freeze(model, 'encoder')
+            if epoch % 2 == 1 or epoch > 3*num_epochs /4:
+                model = freeze(model, 'encoder-decoder')
+
+        # Early stopping
+        try:
+            if val_losses[-1]>=val_losses[-2]:
+                early_stop += 1
+            if early_stop == patience:
+                print("Early stopping! Epoch:", epoch)
+                if cfg.log_wandb:
+                    wandb.finish()  
+                break
+            else:
+                early_stop = 0
+        except:
+            early_stop = 0
+
+        if  val_loss < best_val_loss  :
+            best_loss = train_loss
+            best_val_loss = val_loss
+            best_model_state = model.state_dict().copy()
+
             
 
+            best_a = model.pModel.alpha[0].detach().cpu().numpy().item()
+            best_b = model.pModel.beta[0].detach().cpu().numpy().item()
+            
 
-    # optimizer = torch.optim.Adam([
-    #         {'params': model.encoder.parameters()},
-    #         {'params':  model.pModel.k, 'lr': 1.5}, 
-    #         {'params': model.pModel.eq_distance, 'lr': 1.5}                        
-    #     ], lr=1e-2)
-    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10, eta_min=0)
-    #scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
+        if epoch%(num_epochs /10 )== 0 and cfg.log_wandb:
+            print("epoch:",epoch, "\t training loss:", train_loss,
+                  "\t validation loss:",val_loss)
+            
+        #if epoch == 2:
+        #    return model, log
+            
         
-    ##{'params': model.pModel.parameters(), 'lr': 0.05}      
-    ##{'params':  model.pModel.alpha, 'lr': 0.05}, 
-    ##{'params': model.pModel.beta, 'lr': 0.005}
-    model.to(device)
-    #create vectors for the training and validation loss
 
-    #model = freeze(model, type)
+    if cfg.log_wandb:
+        wandb.finish()
+
+    # save_checkpoint({
+    #     'epoch': epoch,
+    #     'state_dict': best_model_state,
+    #     'best_loss': best_loss,
+    #     'best_val_loss': best_val_loss,
+    #     'optimizer' : optimizer.state_dict(),
+    #     'best_model_state': best_model_state
+    # }, is_best = True)
+    
+    print("best model a",best_a)
+    print("best last a", model.pModel.alpha[0].detach().cpu().numpy().item())
+
+    print("best model b", best_b)
+    print("best last b", model.pModel.beta[0].detach().cpu().numpy().item())
+
+    model.load_state_dict(best_model_state)
+
+    # print("best last a", model.pModel.alpha[0].detach().cpu().numpy().item())
+
+    #model.pModel.alpha[0] = best_a
+
+    #log.append([{ 'alpha': best_a, 'beta': best_b}])
+   
+    return model, log#, [best_a, best_b]
+
+def train_m(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_name=None):
+
+    cfg = OmegaConf.load("config.yaml")
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"Using device: {device}")
+
+    num_epochs = cfg.train.epochs
+    loss_fn = loss_func.getLoss(loss_name)
+    
+    if init_phys == 0:
+        init_phys = 1.0
+
+    optimizer = torch.optim.Adam([
+                {'params': model.encoder.parameters(), 'name': 'encoder'},
+                {'params': model.renorm.parameters(), 'lr':0.1, 'name': 'renorm'},
+                {'params': model.m, 'lr':0.1, 'name': 'm'},
+                {'params': model.b, 'lr':0.1, 'name': 'b'},
+                {'params':  model.pModel.k, 'lr': np.abs(init_phys), 'name': 'k'}, 
+                {'params': model.pModel.eq_distance, 'lr': np.abs(init_phys), 'name': 'eq_distance'}                       
+            ], lr=1e-2)
+
+
+    model.to(device)
 
     now = datetime.now()
 
@@ -234,7 +423,8 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_
 
     if hasattr(model, 'pModel'):
         for name, value in model.pModel.named_parameters():
-            dict_log[name] = value[0].detach().cpu().numpy().item()
+            if not ("encoder" in name):
+                dict_log[name] = value[0].detach().cpu().numpy().item()
 
     if cfg.log_wandb:
         wandb.log(dict_log)
@@ -242,50 +432,23 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_
 
     for epoch in range(1, num_epochs+1):
 
-        # if epoch == 1:
-
-        #     model.pModel.k.requires_grad = True
-        #     model.pModel.eq_distance.requires_grad = False
-
-        # if epoch == (num_epochs //2):
-        #     model.pModel.k.requires_grad = True
-        #     model.pModel.eq_distance.requires_grad = True
-        # #     model = freeze(model, 'pModel')
-        # #     loss_fn = loss_func.getLoss("latent_loss_MSE")
-        # #     for name, param in model.named_parameters():
-        # #         print(name, param.requires_grad)
-        # #     optimizer = torch.optim.Adam([
-        # #         {'params': model.encoder.parameters()},
-        # #         {'params':  model.pModel.k, 'lr': 1.0}, 
-        # #         {'params': model.pModel.eq_distance, 'lr': 1.0}                        
-        # #     ], lr=1e-2)
-
-        # if int(num_epochs % 20)==0:
-
-        #     model.pModel.k.requires_grad = not  model.pModel.k.requires_grad
-        #     model.pModel.eq_distance.requires_grad = not  model.pModel.eq_distance.requires_grad
-
-        # if epoch <20:
-        #     loss_fn = loss_func.getLoss("latent_loss_MSE")
-        # else:
-        #     loss_fn = loss_func.getLoss("latent_loss_multiple")
-
-        if (epoch + 1) % 200 == 0:
+        if (epoch + 1) % 300 == 0:
             for param_group in optimizer.param_groups:
-                if 'beta' in param_group['name'] or 'alpha' in param_group['name']:
-                    if param_group['lr'] > 0.5:
+                if 'eq_distance' in param_group['name'] or 'k' in param_group['name']:
+                    if param_group['lr'] > 0.005:
                         param_group['lr'] = param_group['lr']*0.1
-                    if param_group['lr'] < 0.5:
-                        param_group['lr'] = 0.5
-
-
-            
+                    if param_group['lr'] < 0.005:
+                        param_group['lr'] = 0.005           
             
 
-
+        
+        if epoch % 100 == 0:
+            print_loss = True
+        else:
+            print_loss = False
         # Model training
-        train_loss = train_epoch(model, train_loader, loss_fn,optimizer, device=device)
-        #scheduler.step()
+        train_loss = train_epoch(model, train_loader, loss_fn,optimizer, device=device, print_loss = print_loss)
+        
         # Model validation
         val_loss = evaluate_epoch(model, val_loader, loss_fn, device=device)
 
@@ -333,10 +496,11 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_
         if  val_loss < best_val_loss:
             best_loss = train_loss
             best_val_loss = val_loss
-            best_model_state = model.state_dict()
+            best_model_state = model.state_dict().copy()
+            torch.save(best_model_state, './best-model-parameters.pt')
 
-            best_a = model.pModel.alpha[0].detach().cpu().numpy().item()
-            best_b = model.pModel.beta[0].detach().cpu().numpy().item()
+            best_a = model.pModel.k[0].detach().cpu().numpy().item()
+            best_b = model.pModel.eq_distance[0].detach().cpu().numpy().item()
             
 
         if epoch%(num_epochs /10 )== 0 and cfg.log_wandb:
@@ -351,11 +515,13 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_
     if cfg.log_wandb:
         wandb.finish()
 
+    
+
     print("best model a",best_a)
-    print("best last a", model.pModel.alpha[0].detach().cpu().numpy().item())
+    print("best last a", model.pModel.k[0].detach().cpu().numpy().item())
 
     print("best model b", best_b)
-    print("best last b", model.pModel.beta[0].detach().cpu().numpy().item())
+    print("best last b", model.pModel.eq_distance[0].detach().cpu().numpy().item())
 
     model.load_state_dict(best_model_state)
    

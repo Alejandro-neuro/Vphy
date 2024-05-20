@@ -37,6 +37,22 @@ def generateDynamics(max=1, min=0, dt = 1/100):
     #cp.plotMultiple( X,  'time (ms)', 'Intensity','Intensity', 'test', styleDark = False )
     
     return t,a  
+def generateDynamics_1order(max=1, min=0, dt = 1/100):
+    t = np.linspace(0, 1, 1000)
+    
+    m = (max-min)/(1-(0))
+    b= max - m
+    #a = m*np.exp(-0.02*t)*np.cos(2*t)+b
+    a = m*np.exp(-2*t)+b
+    #a = m*np.cos(2*t)
+
+   
+    
+    #X = []
+    #X.append( { 'x': t, 'y': a, 'label': 'Intensity'} )
+    #cp.plotMultiple( X,  'time (ms)', 'Intensity','Intensity', 'test', styleDark = False )
+    
+    return t,a 
 class FitzHugh_Nagumo:
     def __init__(self, a=0.7, b=0.8, tau=12.5, I=0.5, dt=0.01):
         self.a = a
@@ -198,6 +214,8 @@ def create_half_radius_circle_image(X, noise = False, shapeType = 'complex', bas
     
     # Center of the image
     center = (n // 2, n // 2)
+
+    X = int(X)
     
     # Radii for the left and right halves
     radius_left = 10 + X

@@ -17,3 +17,4 @@ Data/color_mnist.npz
 custom_dataset.npy
 *.npz
 *.npy
+*.avi
