@@ -142,18 +142,18 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_
 
     #optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-    if init_phys == 0:
-        init_phys = 0.1
+    # if init_phys == 0:
+    #     init_phys = 1.0
     
-    if init_phys < 0:
+    # if init_phys < 0:
 
-        init_phys = (init_phys*-1)*0.5
+    #     init_phys = (init_phys*(-1))*0.1
 
-    elif init_phys > 1:
-        init_phys = np.ceil(np.log(init_phys)) * 0.5
-    else:
-        init_phys = 1.0
-
+    # elif init_phys > 1:
+    #     init_phys = init_phys*0.5#np.ceil(np.log(init_phys)) * 0.5
+    # else:
+    #     init_phys = 2.0
+    #init_phys = 1.0
     #init_phys = np.abs(init_phys)
     
 
@@ -240,12 +240,17 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_
 
     for epoch in range(1, num_epochs+1):       
 
-        if (epoch + 1) % (num_epochs//2) == 0:
-            for param_group in optimizer.param_groups:
-                if 'beta' in param_group['name'] or 'alpha' in param_group['name']:
-                    if param_group['lr'] > 0.05:
-                        param_group['lr'] = param_group['lr']*0.5
+        # if (epoch + 1) % (num_epochs//1) == 0:
+        #     for param_group in optimizer.param_groups:
+        #         if 'beta' in param_group['name'] or 'alpha' in param_group['name']:
+        #             if param_group['lr'] > 0.05:
+        #                 param_group['lr'] = param_group['lr']*0.1
                     
+        # if (epoch + 1) == 10:
+        #     for param_group in optimizer.param_groups:
+        #         if 'beta' in param_group['name'] or 'alpha' in param_group['name']:
+        #             #if param_group['lr'] > 0.05:
+        #             param_group['lr'] = 0.5
 
         # Model training
         train_loss = train_epoch(model, train_loader, loss_fn,optimizer, device=device)
@@ -294,10 +299,12 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_
         except:
             early_stop = 0
 
-        if  val_loss < best_val_loss  :
+        if  val_loss < best_val_loss:# and train_loss < best_loss:
             best_loss = train_loss
             best_val_loss = val_loss
             best_model_state = model.state_dict().copy()
+
+            torch.save(best_model_state, './best-model-parameters.pt')
 
             
 
@@ -309,23 +316,7 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_
             print("epoch:",epoch, "\t training loss:", train_loss,
                   "\t validation loss:",val_loss)
             
-        #if epoch == 2:
-        #    return model, log
-            
-        
-
-    if cfg.log_wandb:
-        wandb.finish()
-
-    # save_checkpoint({
-    #     'epoch': epoch,
-    #     'state_dict': best_model_state,
-    #     'best_loss': best_loss,
-    #     'best_val_loss': best_val_loss,
-    #     'optimizer' : optimizer.state_dict(),
-    #     'best_model_state': best_model_state
-    # }, is_best = True)
-    
+ 
     print("best model a",best_a)
     print("best last a", model.pModel.alpha[0].detach().cpu().numpy().item())
 
@@ -333,14 +324,8 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_
     print("best last b", model.pModel.beta[0].detach().cpu().numpy().item())
 
     model.load_state_dict(best_model_state)
-
-    # print("best last a", model.pModel.alpha[0].detach().cpu().numpy().item())
-
-    #model.pModel.alpha[0] = best_a
-
-    #log.append([{ 'alpha': best_a, 'beta': best_b}])
    
-    return model, log#, [best_a, best_b]
+    return model, log, [best_a, best_b]
 
 def train_m(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_name=None):
 

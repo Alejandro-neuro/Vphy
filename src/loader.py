@@ -180,12 +180,12 @@ def getLoader_folder(X, split = True):
       if split:     
             #split dataset 80-20 for training and validation
 
-            train_x, val_x = train_test_split(X, test_size=0.2, shuffle=False)
+            train_x, val_x = train_test_split(X, test_size=0.2, shuffle=True)
 
             #create train and test dataloaders
 
-            train_dataset = DataLoader( Dataset_from_folder(train_x), batch_size=64, shuffle=True)
-            val_dataset = DataLoader( Dataset_from_folder(val_x), batch_size=64, shuffle=False)    
+            train_dataset = DataLoader( Dataset_from_folder(train_x), batch_size=32, shuffle=True)
+            val_dataset = DataLoader( Dataset_from_folder(val_x), batch_size=32, shuffle=True)    
 
             return train_dataset, val_dataset, train_x, val_x 
       else :

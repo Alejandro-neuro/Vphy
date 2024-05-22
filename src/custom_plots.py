@@ -20,7 +20,7 @@ def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False, show = Fals
     # else:
     #     plt.style.use('default')
 
-    fig, ax = plt.subplots(figsize=(20, 10), dpi= 300)
+    fig, ax = plt.subplots(figsize=(10, 10), dpi= 400)
     #plt.title(title,size=40)
     
 
@@ -69,35 +69,52 @@ def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False, show = Fals
     
     #first_legend = plt.legend(fontsize="30", loc ="upper right")
 
-    if False:
+    if True:
         aa, = plt.plot(0,0, color='k', label='Train')
         aa1, =plt.plot(0,0, color='k', linestyle = '--', label='Test')
     lines = ax.get_lines()
 
     if True:
-        first_legend = ax.legend(handles=lines[:-2], fontsize="30", loc ="lower right")
+        first_legend = ax.legend(handles=lines[:-2], fontsize="40", loc ="upper left")
     else:
 
         first_legend = ax.legend(handles=lines[:-2], fontsize="30", loc ="upper right")
         ax.add_artist(first_legend)
         
         
-        
-        second_legend= plt.legend(handles=lines[-2:], fontsize="40", loc ="upper left")
-
-    #set limits
-    #plt.xlim(0, 100)
-    #plt.ylim(0, 0.2)
-
+    ax.plot([-10, 10], [-10, 10], color='gray', alpha=0.5, linestyle='-', linewidth=2)
+    plt.xlim(-1.1, 1.1)
+    plt.ylim(-1.1, 1.1)
+        #second_legend= plt.legend(handles=lines[-2:], fontsize="40", loc ="upper left")
     
+    if False:
+        #set limits
+        plt.xlim(0, 51)
+        #plt.ylim(0, 0.2)
 
+        ax.text(
+        45, -0.8, r'Test', 
+        fontsize=45, color='k', 
+        horizontalalignment='center', verticalalignment='center'#,     bbox=dict(facecolor='yellow', alpha=0.5)
+        )
+
+        ax.text(
+        25, -0.8, r'Train', 
+        fontsize=45, color='k', 
+        horizontalalignment='center', verticalalignment='center'#,     bbox=dict(facecolor='yellow', alpha=0.5)
+        )
+        plt.xlabel(r'time$(s)$',size=50)
+        plt.ylabel(r'${z}$',size=50 , rotation=0)
+
+        
+        ax.axvspan(xmin=40, xmax=51, facecolor='mediumpurple', alpha=0.2)
     plt.rcParams['text.usetex'] = True
     #plt.legend(handles=[second_legend], loc='lower right')
 
     plt.grid(True, alpha=0.5)
-
-    plt.xlabel(r'${}$'.format(xlabel),size=50)
-    plt.ylabel(r'${}$'.format(ylabel),size=50 )#, rotation=0)
+    #.format(xlabel)
+    plt.xlabel(r'$z_{real}$',size=55)
+    plt.ylabel(r'$z$',size=55 , rotation=0)
     plt.tick_params(axis='y', which='major')#, pad=25)
     plt.rc('xtick', labelsize=35)
     plt.rc('ytick', labelsize=35)
@@ -107,8 +124,11 @@ def plotMultiple( X,  xlabel, ylabel,title, name, styleDark = False, show = Fals
     folder = "./Figures/figs_init"
     name_plot = folder+"/"+name+".png"
     name_plot_eps = folder+"/"+name+".eps"
+    name_plot_pdf = folder+"/"+name+".pdf"
     plt.savefig(name_plot, dpi=300, transparent=True,bbox_inches='tight')
     plt.savefig(name_plot_eps, format='eps')
+    plt.savefig(name_plot_pdf, format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.1)
+
     if(show):
         plt.show()
     else:

@@ -94,42 +94,33 @@ def latent_loss(input_img, outputs, expected_pred,print_loss = False):
 
     z2_encoder, z2_phys, zroll = outputs
 
+    #print("z2_encoder",z2_encoder.shape)
+
     
     
     z2_encoder = z2_encoder.reshape(-1, z2_encoder.shape[-1])
     z2_phys = z2_phys.reshape(-1, z2_phys.shape[-1])  
     zroll = zroll.reshape(-1, zroll.shape[-1])
-
+    #print("z2_encoder",z2_encoder.shape)
     loss_MSE = nn.MSELoss()
-    loss1 = loss_MSE(z2_encoder, z2_phys)
+    loss1 = loss_MSE(z2_phys, z2_encoder)
     loss2 = loss_MSE(z2_encoder, zroll)
-    loss = loss1#+loss2
-
+    loss =  loss2# + loss2
 
     
 
-    # z2_encoder = z2_encoder.reshape(-1)
-    # z2_phys = z2_phys.reshape(-1)
-    
-    mu = z2_encoder.mean(0)
-    logvar = torch.log(z2_encoder.var(0))
+   
+    KLD_loss = KL_divergence( z2_encoder)
 
 
-    # mu_2 = 32
-    # var_2 = 32   
-    # KLD = 0.5 * torch.sum( ((mu-mu_2).pow(2))/var_2 + logvar.exp()/var_2 - 1 - logvar - np.log(var_2) )
+    total_loss = loss + KLD_loss
 
-    KLD_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-
-
-    total_loss = 2*loss + KLD_loss
-
-    if torch.isnan(loss):
-        return KLD_loss
-    if torch.isnan(loss):
-        return KLD_loss
-        print("loss",loss)
-        raise ValueError("Loss is NaN")    
+    # if torch.isnan(loss):
+    #     return KLD_loss
+    # if torch.isnan(loss):
+    #     return KLD_loss
+    #     print("loss",loss)
+    #     raise ValueError("Loss is NaN")    
     return total_loss
 
 def KL_divergence(z):

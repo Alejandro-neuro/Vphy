@@ -37,14 +37,31 @@ def generateDynamics(max=1, min=0, dt = 1/100):
     #cp.plotMultiple( X,  'time (ms)', 'Intensity','Intensity', 'test', styleDark = False )
     
     return t,a  
-def generateDynamics_1order(max=1, min=0, dt = 1/100):
-    t = np.linspace(0, 1, 1000)
+def generateDynamics_1order(max=1.0, min=0.0, dt = 1/100):
+    t = np.linspace(0, 2, 500)
+    a = np.exp(-2*t)
+
+    max_a = a.max()
+    min_a = a.min()
     
-    m = (max-min)/(1-(0))
-    b= max - m
+    m = (max-min)/( max_a-min_a )
+    b= max - m*max_a
+    a = m*a+b
     #a = m*np.exp(-0.02*t)*np.cos(2*t)+b
-    a = m*np.exp(-2*t)+b
-    #a = m*np.cos(2*t)
+    
+    # #a = m*np.cos(2*t)
+    # t = np.linspace(0, 3, 1000)
+    # a = 0.5*np.log(t)+1
+
+    t = np.linspace(-0.2,3,300)
+    a= np.exp(-t)*(3-2*np.exp(t/2))**2
+
+    max_a = a.max()
+    min_a = a.min()
+    
+    m = (max-min)/( max_a-min_a )
+    b= max - m*max_a
+    a = m*a+b   
 
    
     

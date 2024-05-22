@@ -148,9 +148,10 @@ class EndPhys(nn.Module):
         #self.pModel = pModel()
         self.pModel = PhysModels.getModel(pmodel, init_phys)
         self.dt = dt
+        print("dt",dt)
     def forward(self, x):    
       
-      order = self.pModel.order
+      order = 2
       frames = x.clone()
 
       #frame_area_list = [] 
@@ -171,18 +172,20 @@ class EndPhys(nn.Module):
             z_temp = self.encoder(mask_frame)
 
           else:
+            #print("current_frame",current_frame.shape)
             z_temp = self.encoder(frames[:,i,:,:,:])
 
           z_temp = z_temp.unsqueeze(1)
           z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
     
+      #print("z",z.shape)
       z2_phys = z[:,0:order,:]
       z_renorm = z[:,0:order,:]
       z2_encoder = z
       for i in range(frames.shape[1]-order):
           
-          z_window = z2_phys[:,i:i+2,:]
-          z_window2 = z[:,i:i+2,:]
+          z_window = z2_phys[:,i:i+order,:]
+          z_window2 = z[:,i:i+order,:]
 
 
           pred_window = self.pModel(z_window,self.dt)

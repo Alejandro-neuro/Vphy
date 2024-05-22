@@ -56,7 +56,7 @@ class dyn_1storder(nn.Module):
       device = "cuda" if torch.cuda.is_available() else "cpu"
       dt = torch.tensor([dt], requires_grad=False).float().to(device)
 
-      y1 = z[:,0:1]
+      y1 = z
 
       dt = dt
 
@@ -64,7 +64,9 @@ class dyn_1storder(nn.Module):
 
       #y_hat = y1+ (y1-y0) -dt*dt *self.alpha* y1
 
-      y_hat = y1 -dt*(self.alpha)*y1 
+      #y_hat = y1 -dt*(self.alpha*y1) 
+
+      y_hat= y1 - dt*( y1 + self.alpha*torch.sqrt( torch.abs(y1) )  )
 
       return  y_hat
 class Clifford_Attractor(nn.Module):
