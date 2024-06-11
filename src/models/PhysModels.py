@@ -31,7 +31,7 @@ class Damped_oscillation(nn.Module):
 
       #y_hat = y1+ (y1-y0) -dt*dt *self.alpha* y1
 
-      y_hat = y1 +(y1 - y0) - dt*(self.beta*(y1-y0) +dt*self.alpha*y1)
+      y_hat = y1 +(y1 - y0) - dt*(self.beta*(y1-y0) +dt*torch.abs(self.alpha)*y1)
 
       return  y_hat
     

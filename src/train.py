@@ -161,7 +161,7 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_
         optimizer = torch.optim.Adam([
                 {'params': model.encoder.parameters(), 'name': 'encoder'},
                 {'params':  model.pModel.parameters(), 'lr': init_phys,  'name': 'alpha' }#,'momentum': 0.9 ,  'name': 'alpha', 'alpha': 0.8},                     
-            ], lr=1e-2)
+            ], lr=1e-3)
     else:
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     #'momentum': 0.8 ,
