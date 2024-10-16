@@ -103,7 +103,7 @@ def latent_loss(input_img, outputs, expected_pred,print_loss = False):
     zroll = zroll.reshape(-1, zroll.shape[-1])
     #print("z2_encoder",z2_encoder.shape)
     loss_MSE = nn.MSELoss()
-    loss1 = loss_MSE(z2_phys, z2_encoder)
+    #loss1 = loss_MSE(z2_phys, z2_encoder)
     loss2 = loss_MSE(z2_encoder, zroll)
     loss =  loss2# + loss2
 
@@ -153,6 +153,8 @@ def latent_loss_multiple(input_img, outputs, expected_pred,print_loss = False):
     loss3 = loss_MSE(z2_encoder, z_renorm)
     loss =  loss2+loss3
 
+    loss = loss2
+
     
     
     sum_kld = 0
@@ -177,7 +179,7 @@ def latent_loss_multiple(input_img, outputs, expected_pred,print_loss = False):
 
     KLD_loss = KLD_4d + 0*KLD_2d + 0*KLD_1d #+ KLD_loss2 + sum_kld2
 
-    total_loss = 4*loss + KLD_loss
+    total_loss = 2*loss + KLD_loss
     if print_loss:
         print("loss",loss)
         print("KLD_4d",KLD_4d)

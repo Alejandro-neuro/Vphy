@@ -18,3 +18,10 @@ custom_dataset.npy
 *.npz
 *.npy
 *.avi
+*.mp4
+*.png
+*.gif
+*.mov
+*.svg
+*.pdf
+*.zip

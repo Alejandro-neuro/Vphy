@@ -7,7 +7,7 @@ class Damped_oscillation(nn.Module):
 
         if init_phys is not None:
             self.alpha = torch.tensor([init_phys], requires_grad=True).float()
-            self.beta = torch.tensor([init_phys], requires_grad=True).float()
+            self.beta = torch.tensor([init_phys*0.1], requires_grad=True).float()
         else:
             self.alpha = torch.tensor([0.5], requires_grad=True).float()        
             self.beta = torch.tensor([0.5], requires_grad=True).float()
@@ -31,11 +31,42 @@ class Damped_oscillation(nn.Module):
 
       #y_hat = y1+ (y1-y0) -dt*dt *self.alpha* y1
 
-      y_hat = y1 +(y1 - y0) - dt*(self.beta*(y1-y0) +dt*torch.abs(self.alpha)*y1)
+      y_hat = y1 +(y1 - y0) - dt*(self.beta*(y1-y0) +dt*(9.80665/self.alpha)*torch.sin(y1) )
+
+      #y_hat = y1 +(y1 - y0) - dt*(self.beta*(y1-y0) +dt*self.alpha*y1 )
 
       return  y_hat
     
 class dyn_1storder(nn.Module):
+    def __init__(self, init_phys = None):
+        super().__init__()
+
+        if init_phys is not None:
+            self.alpha = torch.tensor([init_phys], requires_grad=True).float()
+            self.beta = torch.tensor([init_phys], requires_grad=True).float()
+        else:
+            self.alpha = torch.tensor([0.5], requires_grad=True).float()        
+            self.beta = torch.tensor([0.5], requires_grad=True).float()
+
+        self.alpha = nn.Parameter(self.alpha )
+        #self.beta = nn.Parameter(self.beta )
+
+        self.order = 1
+
+    def forward(self, z,dt):    
+
+      device = "cuda" if torch.cuda.is_available() else "cpu"
+      dt = torch.tensor([dt], requires_grad=False).float().to(device)
+
+      y1 = z
+
+      dt = dt
+
+      y_hat= y1 - dt*self.alpha*y1
+
+      return  y_hat
+    
+class lineal(nn.Module):
     def __init__(self, init_phys = None):
         super().__init__()
 
@@ -60,13 +91,7 @@ class dyn_1storder(nn.Module):
 
       dt = dt
 
-      #for i in range(5):
-
-      #y_hat = y1+ (y1-y0) -dt*dt *self.alpha* y1
-
-      #y_hat = y1 -dt*(self.alpha*y1) 
-
-      y_hat= y1 - dt*( y1 + self.alpha*torch.sqrt( torch.abs(y1) )  )
+      y_hat= y1 - dt*self.alpha
 
       return  y_hat
 class Clifford_Attractor(nn.Module):
@@ -270,6 +295,10 @@ def getModel(name, init_phys = None):
         return Sprin_ode()
     elif name == "gravity_ode":
         return gravity_ode()
+    elif name == "double_pendulum":
+        return double_pendulum()
+    elif name == "lineal":
+        return lineal()
     else:
         return None
     
@@ -360,3 +389,110 @@ class ODE_2ObjectsSpring(nn.Module):
 
         return z_hat
     
+class double_pendulum(nn.Module):
+    def __init__(self, initw = False):
+        super().__init__()
+
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.g = torch.tensor([9.8], requires_grad=True).float().to(device)
+        #self.g = nn.Parameter(self.g)
+        
+
+        self.l1 = torch.tensor([1.0], requires_grad=True).float().to(device)
+        #self.l1 = nn.Parameter(self.l1)
+        
+
+        self.l2 = torch.tensor([1.0], requires_grad=True).float().to(device)
+        #self.l2 = nn.Parameter(self.l2)
+        
+
+        self.m1 = torch.tensor([1.0], requires_grad=True).float().to(device)
+        #self.m1 = nn.Parameter(self.m1)
+        
+
+        self.m2 = torch.tensor([1.0], requires_grad=True).float().to(device)
+        #self.m2 = nn.Parameter(self.m2)
+
+        self.relu = nn.ReLU()
+
+    #Get theta1 acceleration 
+    def theta1_acceleration(self, theta1,theta2,theta1_velocity,theta2_velocity):
+
+        g = self.g
+        m1 = self.m1
+        m2 = self.m2
+        l1 = self.l1
+        l2 = self.l2
+        mass1 = -g*(2*m1 + m2)*torch.sin(theta1)
+        mass2 = -m2*g*torch.sin(theta1 - 2*theta2)
+        interaction = -2*torch.sin(theta1 - theta2)*m2*torch.cos(theta2_velocity**2*l2 + theta1_velocity**2*l1*torch.cos(theta1 - theta2))
+        normalization = l1*(2*m1 + m2 - m2*torch.cos(2*theta1 - 2*theta2))
+        
+        theta1_ddot = (mass1 + mass2 + interaction)/normalization
+        
+        return theta1_ddot
+
+    #Get theta2 acceleration
+    def theta2_acceleration(self, theta1,theta2,theta1_velocity,theta2_velocity):
+        g = self.g
+        m1 = self.m1
+        m2 = self.m2
+        l1 = self.l1
+        l2 = self.l2
+
+
+        system = 2*torch.sin(theta1 - theta2)*(theta1_velocity**2*l1*(m1 + m2) + g*(m1 + m2)*torch.cos(theta1) + theta2_velocity**2*l2*m2*torch.cos(theta1 - theta2))
+        normalization = l1*(2*m1 + m2 - m2*torch.cos(2*theta1 - 2*theta2))
+        
+        theta2_ddot = system/normalization
+        return theta2_ddot
+
+    def force_eq(self, dt, theta1, theta2, omega1, omega2):
+
+        theta1_new = theta1 + omega1*dt + self.theta1_acceleration(theta1,theta2,omega1,omega2)*dt*dt
+        theta2_new = theta2 + omega2*dt + self.theta2_acceleration(theta1,theta2,omega1,omega2)*dt*dt
+
+        return theta1_new, theta2_new
+
+    def forward(self, z,dt):    
+
+      device = "cuda" if torch.cuda.is_available() else "cpu"
+      dt = torch.tensor([dt], requires_grad=False).float().to(device)
+
+      
+    #   theta1_0 = torch.asin(z[:,0,0] / self.l1)
+    #   theta2_0 = torch.asin((z[:,0,2] - z[:,0,0] ) / self.l2)
+
+    #   theta1 = torch.asin(z[:,1,0] / self.l1)
+    #   theta2 = torch.asin((z[:,1,2] - z[:,1,0] ) / self.l2)
+
+      
+      theta1_0 = z[:,0,0]
+      theta2_0 = z[:,0,1]
+
+      theta1 = z[:,1,0]
+      theta2 = z[:,1,1]
+      
+      omega1 = theta1 - theta1_0
+      omega2 = theta2 - theta2_0
+
+      theta1_new, theta2_new = self.force_eq(dt, theta1, theta2, omega1, omega2)
+
+    #   x1 = self.l1*torch.sin(theta1_new) #Pendulum 1 x
+    #   y1 = -self.l1*torch.cos(theta1_new) #Pendulum 1 y
+
+    #   x2 = self.l1*torch.sin(theta1_new) + self.l2*torch.sin(theta2_new) #Pendulum 2 x
+    #   y2 = -self.l1*torch.cos(theta1_new) - self.l2*torch.cos(theta2_new) #Pendulum 2 y
+
+    #   z_hat = torch.cat([x1.unsqueeze(1),y1.unsqueeze(1),x2.unsqueeze(1),y2.unsqueeze(1)],dim=1)
+
+      
+      z_hat = torch.cat((theta1_new.unsqueeze(1) ,theta2_new.unsqueeze(1)),dim=1)
+
+      z_hat = z_hat.unsqueeze(1)
+
+      
+
+      
+
+      return  z_hat

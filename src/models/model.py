@@ -151,7 +151,7 @@ class EndPhys(nn.Module):
         print("dt",dt)
     def forward(self, x):    
       
-      order = 2
+      order = 1
       frames = x.clone()
 
       #frame_area_list = [] 
@@ -296,6 +296,86 @@ class EndPhysMultiple(nn.Module):
 
       #print(z2_phys.shape)
       #z2_encoder = z[:,2:]
+      
+      return  z, z2_phys, z_renorm
+    
+    def get_masks(self):
+        return self.masks
+    
+
+class EndPhys_dp(nn.Module):
+    def __init__(self, in_size=50, latent_dim = 1, n_mask = 1, in_channels = 1,  dt = 0.2, pmodel = "Damped_oscillation", init_phys = None, initw = False):
+        super().__init__()
+
+        self.n_mask = n_mask
+        self.in_channels = in_channels 
+
+        self.latent_dim =latent_dim 
+
+        
+        
+        self.encoder = encoders.EncoderMLP_dp(in_size = in_size, in_chan=1, latent_dim = latent_dim, initw = False)
+        self.encoder1 = encoders.EncoderMLP_dp(in_size = in_size, in_chan=1, latent_dim = latent_dim, initw = initw)
+        #self.masker = aunet.UNet(c_in = in_channels, c_out=n_mask, img_size=in_size)
+        self.masks = None
+
+        self.pModel = PhysModels.getModel(pmodel, init_phys)
+        self.dt = dt
+    def forward(self, x):    
+      frames = x.clone()
+
+      device = "cuda" if torch.cuda.is_available() else "cpu"   
+
+      #frame_area_list = [] 
+
+
+      for i in range(frames.shape[1]):
+          
+          #frame = frames[batch,frame,channel,w,h]
+
+          #print(frames.shape)
+          
+
+        current_frame = frames[:,i,:,:,:]
+    
+        mask1 = current_frame[:,0:1,:,:]
+        mask2 = current_frame[:,1:2,:,:]
+
+        
+        p1 = self.encoder(mask1)
+        p2 = self.encoder(mask2)            
+
+        z_temp = torch.cat((p1.unsqueeze(1),p2.unsqueeze(1)),dim=2)
+        
+        
+
+
+        z = z_temp if i == 0 else torch.cat((z,z_temp),dim=1)
+
+      
+      z = z.squeeze(2)
+ 
+     
+      
+      z_renorm = z
+      z_renorm = z[:,0:2,:]
+
+      z2_phys = z_renorm[:,0:2,:]
+
+      
+      for i in range(frames.shape[1]-2):       
+          
+
+          z_window = z2_phys[:,i:i+2,:]
+          z_window2 = z[:,i:i+2,:]
+
+
+          pred_window = self.pModel(z_window,self.dt)
+          pred_window2 = self.pModel(z_window2,self.dt)
+          
+          z2_phys = torch.cat((z2_phys,pred_window),dim=1)
+          z_renorm = torch.cat((z_renorm,pred_window2),dim=1)
+
       
       return  z, z2_phys, z_renorm
     
