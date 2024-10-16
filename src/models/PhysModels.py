@@ -276,32 +276,6 @@ class gravity_ode(nn.Module):
 
       return  z_hat.view(-1,6).unsqueeze(1)
     
-def getModel(name, init_phys = None):
-
-    if name == "IntegratedFire":
-
-        return IntegratedFire()
-    if name == "dyn_1storder":
-        return dyn_1storder(init_phys)
-    if name == "Clifford_Attractor":    
-        return Clifford_Attractor()
-    if name == "ODE_2ObjectsSpring":
-        return ODE_2ObjectsSpring(init_phys[0], init_phys[1])
-    if name == "Damped_oscillation":
-        return Damped_oscillation(init_phys)
-    elif name == "Oscillation":
-        return Oscillation()
-    elif name == "Sprin_ode":
-        return Sprin_ode()
-    elif name == "gravity_ode":
-        return gravity_ode()
-    elif name == "double_pendulum":
-        return double_pendulum()
-    elif name == "lineal":
-        return lineal()
-    else:
-        return None
-    
 
 class ODE_2ObjectsSpring(nn.Module):
     def __init__(self, k, eq_distance):
@@ -458,7 +432,6 @@ class double_pendulum(nn.Module):
 
       device = "cuda" if torch.cuda.is_available() else "cpu"
       dt = torch.tensor([dt], requires_grad=False).float().to(device)
-
       
     #   theta1_0 = torch.asin(z[:,0,0] / self.l1)
     #   theta2_0 = torch.asin((z[:,0,2] - z[:,0,0] ) / self.l2)
@@ -488,11 +461,153 @@ class double_pendulum(nn.Module):
 
       
       z_hat = torch.cat((theta1_new.unsqueeze(1) ,theta2_new.unsqueeze(1)),dim=1)
-
       z_hat = z_hat.unsqueeze(1)
 
-      
-
-      
-
       return  z_hat
+    
+class Pendulum(nn.Module):
+    def __init__(self, init_phys = None):
+        super().__init__()
+
+        if init_phys is not None:
+            self.alpha = torch.tensor([init_phys], requires_grad=True).float()
+            self.beta = torch.tensor([init_phys*0.1], requires_grad=True).float()
+        else:
+            self.alpha = torch.tensor([0.5], requires_grad=True).float()        
+            self.beta = torch.tensor([0.5], requires_grad=True).float()
+
+        self.alpha = nn.Parameter(self.alpha )
+        self.beta = nn.Parameter(self.beta )
+
+        self.order = 2
+
+    def forward(self, z,dt):    
+
+      device = "cuda" if torch.cuda.is_available() else "cpu"
+      dt = torch.tensor([dt], requires_grad=False).float().to(device)
+
+      y1 = z[:,1:2]
+      y0 = z[:,0:1]
+
+      dt = dt
+
+      y_hat = y1 +(y1 - y0) - dt*(self.beta*(y1-y0) +dt*(9.80665/self.alpha)*torch.sin(y1) )
+
+      return  y_hat
+
+class Sliding_block(nn.Module):
+    def __init__(self, init_phys = None):
+        super().__init__()
+
+        if init_phys is not None:
+            self.alpha = torch.tensor([init_phys], requires_grad=True).float()
+            self.beta = torch.tensor([init_phys*0.1], requires_grad=True).float()
+        else:
+            self.alpha = torch.tensor([0.5], requires_grad=True).float()        
+            self.beta = torch.tensor([0.5], requires_grad=True).float()
+
+        self.alpha = nn.Parameter(self.alpha )
+        self.beta = nn.Parameter(self.beta )
+
+        self.order = 2
+
+    def forward(self, z,dt):    
+
+      device = "cuda" if torch.cuda.is_available() else "cpu"
+      dt = torch.tensor([dt], requires_grad=False).float().to(device)
+
+      y1 = z[:,1:2]
+      y0 = z[:,0:1]
+
+      dt = dt
+
+      y_hat = y1 +(y1 - y0) - dt*dt*9.80665( torch.sin(self.alpha) - self.beta*torch.cos(self.alpha)   )       
+
+      return  y_hat
+
+class bouncing_ball(nn.Module):
+    def __init__(self, init_phys = None):
+        super().__init__()
+
+        if init_phys is not None:
+            self.alpha = torch.tensor([init_phys], requires_grad=True).float()
+            self.beta = torch.tensor([init_phys*0.1], requires_grad=True).float()
+        else:
+            self.alpha = torch.tensor([0.5], requires_grad=True).float()        
+            self.beta = torch.tensor([0.5], requires_grad=True).float()
+
+        self.alpha = nn.Parameter(self.alpha )
+        self.beta = nn.Parameter(self.beta )
+
+        self.order = 2
+
+    def forward(self, z,dt):    
+
+      device = "cuda" if torch.cuda.is_available() else "cpu"
+      dt = torch.tensor([dt], requires_grad=False).float().to(device)
+
+      y1 = z[:,1:2]
+      y0 = z[:,0:1]
+
+      dt = dt
+
+      y_hat = y1 +(y1 - y0) - dt*dt*self.alpha        
+
+      return  y_hat  
+class led(nn.Module):
+    def __init__(self, init_phys = None):
+        super().__init__()
+
+        if init_phys is not None:
+            self.alpha = torch.tensor([init_phys], requires_grad=True).float()
+            self.beta = torch.tensor([0.0], requires_grad=True).float()
+        else:
+            self.alpha = torch.tensor([0.5], requires_grad=True).float()        
+            self.beta = torch.tensor([0.0], requires_grad=True).float()
+
+        self.alpha = nn.Parameter(self.alpha )
+        #self.beta = nn.Parameter(self.beta )
+
+        self.order = 1
+
+    def forward(self, z,dt):    
+
+      device = "cuda" if torch.cuda.is_available() else "cpu"
+      dt = torch.tensor([dt], requires_grad=False).float().to(device)
+
+      y1 = z
+
+      dt = dt
+
+      y_hat= y1 - dt*self.alpha*y1
+
+      return  y_hat
+
+
+def getModel(name, init_phys = None):
+
+    if name == "IntegratedFire":
+
+        return IntegratedFire()
+    if name == "dyn_1storder":
+        return dyn_1storder(init_phys)
+    if name == "Clifford_Attractor":    
+        return Clifford_Attractor()
+    if name == "ODE_2ObjectsSpring":
+        return ODE_2ObjectsSpring(init_phys[0], init_phys[1])
+    if name == "Damped_oscillation":
+        return Damped_oscillation(init_phys)
+    elif name == "Oscillation":
+        return Oscillation()
+    elif name == "Sprin_ode":
+        return Sprin_ode()
+    elif name == "gravity_ode":
+        return gravity_ode()
+    elif name == "double_pendulum":
+        return double_pendulum()
+    elif name == "lineal":
+        return lineal()
+    
+    else:
+        return None
+    
