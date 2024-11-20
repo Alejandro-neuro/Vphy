@@ -9,8 +9,16 @@ class EncoderMLP(nn.Module):
     def __init__(self, in_size = 50,in_chan = 1,  latent_dim=1, initw = True):
         super().__init__()
 
-        self.l1 = nn.Linear(5600,1000*in_chan )
-        self.l2 = nn.Linear(1000*in_chan,100*in_chan )
+        # self.l1 = nn.Linear(5600,1000*in_chan )
+        # self.l2 = nn.Linear(1000*in_chan,100*in_chan )
+        # self.l3 = nn.Linear(100*in_chan,latent_dim)
+
+        # self.l1 = nn.Linear(2500,1000*in_chan )
+        # self.l2 = nn.Linear(1000*in_chan,100*in_chan )
+        # self.l3 = nn.Linear(100*in_chan,latent_dim)
+
+        self.l1 = nn.Linear(in_size*in_size*in_chan,500*in_chan )
+        self.l2 = nn.Linear(500*in_chan,100*in_chan )
         self.l3 = nn.Linear(100*in_chan,latent_dim)
 
         self.relu= nn.ReLU()

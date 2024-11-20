@@ -151,7 +151,7 @@ class EndPhys(nn.Module):
         print("dt",dt)
     def forward(self, x):    
       
-      order = 1
+      order = 2
       frames = x.clone()
 
       #frame_area_list = [] 

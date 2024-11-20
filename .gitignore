@@ -25,3 +25,7 @@ custom_dataset.npy
 *.svg
 *.pdf
 *.zip
+*.jpg
+*.ai
+*.eps
+*.json

@@ -3,7 +3,7 @@ optimize:
   optimizer: Adam
   lr: 0.001
 train:
-  epochs: 500
+  epochs: 200
   batch_size: 64
 dataset:
   path: MNIST
@@ -13,4 +13,4 @@ dataset:
   num_workers: 2
 loss: custom
 image_size: 50
-log_wandb: True
+log_wandb: False

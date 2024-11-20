@@ -142,19 +142,19 @@ def train(model, train_loader, val_loader, type ='normal', init_phys = 1.0,loss_
 
     #optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-    # if init_phys == 0:
-    #     init_phys = 1.0
+    if init_phys == 0:
+        init_phys = 1.0
     
-    # if init_phys < 0:
+    if init_phys < 0:
 
-    #     init_phys = (init_phys*(-1))*0.1
+        init_phys = (init_phys*(-1))*0.1
 
-    # elif init_phys > 1:
-    #     init_phys = init_phys*0.5#np.ceil(np.log(init_phys)) * 0.5
-    # else:
-    #     init_phys = 2.0
-    #init_phys = 1.0
-    #init_phys = np.abs(init_phys)
+    elif init_phys > 1:
+        init_phys = init_phys*0.5#np.ceil(np.log(init_phys)) * 0.5
+    else:
+        init_phys = 2.0
+    init_phys = 1.0
+    init_phys = np.abs(init_phys)
     
 
     if hasattr(model, 'pModel') and hasattr(model, 'encoder'):
@@ -434,7 +434,7 @@ def train_m(model, train_loader, val_loader, type ='normal', init_phys = 1.0,los
 
         
         if epoch % 100 == 0:
-            print_loss = True
+            print_loss = False
         else:
             print_loss = False
         # Model training
@@ -503,8 +503,8 @@ def train_m(model, train_loader, val_loader, type ='normal', init_phys = 1.0,los
             best_model_state = model.state_dict().copy()
             torch.save(best_model_state, './best-train-parameters.pt')   
 
-        if epoch%(num_epochs /10 )== 0 and cfg.log_wandb:
-            print("epoch:",epoch, "\t training loss:", train_loss,
+        if epoch%(num_epochs /10 )== 0:# and cfg.log_wandb:
+            print("epoch:",epoch,"/",num_epochs, "\t training loss:", train_loss,
                   "\t validation loss:",val_loss)
             
         #if epoch == 2:
